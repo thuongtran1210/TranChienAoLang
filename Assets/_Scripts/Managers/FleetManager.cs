@@ -6,7 +6,7 @@ public class FleetManager : MonoBehaviour
 {
     [Header("Settings")]
     [SerializeField] private List<DuckDataSO> levelFleetConfig; // Config ban đầu
-
+    [SerializeField] private List<DuckDataSO> levelFleetData;
     // State Runtime
     private List<DuckDataSO> _availableShips;
     private DuckDataSO _currentSelectedDuck;
@@ -43,7 +43,11 @@ public class FleetManager : MonoBehaviour
         if (_availableShips == null) _availableShips = new List<DuckDataSO>();
         return _availableShips;
     }
-
+    public List<DuckDataSO> GetFleetData()
+    {
+   
+        return new List<DuckDataSO>(levelFleetData);
+    }
 
     public void SelectShip(DuckDataSO shipData)
     {

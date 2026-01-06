@@ -80,11 +80,26 @@ public class GridInputController : MonoBehaviour
     {
         if (!_isInitialized) return;
 
-
-        if (TryGetGridInfo(_currentScreenPos, out Vector2Int gridPos, out Owner owner))
+      
+        if (TryGetInteractable(_currentScreenPos, out IGridInteractable interactable))
         {
-            OnGridCellClicked?.Invoke(gridPos, owner);
+            OnGridCellClicked?.Invoke(interactable.GridPosition, interactable.CellOwner);
         }
+    }
+    private bool TryGetInteractable(Vector2 screenPos, out IGridInteractable interactable)
+    {
+        interactable = null;
+        if (_inputCamera == null) return false;
+
+        Vector3 worldPos = GetMouseWorldPosition(screenPos);
+        Collider2D hitCollider = Physics2D.OverlapPoint(worldPos, gridLayer);
+
+        if (hitCollider != null)
+        {
+          
+            return hitCollider.TryGetComponent(out interactable);
+        }
+        return false;
     }
 
     private void HandleRotateInput() => OnRightClick?.Invoke();

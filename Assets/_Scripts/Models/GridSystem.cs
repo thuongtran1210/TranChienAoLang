@@ -82,6 +82,19 @@ public class GridSystem : IGridSystem
         }
         AliveUnitsCount++;
     }
+    public void Clear()
+    {
+        // Reset lại toàn bộ data của GridCell
+        foreach (var cell in _gridCells)
+        {
+            cell.OccupiedUnit = null;
+            
+        }
+
+
+        // Bắn event để View cập nhật (xóa visual tàu)
+        OnGridStateChanged?.Invoke();
+    }
 
     // --- BATTLE PHASE METHODS ---
 

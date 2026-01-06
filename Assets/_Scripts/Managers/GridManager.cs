@@ -109,6 +109,11 @@ public class GridManager : MonoBehaviour, IGridContext
         Debug.Log($"[GridManager] Đã đặt {data.duckName} tại {gridPos}");
         return true;
     }
+    public Vector3 GetWorldPosition(Vector2Int gridPos)
+    {
+        // Gọi xuống View để lấy World Pos chuẩn
+        return gridView.GridToWorldPosition(gridPos);
+    }
 
     // --- INPUT HANDLING ---
     private void HandleCellClicked(Vector2Int gridPos, Owner clickedOwner)

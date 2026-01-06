@@ -22,4 +22,5 @@ public interface IGridSystem
 
     // Helper
     bool IsValidPosition(Vector2Int pos);
+    void Clear();
 }

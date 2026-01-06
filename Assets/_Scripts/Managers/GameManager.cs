@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour, IGameContext
 {
@@ -7,6 +8,7 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private GridManager playerGrid;
     [SerializeField] private GridManager enemyGrid;
     [SerializeField] private FleetManager fleetManager;
+    [SerializeField] private GridRandomizer gridRandomizer;
 
     [SerializeField] private GridInputController gridInputController;
 
@@ -41,8 +43,13 @@ public class GameManager : MonoBehaviour, IGameContext
         // 3. Khởi tạo các States 
 
         _setupState = new SetupState(this, playerGrid, fleetManager, gridInputController);
-        _battleState = new BattleState(this, playerGrid, enemyGrid, aiImplementation, gridInputController); 
+        _battleState = new BattleState(this, playerGrid, enemyGrid, aiImplementation, gridInputController);
+        // 2. SETUP ENEMY BOARD (AUTO)
+        // Lấy danh sách vịt từ FleetManager
+        List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();
 
+        Debug.Log("Generating Enemy Fleet...");
+        gridRandomizer.RandomizePlacement(enemyGrid, enemyFleet);
         // 4. Bắt đầu game bằng Setup State
         ChangeState(_setupState);
     }
