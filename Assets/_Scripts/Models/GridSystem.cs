@@ -9,6 +9,7 @@ public class GridSystem : IGridSystem
     public int Height { get; private set; }
     public GridCell[,] Cells { get; private set; }
     public int AliveUnitsCount { get; private set; }
+    public event Action OnGridReset;
 
     // Implement Interface Event
     public event Action<Vector2Int, ShotResult> OnGridStateChanged;
@@ -70,30 +71,29 @@ public class GridSystem : IGridSystem
 
     public void PlaceUnit(IGridOccupant unit, Vector2Int position, bool isHorizontal)
     {
-        DuckDataSO data = unit.Data; // Giả sử IGridOccupant có access tới Data
+        DuckDataSO data = unit.Data; 
 
         foreach (Vector2Int pos in GetTargetPositions(data, position, isHorizontal))
         {
             if (IsValidPosition(pos))
             {
                 Cells[pos.x, pos.y].OccupiedUnit = unit;
-                // Lưu ý: _aliveUnitsCount chỉ nên ++ 1 lần cho mỗi Unit, không phải mỗi Cell
+                
             }
         }
         AliveUnitsCount++;
     }
     public void Clear()
     {
-        // Reset lại toàn bộ data của GridCell
-        foreach (var cell in _gridCells)
+        foreach (var cell in Cells)
         {
             cell.OccupiedUnit = null;
-            
+            cell.IsHit = false;
         }
+        AliveUnitsCount = 0;
 
-
-        // Bắn event để View cập nhật (xóa visual tàu)
-        OnGridStateChanged?.Invoke();
+       
+        OnGridReset?.Invoke();
     }
 
     // --- BATTLE PHASE METHODS ---

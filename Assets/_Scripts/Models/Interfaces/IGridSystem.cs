@@ -7,10 +7,14 @@ public interface IGridSystem
     int Width { get; }
     int Height { get; }
     GridCell[,] Cells { get; }
-   
+
 
     // --- Events ---
+    // Event khi một ô thay đổi (bị bắn)
     event Action<Vector2Int, ShotResult> OnGridStateChanged;
+
+    // Event riêng biệt khi Grid bị reset (Clear)
+    event Action OnGridReset;
 
     GridCell GetCell(Vector2Int position);
     GridCell GetCell(int x, int y);
