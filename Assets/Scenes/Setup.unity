@@ -164,6 +164,7 @@ GameObject:
   - component: {fileID: 387395764}
   - component: {fileID: 387395765}
   - component: {fileID: 387395762}
+  - component: {fileID: 387395766}
   m_Layer: 0
   m_Name: EnemyBoard
   m_TagString: Untagged
@@ -242,6 +243,19 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 136
   _drawDebugRay: 1
+--- !u!114 &387395766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387395760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5306465b8757b9947a0c461fe62468c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridRandomizer
+  maxAttempts: 100
 --- !u!1 &398420239
 GameObject:
   m_ObjectHideFlags: 0
@@ -289,6 +303,7 @@ MonoBehaviour:
   playerGrid: {fileID: 1897542689}
   enemyGrid: {fileID: 387395764}
   fleetManager: {fileID: 967563622}
+  gridRandomizer: {fileID: 387395766}
   gridInputController: {fileID: 1897542692}
   vsAI: 1
 --- !u!1 &400194531
@@ -927,6 +942,7 @@ MonoBehaviour:
   levelFleetConfig:
   - {fileID: 11400000, guid: 5c149477d25e7d54da6e985d0c9c7d65, type: 2}
   - {fileID: 11400000, guid: 888be12934f4eff478036a5b4b3616b1, type: 2}
+  levelFleetData: []
 --- !u!4 &967563623
 Transform:
   m_ObjectHideFlags: 0

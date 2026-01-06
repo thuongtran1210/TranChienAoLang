@@ -97,7 +97,8 @@ public class GridView : MonoBehaviour
     // Lấy tâm ô 
     public Vector3 GetWorldCenterPosition(int x, int y)
     {
-        Vector3 localCenter = GetLocalPosition(x, y) + new Vector3(cellSize , cellSize , 0);
+        Vector3 halfCell = new Vector3(cellSize * 0.5f, cellSize * 0.5f, 0);
+        Vector3 localCenter = GetLocalPosition(x, y) + halfCell;
         return transform.TransformPoint(localCenter);
     }
     public Vector3 CalculateCenterPosition(Vector2Int startGridPos, int size, bool isHorizontal)
@@ -114,5 +115,13 @@ public class GridView : MonoBehaviour
         { 
             return startWorldPos + new Vector3(0, centerOffset, 0);
         }
+    }
+    /// <summary>
+    /// Chuyển đổi tọa độ Grid (Vector2Int) sang World Position (Vector3).
+    /// </summary>
+    public Vector3 GridToWorldPosition(Vector2Int gridPos)
+    {
+        
+        return GetWorldPosition(gridPos.x, gridPos.y);
     }
 }
