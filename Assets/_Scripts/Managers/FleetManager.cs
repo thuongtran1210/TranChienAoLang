@@ -5,7 +5,7 @@ using UnityEngine;
 public class FleetManager : MonoBehaviour
 {
     [Header("Settings")]
-    [SerializeField] private List<DuckDataSO> levelFleetConfig; // Config ban đầu
+    [SerializeField] private List<DuckDataSO> levelFleetConfig;
     [SerializeField] private List<DuckDataSO> levelFleetData;
     // State Runtime
     private List<DuckDataSO> _availableShips;

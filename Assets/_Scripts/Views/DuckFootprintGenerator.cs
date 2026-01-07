@@ -12,29 +12,31 @@ public class DuckFootprintGenerator : MonoBehaviour
 
     /// <summary>
     /// Hàm Generic để tạo hình.
-    /// Tuân thủ Open/Closed Principle: Mở rộng visual (prefab khác nhau) nhưng đóng logic xếp grid.
     /// </summary>
     /// <param name="data">Dữ liệu tàu</param>
     /// <param name="prefab">Prefab cần sinh ra (Lá cho Ghost, Vịt cho View)</param>
     /// <param name="sortingOrder">Thứ tự render</param>
     /// <returns>Trả về List để Controller bên ngoài có thể đổi màu hoặc thao tác thêm</returns>
-    public List<GameObject> Generate(DuckDataSO data, GameObject prefab, int sortingOrder)
+    /// <summary>
+    /// Tạo hình dáng tàu.
+    /// </summary>
+    /// <param name="clearPrevious">Nếu true: Ẩn các object cũ (dùng cho lần vẽ đầu tiên). Nếu false: Vẽ thêm vào (dùng cho layer thứ 2).</param>
+    public List<GameObject> Generate(DuckDataSO data, GameObject prefab, int sortingOrder, bool clearPrevious = true)
     {
-        if (data == null || prefab == null)
+        if (data == null || prefab == null) return new List<GameObject>();
+
+        if (clearPrevious)
         {
-            Debug.LogWarning("[DuckFootprintGenerator] Missing Data or Prefab!");
-            return new List<GameObject>();
+            ReturnToPool();
         }
 
-        // 1. Recycle / Hide old objects (Smart Pooling)
-        ReturnToPool();
+        List<GameObject> newlySpawned = new List<GameObject>();
 
-        // 2. Spawn new objects based on data
+    
         foreach (Vector2Int gridOffset in data.structure)
         {
             GameObject segment = GetFromPool(prefab);
 
-            // Setup Position
             float halfCell = cellSize * 0.5f;
             segment.transform.localPosition = new Vector3(
                 (gridOffset.x * cellSize) + halfCell,
@@ -42,45 +44,65 @@ public class DuckFootprintGenerator : MonoBehaviour
                 0
             );
 
-            // Setup Rotation (Random nhẹ cho tự nhiên nếu muốn, hoặc reset)
             segment.transform.localRotation = Quaternion.identity;
-
-            // Setup Sorting Order
             SetSortingOrder(segment, sortingOrder);
 
             _activeSegments.Add(segment);
+            newlySpawned.Add(segment);
         }
 
-        return _activeSegments;
+        return newlySpawned;
     }
 
     private GameObject GetFromPool(GameObject prefab)
     {
-        GameObject instance;
-        if (_pool.Count > 0)
+        // Logic Pool đơn giản: Nếu có hàng tồn thì lấy, không thì mua mới
+        // Lưu ý: Nếu prefab khác nhau (Lá vs Vịt), pool này có thể bị trộn lẫn visual.
+        // Giải pháp nhanh: Nếu object trong pool KHÁC prefab đang cần -> Destroy nó đi tạo mới.
+
+        while (_pool.Count > 0)
         {
-            instance = _pool.Dequeue();
-            instance.SetActive(true);
+            GameObject item = _pool.Dequeue();
+
+            // [FIX CRASH] Kiểm tra nếu object đã bị xóa từ bên ngoài
+            if (item == null) continue;
+
+            // Kiểm tra xem item này có đúng loại prefab mình cần không? (Check tên hoặc component)
+            // Cách đơn giản nhất: Destroy nếu muốn an toàn tuyệt đối, hoặc tái sử dụng mù quáng (cẩn thận)
+            // Ở đây tôi chọn giải pháp an toàn cho Fresher: Tạo mới nếu nghi ngờ, nhưng vẫn tái sử dụng GameObject
+
+            // Reset lại SpriteRenderer nếu cần (vì pool dùng chung cho cả Lá và Vịt)
+            if (item.TryGetComponent<SpriteRenderer>(out var sr) && prefab.TryGetComponent<SpriteRenderer>(out var prefabSr))
+            {
+                sr.sprite = prefabSr.sprite;
+                sr.color = prefabSr.color;
+            }
+
+            item.SetActive(true);
+            return item;
         }
-        else
-        {
-            instance = Instantiate(prefab, transform);
-        }
-        return instance;
+
+        return Instantiate(prefab, transform);
     }
 
     private void ReturnToPool()
     {
-        foreach (var item in _activeSegments)
+   
+        for (int i = _activeSegments.Count - 1; i >= 0; i--)
         {
-            item.SetActive(false);
-            _pool.Enqueue(item);
+            var item = _activeSegments[i];
+            if (item != null)
+            {
+                item.SetActive(false);
+                _pool.Enqueue(item);
+            }
         }
         _activeSegments.Clear();
     }
 
     private void SetSortingOrder(GameObject obj, int order)
     {
+        if (obj == null) return;
         var renderers = obj.GetComponentsInChildren<SpriteRenderer>();
         foreach (var sr in renderers)
         {
