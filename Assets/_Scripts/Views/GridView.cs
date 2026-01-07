@@ -92,11 +92,15 @@ public class GridView : MonoBehaviour
     // Chuyển đổi từ tọa độ thế giới (nơi chuột trỏ) về tọa độ Grid (x, y)
     public Vector2Int WorldToGridPosition(Vector3 worldPosition)
     {
+        // Chuyển từ World Space về Local Space của GridView
+        // Điều này cực kỳ quan trọng nếu Grid của bạn không nằm ở (0,0) hoặc bị xoay/scale
         Vector3 localPos = transform.InverseTransformPoint(worldPosition);
-        localPos -= originPosition;
 
-        int x = Mathf.FloorToInt(localPos.x / cellSize);
-        int y = Mathf.FloorToInt(localPos.y / cellSize);
+        // Giả sử cellSize là 1. Nếu khác 1, bạn cần chia cho cellSize.
+        // Mathf.FloorToInt giúp làm tròn xuống để lấy chỉ số mảng chuẩn xác
+        int x = Mathf.FloorToInt(localPos.x);
+        int y = Mathf.FloorToInt(localPos.y);
+
         return new Vector2Int(x, y);
     }
     private Vector3 GetLocalCenterOfCell(int x, int y)

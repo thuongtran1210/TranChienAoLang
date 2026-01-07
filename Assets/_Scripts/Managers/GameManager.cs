@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro.Examples;
 
 public class GameManager : MonoBehaviour, IGameContext
 {
@@ -10,6 +11,7 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private FleetManager fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
 
+    [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController gridInputController;
 
     [Header("--- SETTINGS ---")]
@@ -29,32 +31,50 @@ public class GameManager : MonoBehaviour, IGameContext
 
     private void InitializeGame()
     {
-        // 1. Khởi tạo dữ liệu cho 2 Grid (Logic Core)
+        // 1. SETUP HỆ THỐNG INPUT 
+        if (cameraController != null)
+        {
+            gridInputController.Initialize(cameraController.GetCamera());
+        }
+        else
+        {
+            Debug.LogError("GameManager: Chưa gán CameraController trong Inspector!");
+            gridInputController.Initialize(Camera.main);
+        }
 
+      
+        gridInputController.RegisterGrid(playerGrid);
+        gridInputController.RegisterGrid(enemyGrid);
+
+        // 2. Khởi tạo dữ liệu Grid
         playerGrid.Initialize(new GridSystem(10, 10), Owner.Player);
         enemyGrid.Initialize(new GridSystem(10, 10), Owner.Enemy);
 
-        EnemyAIController aiController = new EnemyAIController(); // Khai báo rõ class cụ thể để gọi Init
-        aiController.Initialize(10, 10); 
-
+        // 3. Setup AI
+        EnemyAIController aiController = new EnemyAIController();
+        aiController.Initialize(10, 10);
         IEnemyAI aiImplementation = aiController;
-        // 2. Lắng nghe sự kiện click từ View (GridManager)
 
-        playerGrid.OnGridClicked += HandleGridInteraction;
-        enemyGrid.OnGridClicked += HandleGridInteraction;
+        // 4. Setup Camera 
+        if (cameraController != null)
+        {
+            cameraController.SetupCamera(10, 10);
+        }
 
-        // 3. Khởi tạo các States 
-
+        // 5. Khởi tạo States
+  
         _setupState = new SetupState(this, playerGrid, fleetManager, gridInputController);
-        _battleState = new BattleState(this, playerGrid, enemyGrid, aiImplementation, gridInputController);
-        // 2. SETUP ENEMY BOARD (AUTO)
-        // Lấy danh sách vịt từ FleetManager
-        List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();
 
-        Debug.Log("Generating Enemy Fleet...");
+        // BattleState 
+        _battleState = new BattleState(this, playerGrid, enemyGrid, aiImplementation, gridInputController);
+
+        // 6. Setup Enemy Fleet 
+        List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();
         gridRandomizer.RandomizePlacement(enemyGrid, enemyFleet);
-        // 4. Bắt đầu game bằng Setup State
+
+        // 7. Start Game
         ChangeState(_setupState);
+
     }
 
     private void OnDestroy()

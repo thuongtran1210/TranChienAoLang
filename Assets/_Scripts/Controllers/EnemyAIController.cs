@@ -12,6 +12,8 @@ public class EnemyAIController : IEnemyAI
 
     private Vector2Int _lastHitPos;
 
+    private readonly List<Vector2Int> _cachedNeighbors = new List<Vector2Int>(4);
+
 
     // --- INITIALIZATION ---
     // Hàm này cần được gọi từ GameManager lúc Start game
@@ -103,21 +105,17 @@ public class EnemyAIController : IEnemyAI
     public void NotifyHit(Vector2Int hitPos, IGridSystem grid)
     {
         _currentState = AIState.Targeting;
-        _lastHitPos = hitPos; // <-- Biến đã được khai báo lại, hết lỗi CS0103
+        _lastHitPos = hitPos;
 
-        // Thêm 4 ô lân cận vào Stack để bắn bồi
-        List<Vector2Int> neighbors = new List<Vector2Int>
-        {
-            hitPos + Vector2Int.up,
-            hitPos + Vector2Int.down,
-            hitPos + Vector2Int.left,
-            hitPos + Vector2Int.right
-        };
+        _cachedNeighbors.Clear(); // Xóa sạch dữ liệu cũ
+        _cachedNeighbors.Add(hitPos + Vector2Int.up);
+        _cachedNeighbors.Add(hitPos + Vector2Int.down);
+        _cachedNeighbors.Add(hitPos + Vector2Int.left);
+        _cachedNeighbors.Add(hitPos + Vector2Int.right);
 
-        // Shuffle neighbors để hướng bắn khó đoán hơn
-        ShuffleList(neighbors);
+        ShuffleList(_cachedNeighbors); // Shuffle trực tiếp trên cached list
 
-        foreach (var neighbor in neighbors)
+        foreach (var neighbor in _cachedNeighbors)
         {
             if (grid.IsValidPosition(neighbor) && !grid.GetCell(neighbor).IsHit)
             {

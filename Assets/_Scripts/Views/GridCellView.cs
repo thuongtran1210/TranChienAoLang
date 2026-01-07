@@ -16,11 +16,12 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     public void Setup(GridCell cellLogic, Owner owner)
     {
         _cellLogic = cellLogic;
-        CellOwner = owner; 
-
+        CellOwner = owner;
         spriteRenderer.sprite = defaultSprite;
-  
+
+#if UNITY_EDITOR
         gameObject.name = $"{owner}_Cell_{cellLogic.GridPosition.x}_{cellLogic.GridPosition.y}";
+#endif
     }
 
     public void UpdateVisual(ShotResult shotResult)

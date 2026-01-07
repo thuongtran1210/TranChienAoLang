@@ -239,10 +239,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridInputController
   inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
-  gridLayer:
-    serializedVersion: 2
-    m_Bits: 136
-  _drawDebugRay: 1
 --- !u!114 &387395766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,6 +300,7 @@ MonoBehaviour:
   enemyGrid: {fileID: 387395764}
   fleetManager: {fileID: 967563622}
   gridRandomizer: {fileID: 387395766}
+  cameraController: {fileID: 519420033}
   gridInputController: {fileID: 1897542692}
   vsAI: 1
 --- !u!1 &400194531
@@ -1553,10 +1550,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridInputController
   inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
-  gridLayer:
-    serializedVersion: 2
-    m_Bits: 72
-  _drawDebugRay: 1
 --- !u!1 &2043023258
 GameObject:
   m_ObjectHideFlags: 0

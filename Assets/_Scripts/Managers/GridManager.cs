@@ -113,6 +113,28 @@ public class GridManager : MonoBehaviour, IGridContext
     {
         return gridView.GridToWorldPosition(gridPos);
     }
+    public bool IsWorldPositionInside(Vector3 worldPos, out Vector2Int gridPos)
+    {
+        gridPos = Vector2Int.zero;
+
+        // 1. Chuyển từ World Space (Toàn cầu) -> Local Space (Cục bộ của Grid này)
+        // Ví dụ: Grid nằm tại (10, 0), chuột tại (12, 1) -> Local là (2, 1)
+        Vector3 localPos = transform.InverseTransformPoint(worldPos);
+
+        // 2. Tính toán tọa độ Grid (Giả sử 1 ô = 1 unit)
+        int x = Mathf.FloorToInt(localPos.x);
+        int y = Mathf.FloorToInt(localPos.y);
+
+        // 3. Kiểm tra xem (x, y) có nằm trong kích thước Width/Height không
+        // width và height là biến đã có trong GridManager
+        if (x >= 0 && x < width && y >= 0 && y < height)
+        {
+            gridPos = new Vector2Int(x, y);
+            return true; // Chuột ĐANG nằm trong Grid này
+        }
+
+        return false; // Chuột nằm ngoài
+    }
 
     // --- INPUT HANDLING ---
     private void HandleCellClicked(Vector2Int gridPos, Owner clickedOwner)
