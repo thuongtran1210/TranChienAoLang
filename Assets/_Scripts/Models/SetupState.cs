@@ -110,7 +110,20 @@ public class SetupState : GameStateBase
         _selectedDuckData = data;
         Debug.Log($"SetupState: Picked duck {data.duckName}");
 
+        // 1. Hiển thị GhostDuck
         _playerGrid.ShowGhost(data);
+
+        // 2. [SENIOR TIP] Cập nhật vị trí NGAY LẬP TỨC không cần chờ chuột di chuyển
+        // Lấy vị trí hiện tại từ Controller (Hàm này em đã có trong GridInputController)
+        Vector3 currentWorldPos = _inputController.GetCurrentMouseWorldPosition();
+
+        // Ép GhostDuck nhảy tới vị trí chuột ngay
+        _playerGrid.UpdateGhostPosition(currentWorldPos);
+
+        // Validate ngay lập tức để hiện màu xanh/đỏ đúng
+        Vector2Int gridPos = _playerGrid.GetGridPosition(currentWorldPos);
+        bool isValid = _playerGrid.GridSystem.CanPlaceUnit(_selectedDuckData, gridPos, _playerGrid.IsGhostHorizontal);
+        _playerGrid.SetGhostValidation(isValid);
     }
 
     private void HandleFleetEmpty()

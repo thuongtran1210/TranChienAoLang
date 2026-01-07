@@ -12,6 +12,7 @@ public class GridManager : MonoBehaviour, IGridContext
     [Header("Settings")]
     [SerializeField] private int width = 10;
     [SerializeField] private int height = 10;
+    [SerializeField] private float cellSize = 1f;
 
     [SerializeField] private LayerMask gridLayer;
 
@@ -117,23 +118,21 @@ public class GridManager : MonoBehaviour, IGridContext
     {
         gridPos = Vector2Int.zero;
 
-        // 1. Chuyển từ World Space (Toàn cầu) -> Local Space (Cục bộ của Grid này)
-        // Ví dụ: Grid nằm tại (10, 0), chuột tại (12, 1) -> Local là (2, 1)
+        // 1. Chuyển World -> Local
         Vector3 localPos = transform.InverseTransformPoint(worldPos);
 
-        // 2. Tính toán tọa độ Grid (Giả sử 1 ô = 1 unit)
-        int x = Mathf.FloorToInt(localPos.x);
-        int y = Mathf.FloorToInt(localPos.y);
+        // 2.Tính toán dựa trên cellSize 
+        int x = Mathf.FloorToInt(localPos.x / cellSize);
+        int y = Mathf.FloorToInt(localPos.y / cellSize);
 
-        // 3. Kiểm tra xem (x, y) có nằm trong kích thước Width/Height không
-        // width và height là biến đã có trong GridManager
+        // 3. Kiểm tra biên
         if (x >= 0 && x < width && y >= 0 && y < height)
         {
             gridPos = new Vector2Int(x, y);
-            return true; // Chuột ĐANG nằm trong Grid này
+            return true;
         }
 
-        return false; // Chuột nằm ngoài
+        return false;
     }
 
     // --- INPUT HANDLING ---
@@ -159,7 +158,14 @@ public class GridManager : MonoBehaviour, IGridContext
         HideGhost();
     }
 
-    public Vector2Int GetGridPosition(Vector3 worldPos) => gridView.WorldToGridPosition(worldPos);
+    public Vector2Int GetGridPosition(Vector3 worldPosition)
+    {
+
+        return new Vector2Int(
+            Mathf.FloorToInt(worldPosition.x / cellSize),
+            Mathf.FloorToInt(worldPosition.y / cellSize)
+        );
+    }
 
     public void UpdateGhostPosition(Vector3 worldPos)
     {

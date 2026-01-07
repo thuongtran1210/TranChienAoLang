@@ -74,9 +74,17 @@ public class GhostDuck : MonoBehaviour
     public void SetPosition(Vector3 pointerWorldPos)
     {
         if (CurrentData == null) return;
-        int gridX = Mathf.RoundToInt(pointerWorldPos.x / cellSize);
-        int gridY = Mathf.RoundToInt(pointerWorldPos.y / cellSize);
-        transform.position = new Vector3(gridX * cellSize, gridY * cellSize, 0);
+
+        int gridX = Mathf.FloorToInt(pointerWorldPos.x / cellSize);
+        int gridY = Mathf.FloorToInt(pointerWorldPos.y / cellSize);
+
+        float offset = cellSize * 0.5f;
+
+        transform.position = new Vector3(
+            (gridX * cellSize) + offset,
+            (gridY * cellSize) + offset,
+            0
+        );
     }
 
     public void SetValidationState(bool isValid)

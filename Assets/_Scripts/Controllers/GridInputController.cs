@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems; // Cần thiết để gọi EventSystem
 using UnityEngine.InputSystem;
 
 public class GridInputController : MonoBehaviour
@@ -9,7 +10,6 @@ public class GridInputController : MonoBehaviour
     [SerializeField] private InputReader inputReader;
     private Camera _inputCamera;
 
-
     private List<GridManager> _managedGrids = new List<GridManager>();
 
     public event Action<Vector2Int, Owner> OnGridCellClicked;
@@ -17,14 +17,13 @@ public class GridInputController : MonoBehaviour
     public event Action OnRightClick;
 
     private bool _isInitialized = false;
-    bool _fireInputReceived = true;
+
+    // --- STATE MANAGEMENT ---
+    // Thay vì xử lý ngay, chúng ta dùng biến này để đánh dấu sự kiện
+    private bool _isFireInputPending = false;
     private Vector2 _currentScreenPos;
 
-    // --- INITIALIZATION ---
-
-    /// <summary>
-    /// Hàm này được gọi từ GameManager để đăng ký PlayerGrid và EnemyGrid
-    /// </summary>
+    // --- INITIALIZATION (Giữ nguyên) ---
     public void RegisterGrid(GridManager grid)
     {
         if (!_managedGrids.Contains(grid))
@@ -33,9 +32,7 @@ public class GridInputController : MonoBehaviour
             Debug.Log($"[GridInputController] Đã đăng ký Grid: {grid.GridOwner}");
         }
     }
-    /// <summary>
-    /// Inject dependency Camera. 
-    /// </summary>
+
     public void Initialize(Camera cameraToUse)
     {
         _inputCamera = cameraToUse;
@@ -63,7 +60,7 @@ public class GridInputController : MonoBehaviour
     {
         if (inputReader == null) return;
         inputReader.MoveEvent += HandleMove;
-        inputReader.FireEvent += HandleFire;
+        inputReader.FireEvent += HandleFireInput; 
         inputReader.RotateEvent += HandleRotateInput;
     }
 
@@ -71,71 +68,84 @@ public class GridInputController : MonoBehaviour
     {
         if (inputReader == null) return;
         inputReader.MoveEvent -= HandleMove;
-        inputReader.FireEvent -= HandleFire;
+        inputReader.FireEvent -= HandleFireInput;
         inputReader.RotateEvent -= HandleRotateInput;
     }
-    // --- INPUT HANDLERS (PURE MATH LOGIC) ---
+
+    private void Update()
+    {
+        if (!_isInitialized) return;
+
+        if (_isFireInputPending)
+        {
+            ProcessFireLogic();
+            _isFireInputPending = false; 
+        }
+    }
+
+    // --- INPUT HANDLERS (SIGNAL ONLY) ---
 
     private void HandleMove(Vector2 screenPos)
     {
         if (!_isInitialized) return;
+
+        // 1. Cập nhật vị trí màn hình (cho logic polling nếu cần)
         _currentScreenPos = screenPos;
 
+        // 2. Chuyển đổi sang World Position
+        Vector3 worldPos = GetMouseWorldPosition(screenPos);
+
+        // 3. [QUAN TRỌNG] Bắn event để GhostDuck hoặc các hệ thống khác biết để cập nhật vị trí
+        OnPointerPositionChanged?.Invoke(worldPos);
     }
 
-    private void HandleFire()
+    private void HandleFireInput()
     {
         if (!_isInitialized) return;
+        _isFireInputPending = true;
+    }
 
-        // 1. Chặn click xuyên UI (nếu dùng EventSystem)
-        if (UnityEngine.EventSystems.EventSystem.current != null &&
-            UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+    private void HandleRotateInput() => OnRightClick?.Invoke();
+
+    // --- GAME LOGIC (PROCESSING) ---
+
+    private void ProcessFireLogic()
+    {
+        // 1. Chặn click xuyên UI
+
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         {
+            Debug.Log("Blocked by UI");
             return;
         }
 
         // 2. Lấy vị trí chuột trong World
         Vector3 worldPos = GetMouseWorldPosition(_currentScreenPos);
 
-        // 3. Duyệt qua danh sách các Grid đã đăng ký (Player & Enemy)
+        // 3. Duyệt qua danh sách các Grid
         foreach (var grid in _managedGrids)
         {
-            // Gọi hàm IsWorldPositionInside (Bạn cần đảm bảo đã thêm hàm này vào GridManager như hướng dẫn trước)
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
-                // [FOUND IT] Tìm thấy Grid mà chuột đang trỏ vào!
-                // grid.GridOwner sẽ cho biết đó là Player hay Enemy
                 Debug.Log($"Click vào {grid.GridOwner} tại {gridPos}");
-
                 OnGridCellClicked?.Invoke(gridPos, grid.GridOwner);
-                return; // Đã tìm thấy thì thoát vòng lặp ngay
+                return;
             }
         }
-
-        // Nếu chạy hết vòng lặp mà không return -> Click vào khoảng không
-        // Debug.Log("Click trượt ra ngoài các bảng đấu.");
     }
 
-    private void HandleRotateInput() => OnRightClick?.Invoke();
-
-    // --- UTILS ---
+    // --- UTILS (Giữ nguyên) ---
 
     private Vector3 GetMouseWorldPosition(Vector2 screenPos)
     {
         if (_inputCamera == null) return Vector3.zero;
+        // Lưu ý: InputSystem trả về Vector2, cần đảm bảo Z distance phù hợp với Camera
         Vector3 screenPosWithZ = new Vector3(screenPos.x, screenPos.y, -_inputCamera.transform.position.z);
         return _inputCamera.ScreenToWorldPoint(screenPosWithZ);
     }
-    // --- PUBLIC API 
 
-    /// <summary>
-    /// Trả về vị trí World hiện tại của chuột (Z = 0 trên mặt phẳng Grid).
-    /// Dùng cho các State cần poll vị trí chuột (như khi nhấn R để xoay tại chỗ).
-    /// </summary>
     public Vector3 GetCurrentMouseWorldPosition()
     {
-        // _currentScreenPos là biến private đã có trong code cũ, được update tại HandleMove
         return GetMouseWorldPosition(_currentScreenPos);
     }
-
 }
