@@ -7,6 +7,7 @@ public interface IGridContext
     DuckDataSO SelectedDuck { get; }
     GridInputController InputController { get; }
     Vector2Int GetGridPosition(Vector3 worldPos);
+    Vector3 GetWorldPosition(Vector2Int gridPos);
     Owner GridOwner { get; }
     // --- STATES PROPERTIES ---
     bool IsGhostHorizontal { get; }

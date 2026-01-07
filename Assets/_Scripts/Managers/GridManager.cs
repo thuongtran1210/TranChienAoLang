@@ -112,7 +112,17 @@ public class GridManager : MonoBehaviour, IGridContext
     }
     public Vector3 GetWorldPosition(Vector2Int gridPos)
     {
-        return gridView.GridToWorldPosition(gridPos);
+        // Tính toán vị trí World dựa trên Grid Index
+        // Lưu ý: Cộng thêm offset (cellSize * 0.5) để lấy tâm ô, giống logic trong GhostDuck
+        float offset = cellSize * 0.5f;
+
+        Vector3 localPos = new Vector3(
+            (gridPos.x * cellSize) + offset,
+            (gridPos.y * cellSize) + offset,
+            0
+        );
+
+        return transform.TransformPoint(localPos);
     }
     public bool IsWorldPositionInside(Vector3 worldPos, out Vector2Int gridPos)
     {
@@ -158,13 +168,16 @@ public class GridManager : MonoBehaviour, IGridContext
         HideGhost();
     }
 
-    public Vector2Int GetGridPosition(Vector3 worldPosition)
+    public Vector2Int GetGridPosition(Vector3 worldPos)
     {
+        // 1. Chuyển sang Local Space của Grid
+        Vector3 localPos = transform.InverseTransformPoint(worldPos);
 
-        return new Vector2Int(
-            Mathf.FloorToInt(worldPosition.x / cellSize),
-            Mathf.FloorToInt(worldPosition.y / cellSize)
-        );
+        // 2. Tính toán dùng FloorToInt và cellSize (Logic chuẩn)
+        int x = Mathf.FloorToInt(localPos.x / cellSize);
+        int y = Mathf.FloorToInt(localPos.y / cellSize);
+
+        return new Vector2Int(x, y);
     }
 
     public void UpdateGhostPosition(Vector3 worldPos)
