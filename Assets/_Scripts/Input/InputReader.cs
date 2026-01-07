@@ -36,7 +36,6 @@ public class InputReader : ScriptableObject, InputSystem_Actions.IGameInputActio
 
     public void OnPoint(InputAction.CallbackContext context)
     {
-        // 2. Fix: Invoke đúng sự kiện mà Controller đang lắng nghe
         MoveEvent?.Invoke(context.ReadValue<Vector2>());
     }
 

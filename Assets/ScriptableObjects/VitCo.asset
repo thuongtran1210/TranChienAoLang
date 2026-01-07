@@ -17,5 +17,5 @@ MonoBehaviour:
   structure:
   - {x: 0, y: 0}
   - {x: 1, y: 0}
-  icon: {fileID: -5567005244463056006, guid: 39030e1537a52ca49be8c67d6cda8559, type: 3}
+  icon: {fileID: 2458098434777339976, guid: f111bfbbb9a52a8498693c45896b3b8b, type: 3}
   unitPrefab: {fileID: 6513479564865191508, guid: 1aecf76ebaea01047b95b13519cd51c2, type: 3}

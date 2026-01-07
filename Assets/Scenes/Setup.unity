@@ -942,7 +942,9 @@ MonoBehaviour:
   levelFleetConfig:
   - {fileID: 11400000, guid: 5c149477d25e7d54da6e985d0c9c7d65, type: 2}
   - {fileID: 11400000, guid: 888be12934f4eff478036a5b4b3616b1, type: 2}
-  levelFleetData: []
+  levelFleetData:
+  - {fileID: 11400000, guid: 5c149477d25e7d54da6e985d0c9c7d65, type: 2}
+  - {fileID: 11400000, guid: 5c149477d25e7d54da6e985d0c9c7d65, type: 2}
 --- !u!4 &967563623
 Transform:
   m_ObjectHideFlags: 0

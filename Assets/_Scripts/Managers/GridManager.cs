@@ -111,7 +111,6 @@ public class GridManager : MonoBehaviour, IGridContext
     }
     public Vector3 GetWorldPosition(Vector2Int gridPos)
     {
-        // Gọi xuống View để lấy World Pos chuẩn
         return gridView.GridToWorldPosition(gridPos);
     }
 
@@ -120,7 +119,7 @@ public class GridManager : MonoBehaviour, IGridContext
     {
         if (clickedOwner != this.GridOwner)
         {
-            return; // Click nhầm sang bảng khác -> Bỏ qua ngay lập tức
+            return; 
         }
         Debug.Log($"[GridManager] Valid click on {GridOwner} board at {gridPos}");
         OnGridClicked?.Invoke(this, gridPos);

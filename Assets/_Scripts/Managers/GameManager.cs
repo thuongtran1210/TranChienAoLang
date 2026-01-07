@@ -13,12 +13,12 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private GridInputController gridInputController;
 
     [Header("--- SETTINGS ---")]
-    [SerializeField] private bool vsAI = true; // Biến này để mở rộng sau này (PvP hoặc PvE)
+    [SerializeField] private bool vsAI = true; 
 
     // --- STATE MANAGEMENT ---
     private GameStateBase _currentState;
 
-    // Cache các state để không phải new liên tục (Optimization)
+    // Cache state 
     private SetupState _setupState;
     private BattleState _battleState;
 
