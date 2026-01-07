@@ -117,28 +117,9 @@ public class GhostDuck : MonoBehaviour
     /// </summary>
     private Vector3 CalculateCenterOffset(int size)
     {
-        // Giả sử Pivot của Sprite Sliced nằm ở Center-Left (0, 0.5) hoặc Bottom-Left (0,0)
-        // Đây là công thức cho Pivot Center (0.5, 0.5) của từng ô đơn lẻ
 
-        // Nếu tàu dài 3 ô -> Center nằm ở 1.5 -> Offset từ gốc (0) là +1.5 ô (nếu Pivot Sprite ở tâm)
-        // Nhưng Grid System thường tính từ góc dưới trái mỗi ô.
 
-        // Cách đơn giản nhất cho Sliced Sprite (Pivot Center):
-        // Không cần offset nếu Sprite đã set Pivot Center.
-        // Chỉ cần offset nếu Sprite set Pivot Left.
-
-        // Tại đây tôi giả định bạn đang setup Sprite Pivot = Center.
-        // Nếu kích thước là chẵn (2,4), tâm nằm trên đường lưới -> Cần dịch 0.5
-        // Nếu kích thước là lẻ (1,3), tâm nằm giữa ô -> Không cần dịch (nếu đã Snap)
-
-        // TUY NHIÊN, với GridSystem, thường tọa độ (x,y) là TÂM ô.
-
-        return Vector3.zero; // Thử trả về 0 trước, nếu lệch hãy dùng công thức dưới:
-
-        /* Nếu tàu bị lệch, hãy dùng logic này:
-           float xOffset = (size % 2 == 0) ? 0.5f * cellSize : 0f;
-           return new Vector3(xOffset, 0, 0);
-        */
+        return Vector3.zero; 
     }
 
     public void SetValidationState(bool isValid)
