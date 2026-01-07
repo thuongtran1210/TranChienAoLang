@@ -42,12 +42,18 @@ public class GridView : MonoBehaviour
     {
         if (data == null || data.unitPrefab == null) return;
 
+        Vector3 localSpawnPos = CalculateLocalCenterPosition(gridPos, data.size, isHorizontal);
 
-        Vector3 spawnPos = GetWorldCenterPosition(gridPos.x, gridPos.y);
-
+      
         Quaternion rotation = isHorizontal ? Quaternion.identity : Quaternion.Euler(0, 0, 90);
 
-        GameObject duckObj = Instantiate(data.unitPrefab, spawnPos, rotation, transform);
+
+        GameObject duckObj = Instantiate(data.unitPrefab, transform);
+
+        duckObj.transform.localPosition = localSpawnPos;
+        duckObj.transform.localRotation = rotation;
+
+        // --- Setup Logic ---
         DuckView view = duckObj.GetComponent<DuckView>();
         if (view != null)
         {
@@ -101,20 +107,19 @@ public class GridView : MonoBehaviour
         Vector3 localCenter = GetLocalPosition(x, y) + halfCell;
         return transform.TransformPoint(localCenter);
     }
-    public Vector3 CalculateCenterPosition(Vector2Int startGridPos, int size, bool isHorizontal)
+    /// <summary>
+    /// Tính toán vị trí LOCAL trên Board   
+    /// </summary>
+    public Vector3 CalculateLocalCenterPosition(Vector2Int startGridPos, int size, bool isHorizontal)
     {
-        Vector3 startWorldPos = GetWorldCenterPosition(startGridPos.x, startGridPos.y);
+        // 1. Lấy vị trí góc dưới trái của ô bắt đầu
+        Vector3 cellLocalPos = GetLocalPosition(startGridPos.x, startGridPos.y);
 
-        float centerOffset = (size - 1) * 0.5f * cellSize;
+        // 2. Lấy tâm của ô 
+        Vector3 halfCell = new Vector3(cellSize , cellSize , 0);
 
-        if (isHorizontal)
-        {
-            return startWorldPos + new Vector3(centerOffset, 0, 0);
-        }
-        else
-        { 
-            return startWorldPos + new Vector3(0, centerOffset, 0);
-        }
+
+        return cellLocalPos + halfCell;
     }
     /// <summary>
     /// Chuyển đổi tọa độ Grid (Vector2Int) sang World Position (Vector3).

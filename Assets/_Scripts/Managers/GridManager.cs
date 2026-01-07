@@ -121,7 +121,6 @@ public class GridManager : MonoBehaviour, IGridContext
         {
             return; 
         }
-        Debug.Log($"[GridManager] Valid click on {GridOwner} board at {gridPos}");
         OnGridClicked?.Invoke(this, gridPos);
     }
 
