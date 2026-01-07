@@ -137,32 +137,18 @@ public class GridView : MonoBehaviour
         
         return GetWorldPosition(gridPos.x, gridPos.y);
     }
-    // Thêm vào Assets/_Scripts/Views/GridView.cs
 
 #if UNITY_EDITOR
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected() // Chỉ vẽ khi click vào GridView
     {
-    
         if (!Application.isPlaying || _cellViews == null) return;
 
-        Gizmos.color = Color.cyan;
-        float debugSize = 0.1f;
-
-        for (int x = 0; x < _cellViews.GetLength(0); x++)
-        {
-            for (int y = 0; y < _cellViews.GetLength(1); y++)
-            {
-                // 1. Tính toán vị trí theo công thức hiện tại của bạn
-         
-                Vector3 calculatedLocalPos = CalculateLocalCenterPosition(new Vector2Int(x, y), 1, true);
-
-                // 2. Chuyển sang World Position để vẽ Gizmos
-                Vector3 drawPos = transform.TransformPoint(calculatedLocalPos);
-
-                // 3. Vẽ một quả cầu tại vị trí đó
-                Gizmos.DrawWireSphere(drawPos, debugSize);
-            }
-        }
+        Gizmos.color = new Color(0, 1, 1, 0.3f);
+        // Thay vì vẽ từng ô, hãy vẽ WireCube bao quanh toàn bộ Grid cho nhẹ
+        Vector3 center = GetLocalCenterOfCell(_cellViews.GetLength(0) / 2, _cellViews.GetLength(1) / 2);
+        Vector3 size = new Vector3(_cellViews.GetLength(0) * cellSize, _cellViews.GetLength(1) * cellSize, 1);
+        Gizmos.DrawWireCube(transform.TransformPoint(center), size);
     }
 #endif
+
 }

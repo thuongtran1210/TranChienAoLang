@@ -54,7 +54,7 @@ public class FleetManager : MonoBehaviour
         if (_availableShips.Contains(shipData))
         {
             _currentSelectedDuck = shipData;
-            OnShipSelected?.Invoke(shipData); // Báo cho GridManager biết để hiện GhostDuck
+            OnShipSelected?.Invoke(shipData); 
             Debug.Log($"FleetManager: Đã chọn {shipData.duckName}");
         }
     }

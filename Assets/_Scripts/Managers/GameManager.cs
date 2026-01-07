@@ -34,7 +34,10 @@ public class GameManager : MonoBehaviour, IGameContext
         playerGrid.Initialize(new GridSystem(10, 10), Owner.Player);
         enemyGrid.Initialize(new GridSystem(10, 10), Owner.Enemy);
 
-        IEnemyAI aiImplementation = new EnemyAIController();
+        EnemyAIController aiController = new EnemyAIController(); // Khai báo rõ class cụ thể để gọi Init
+        aiController.Initialize(10, 10); 
+
+        IEnemyAI aiImplementation = aiController;
         // 2. Lắng nghe sự kiện click từ View (GridManager)
 
         playerGrid.OnGridClicked += HandleGridInteraction;

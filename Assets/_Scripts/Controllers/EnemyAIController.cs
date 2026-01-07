@@ -7,18 +7,43 @@ public class EnemyAIController : IEnemyAI
     private enum AIState { Searching, Targeting }
     private AIState _currentState = AIState.Searching;
 
-    // Stack lưu các ô tiềm năng khi ở chế độ Targeting.
+    private List<Vector2Int> _availableParityMoves;
     private Stack<Vector2Int> _potentialTargets = new Stack<Vector2Int>();
+
     private Vector2Int _lastHitPos;
+
+
+    // --- INITIALIZATION ---
+    // Hàm này cần được gọi từ GameManager lúc Start game
+    public void Initialize(int width, int height)
+    {
+        _availableParityMoves = new List<Vector2Int>();
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                // Chỉ thêm các ô thỏa mãn Parity (Bàn cờ vua: ô trắng/đen xen kẽ)
+                // Giúp giảm 50% số lượt bắn mù quáng
+                if ((x + y) % 2 == 0)
+                {
+                    _availableParityMoves.Add(new Vector2Int(x, y));
+                }
+            }
+        }
+        // Xáo trộn danh sách ngay từ đầu (Fisher-Yates shuffle)
+        ShuffleList(_availableParityMoves);
+    }
+    // --- CORE LOGIC ---
 
     public Vector2Int GetNextTarget(IGridSystem playerGrid)
     {
+        // Ưu tiên bắn các ô trong Stack (Chế độ Targeting)
         if (_currentState == AIState.Targeting && _potentialTargets.Count > 0)
         {
             return GetTargetingShot(playerGrid);
         }
 
-        // Fallback về Searching nếu hết target hoặc đang searching
+        // Nếu hết mục tiêu tiềm năng, quay lại chế độ săn tìm (Searching)
         _currentState = AIState.Searching;
         return GetParityHuntingShot(playerGrid);
     }
@@ -26,36 +51,50 @@ public class EnemyAIController : IEnemyAI
     // Parity Hunting 
     private Vector2Int GetParityHuntingShot(IGridSystem grid)
     {
-        // Logic tìm ô ngẫu nhiên thỏa mãn (x + y) % 2 == 0 và chưa bị bắn
-        // Viết đơn giản: Random until valid (Cần tối ưu trong thực tế bằng List available moves)
-        int w = grid.Width;
-        int h = grid.Height;
-
-        while (true)
+        // Lấy từ túi (List) ra thay vì Random.Range trong vòng lặp while(true)
+        while (_availableParityMoves != null && _availableParityMoves.Count > 0)
         {
-            int x = Random.Range(0, w);
-            int y = Random.Range(0, h);
-            if ((x + y) % 2 == 0 && !grid.GetCell(new Vector2Int(x, y)).IsHit)
-            {
-                return new Vector2Int(x, y);
-            }
-            // Safety break cần thiết...
-        }
-    }
+            // Lấy phần tử cuối (hiệu suất O(1) khi remove)
+            int lastIndex = _availableParityMoves.Count - 1;
+            Vector2Int candidate = _availableParityMoves[lastIndex];
+            _availableParityMoves.RemoveAt(lastIndex);
 
-    // GDD: Targeting (Bắn lân cận)
-    private Vector2Int GetTargetingShot(IGridSystem grid)
-    {
-        while (_potentialTargets.Count > 0)
-        {
-            Vector2Int candidate = _potentialTargets.Pop();
+            // Kiểm tra: Chỉ bắn nếu ô này CHƯA bị bắn (có thể đã bị bắn trong lúc Targeting)
             if (grid.IsValidPosition(candidate) && !grid.GetCell(candidate).IsHit)
             {
                 return candidate;
             }
         }
 
-        // Nếu stack rỗng mà vẫn gọi, quay về search
+        // Fallback an toàn: Nếu hết nước đi Parity (hiếm khi xảy ra), 
+        // quét tuyến tính tìm bất kỳ ô trống nào còn lại
+        for (int x = 0; x < grid.Width; x++)
+        {
+            for (int y = 0; y < grid.Height; y++)
+            {
+                Vector2Int pos = new Vector2Int(x, y);
+                if (!grid.GetCell(pos).IsHit) return pos;
+            }
+        }
+
+        return Vector2Int.zero; // Should not happen if game flow is correct
+    }
+
+    // Chế độ 2: Nhắm bắn (Targeting)
+    private Vector2Int GetTargetingShot(IGridSystem grid)
+    {
+        while (_potentialTargets.Count > 0)
+        {
+            Vector2Int candidate = _potentialTargets.Pop();
+
+            // Chỉ trả về nếu ô đó hợp lệ và chưa bắn
+            if (grid.IsValidPosition(candidate) && !grid.GetCell(candidate).IsHit)
+            {
+                return candidate;
+            }
+        }
+
+        // Nếu Stack rỗng mà vẫn gọi hàm này -> quay về Search
         _currentState = AIState.Searching;
         return GetParityHuntingShot(grid);
     }
@@ -64,14 +103,38 @@ public class EnemyAIController : IEnemyAI
     public void NotifyHit(Vector2Int hitPos, IGridSystem grid)
     {
         _currentState = AIState.Targeting;
-        _lastHitPos = hitPos;
+        _lastHitPos = hitPos; // <-- Biến đã được khai báo lại, hết lỗi CS0103
 
-        // Push 4 ô lân cận vào Stack
-        _potentialTargets.Push(hitPos + Vector2Int.up);
-        _potentialTargets.Push(hitPos + Vector2Int.down);
-        _potentialTargets.Push(hitPos + Vector2Int.left);
-        _potentialTargets.Push(hitPos + Vector2Int.right);
+        // Thêm 4 ô lân cận vào Stack để bắn bồi
+        List<Vector2Int> neighbors = new List<Vector2Int>
+        {
+            hitPos + Vector2Int.up,
+            hitPos + Vector2Int.down,
+            hitPos + Vector2Int.left,
+            hitPos + Vector2Int.right
+        };
 
-        // Mẹo: Shuffle stack để AI bắn ngẫu nhiên các hướng, khó đoán hơn
+        // Shuffle neighbors để hướng bắn khó đoán hơn
+        ShuffleList(neighbors);
+
+        foreach (var neighbor in neighbors)
+        {
+            if (grid.IsValidPosition(neighbor) && !grid.GetCell(neighbor).IsHit)
+            {
+                _potentialTargets.Push(neighbor);
+            }
+        }
+    }
+    private void ShuffleList<T>(List<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = Random.Range(0, n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
     }
 }

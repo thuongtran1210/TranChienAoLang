@@ -80,10 +80,23 @@ public class GridInputController : MonoBehaviour
     {
         if (!_isInitialized) return;
 
-      
-        if (TryGetInteractable(_currentScreenPos, out IGridInteractable interactable))
+        // 1. Lấy vị trí chuột trong World
+        Vector3 worldPos = GetMouseWorldPosition(_currentScreenPos);
+
+        // 2. Chuyển đổi World -> Grid Coordinates bằng GridView (Pure Math)
+        // Cần tham chiếu GridView hoặc GridManager ở đây. 
+        // Giả sử ta tiêm GridManager vào controller hoặc InputController nằm trong GridManager.
+
+        // Lấy GridManager từ context hoặc inject dependency
+        var gridManager = GetComponentInParent<GridManager>();
+        if (gridManager == null) return;
+
+        Vector2Int gridPos = gridManager.GetGridPosition(worldPos);
+
+        // 3. Kiểm tra bounds logic thay vì Raycast physics
+        if (gridManager.GridSystem.IsValidPosition(gridPos))
         {
-            OnGridCellClicked?.Invoke(interactable.GridPosition, interactable.CellOwner);
+            OnGridCellClicked?.Invoke(gridPos, gridManager.GridOwner);
         }
     }
     private bool TryGetInteractable(Vector2 screenPos, out IGridInteractable interactable)
