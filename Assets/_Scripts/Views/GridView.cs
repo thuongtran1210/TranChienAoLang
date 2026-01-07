@@ -17,18 +17,28 @@ public class GridView : MonoBehaviour
     public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
     {
         _cellViews = new GridCellView[width, height];
+        Vector3 halfCellOffset = new Vector3(cellSize * 0.5f, cellSize * 0.5f, 0);
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                Vector3 localPos = GetLocalPosition(x, y);
+                // 1. Lấy vị trí góc (Bottom-Left)
+                Vector3 bottomLeftPos = GetLocalPosition(x, y);
+
+                // 2. Tính vị trí tâm (Center)
+                Vector3 centerPos = bottomLeftPos + halfCellOffset;
 
                 GridCellView cellView = Instantiate(cellPrefab, gridContainer);
-                cellView.transform.localPosition = localPos;
+
+                // 3. Đặt View vào tâm, thay vì đặt vào góc
+                cellView.transform.localPosition = centerPos;
+
+                // 4. Đồng bộ kích thước Visual 
+         
+                cellView.SetVisualSize(cellSize);
 
                 var cellLogic = gridSystem.GetCell(new Vector2Int(x, y));
-
                 cellView.Setup(cellLogic, owner);
 
                 _cellViews[x, y] = cellView;
@@ -89,6 +99,12 @@ public class GridView : MonoBehaviour
         int y = Mathf.FloorToInt(localPos.y / cellSize);
         return new Vector2Int(x, y);
     }
+    private Vector3 GetLocalCenterOfCell(int x, int y)
+    {
+        Vector3 origin = GetLocalPosition(x, y);
+        Vector3 halfSize = new Vector3(cellSize * 0.5f, cellSize * 0.5f, 0);
+        return origin + halfSize;
+    }
     public Vector3 GetLocalPosition(int x, int y)
     {
         return new Vector3(x, y) * cellSize + originPosition;
@@ -103,23 +119,15 @@ public class GridView : MonoBehaviour
     // Lấy tâm ô 
     public Vector3 GetWorldCenterPosition(int x, int y)
     {
-        Vector3 halfCell = new Vector3(cellSize * 0.5f, cellSize * 0.5f, 0);
-        Vector3 localCenter = GetLocalPosition(x, y) + halfCell;
-        return transform.TransformPoint(localCenter);
+        return transform.TransformPoint(GetLocalCenterOfCell(x, y));
     }
     /// <summary>
     /// Tính toán vị trí LOCAL trên Board   
     /// </summary>
     public Vector3 CalculateLocalCenterPosition(Vector2Int startGridPos, int size, bool isHorizontal)
     {
-        // 1. Lấy vị trí góc dưới trái của ô bắt đầu
-        Vector3 cellLocalPos = GetLocalPosition(startGridPos.x, startGridPos.y);
-
-        // 2. Lấy tâm của ô 
-        Vector3 halfCell = new Vector3(cellSize , cellSize , 0);
-
-
-        return cellLocalPos + halfCell;
+       
+        return GetLocalCenterOfCell(startGridPos.x, startGridPos.y);
     }
     /// <summary>
     /// Chuyển đổi tọa độ Grid (Vector2Int) sang World Position (Vector3).
@@ -129,4 +137,32 @@ public class GridView : MonoBehaviour
         
         return GetWorldPosition(gridPos.x, gridPos.y);
     }
+    // Thêm vào Assets/_Scripts/Views/GridView.cs
+
+#if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+    
+        if (!Application.isPlaying || _cellViews == null) return;
+
+        Gizmos.color = Color.cyan;
+        float debugSize = 0.1f;
+
+        for (int x = 0; x < _cellViews.GetLength(0); x++)
+        {
+            for (int y = 0; y < _cellViews.GetLength(1); y++)
+            {
+                // 1. Tính toán vị trí theo công thức hiện tại của bạn
+         
+                Vector3 calculatedLocalPos = CalculateLocalCenterPosition(new Vector2Int(x, y), 1, true);
+
+                // 2. Chuyển sang World Position để vẽ Gizmos
+                Vector3 drawPos = transform.TransformPoint(calculatedLocalPos);
+
+                // 3. Vẽ một quả cầu tại vị trí đó
+                Gizmos.DrawWireSphere(drawPos, debugSize);
+            }
+        }
+    }
+#endif
 }

@@ -41,4 +41,33 @@ public class GridCellView : MonoBehaviour, IGridInteractable
                
         }
     }
+    /// <summary>
+    /// Điều chỉnh Scale của view để vừa khít với kích thước ô lưới logic
+    /// </summary>
+    /// <param name="targetSize">Kích thước mong muốn (cellSize)</param>
+    public void SetVisualSize(float targetSize)
+    {
+        if (spriteRenderer == null || spriteRenderer.sprite == null) return;
+
+        // 1. Reset scale về 1 để lấy kích thước gốc chính xác
+        transform.localScale = Vector3.one;
+
+        // 2. Lấy kích thước gốc của Sprite (Local Bounds)
+        // bounds.size trả về kích thước tính bằng World Unit (dựa trên PPU settings)
+        Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
+
+        if (spriteSize.x == 0 || spriteSize.y == 0)
+        {
+            Debug.LogWarning($"[GridCellView] Sprite {gameObject.name} có kích thước 0!");
+            return;
+        }
+
+        // 3. Tính toán tỷ lệ cần thiết
+        // Công thức: Scale = Target / Original
+        float scaleFactorX = targetSize / spriteSize.x;
+        float scaleFactorY = targetSize / spriteSize.y;
+
+        // 4. Áp dụng Scale mới
+        transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
+    }
 }
