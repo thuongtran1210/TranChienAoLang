@@ -10,7 +10,7 @@ public class GridRandomizer : MonoBehaviour
     /// <summary>
     /// Xếp ngẫu nhiên danh sách vịt lên GridManager mục tiêu.
     /// </summary>
-    public void RandomizePlacement(GridManager targetGrid, List<DuckDataSO> ducksToPlace)
+    public void RandomizePlacement(GridController targetGrid, List<DuckDataSO> ducksToPlace)
     {
         if (targetGrid == null || ducksToPlace == null || ducksToPlace.Count == 0)
         {

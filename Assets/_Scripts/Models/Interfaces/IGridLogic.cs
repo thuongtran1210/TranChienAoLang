@@ -2,7 +2,6 @@
 using System;
 using UnityEngine;
 
-// 1. Interface chuyên về Logic & Dữ liệu (Dùng cho AI, Controller kiểm tra luật chơi)
 public interface IGridLogic
 {
     // Data
@@ -10,15 +9,15 @@ public interface IGridLogic
     Owner GridOwner { get; }
     void Initialize(IGridSystem gridSystem, Owner owner);
 
-    // Helper tính toán tọa độ
+    // Helper tính toán tọa độ (Spatial Logic)
     Vector2Int GetGridPosition(Vector3 worldPos);
     Vector3 GetWorldPosition(Vector2Int gridPos);
     bool IsWorldPositionInside(Vector3 worldPos, out Vector2Int gridPos);
 
-    // Core Logic
+    // Core Gameplay Logic
     bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
     bool TryPlaceShip(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
 
-    // Event (nếu cần cho logic game)
+    // Event
     event Action<IGridLogic, Vector2Int> OnGridClicked;
 }

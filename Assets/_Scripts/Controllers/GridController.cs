@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
-using System; // Để dùng Action
+using System; 
 
-public class GridManager : MonoBehaviour, IGridContext
+public class GridController : MonoBehaviour, IGridContext
 {
     [Header("Dependencies")]
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController inputController;
     [SerializeField] private GridView gridView;
- 
+    [SerializeField] private GhostDuck ghostDuck;
 
     [Header("Settings")]
     [SerializeField] private int width = 10;
@@ -28,7 +28,6 @@ public class GridManager : MonoBehaviour, IGridContext
     public DuckDataSO SelectedDuck => null; 
 
     public GridInputController InputController => inputController;
-    public bool IsGhostHorizontal => true;
     public Owner GridOwner { get; private set; }
 
 
@@ -153,16 +152,6 @@ public class GridManager : MonoBehaviour, IGridContext
 
     // --- INTERFACE VISUAL METHODS  ---
 
-    public void OnDuckPlacedSuccess(DuckUnit unit, Vector2Int pos)
-    {
-        gridView.SpawnDuck(pos, unit.IsHorizontal, unit.Data, unit);
-    }
-
-    public void OnSetupPhaseCompleted()
-    {
-        // [REMOVED] HideGhost();
-    }
-
     public Vector2Int GetGridPosition(Vector3 worldPos)
     {
     
@@ -173,35 +162,69 @@ public class GridManager : MonoBehaviour, IGridContext
 
         return new Vector2Int(x, y);
     }
-    
 
-    public void UpdateGhostPosition(Vector3 worldPos)
+
+    #region IGridGhostHandler Implementation
+
+    // Property: Trả về trạng thái xoay của Ghost
+    public bool IsGhostHorizontal
     {
-        if (ghostDuck != null) ghostDuck.SetPosition(worldPos);
+        get
+        {
+            // Senior Tip: Đừng return true cứng, hãy hỏi thẳng object GhostDuck
+            if (ghostDuck != null) return ghostDuck.IsHorizontal;
+            return true; // Default safety
+        }
     }
 
-    public void SetGhostValidation(bool isValid)
-    {
-        if (ghostDuck != null) ghostDuck.SetValidationState(isValid);
-    }
-
-    public void ToggleGhostRotation()
-    {
-        if (ghostDuck != null) ghostDuck.Rotate();
-    }
-
-    public void HideGhost()
-    {
-        if (ghostDuck != null) ghostDuck.Hide();
-    }
     public void ShowGhost(DuckDataSO data)
     {
         if (ghostDuck != null)
         {
-            ghostDuck.Show(data);
             ghostDuck.gameObject.SetActive(true);
+            ghostDuck.Show(data);
         }
     }
-    
+
+    public void HideGhost()
+    {
+        // Dùng ?. để code gọn hơn: "Nếu ghostDuck không null thì gọi Hide()"
+        ghostDuck?.Hide();
+    }
+
+    public void UpdateGhostPosition(Vector3 worldPos)
+    {
+        ghostDuck?.SetPosition(worldPos);
+    }
+
+    public void SetGhostValidation(bool isValid)
+    {
+        ghostDuck?.SetValidationState(isValid);
+    }
+
+    public void ToggleGhostRotation()
+    {
+        ghostDuck?.Rotate();
+    }
+
+    // Hàm này được gọi khi đặt vịt thành công (SetupState gọi) -> Cập nhật View thật
+    public void OnDuckPlacedSuccess(DuckUnit unit, Vector2Int pos)
+    {
+        // Gọi GridView để spawn con vịt thật
+        gridView.SpawnDuck(pos, unit.IsHorizontal, unit.Data, unit);
+
+        // Ẩn ghost đi để chuẩn bị cho con tiếp theo (nếu cần)
+        HideGhost();
+    }
+
+    public void OnSetupPhaseCompleted()
+    {
+        // Khi xong phase Setup, chắc chắn phải ẩn Ghost
+        HideGhost();
+        Debug.Log($"[{GridOwner}] Setup Phase Completed.");
+    }
+
+    #endregion
+
 
 }

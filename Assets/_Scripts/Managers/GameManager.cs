@@ -6,8 +6,8 @@ using TMPro.Examples;
 public class GameManager : MonoBehaviour, IGameContext
 {
     [Header("--- COMPONENTS ---")]
-    [SerializeField] private GridManager playerGridManager;
-    [SerializeField] private GridManager enemyGridManager;
+    [SerializeField] private GridController playerGridManager;
+    [SerializeField] private GridController enemyGridManager;
     [SerializeField] private FleetManager fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
 
@@ -50,8 +50,8 @@ public class GameManager : MonoBehaviour, IGameContext
         gridInputController.RegisterGrid(_enemyGrid);
 
         // 2. Khởi tạo dữ liệu Grid
-        playerGrid.Initialize(new GridSystem(10, 10), Owner.Player);
-        enemyGrid.Initialize(new GridSystem(10, 10), Owner.Enemy);
+        playerGridManager.Initialize(new GridSystem(10, 10), Owner.Player);
+        enemyGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
 
         // 3. Setup AI
         EnemyAIController aiController = new EnemyAIController();
@@ -69,11 +69,11 @@ public class GameManager : MonoBehaviour, IGameContext
         _setupState = new SetupState(this, _playerGrid, fleetManager, gridInputController);
 
         // BattleState 
-        _battleState = new BattleState(this, playerGrid, enemyGrid, aiImplementation, gridInputController);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiImplementation, gridInputController);
 
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();
-        gridRandomizer.RandomizePlacement(enemyGrid, enemyFleet);
+        gridRandomizer.RandomizePlacement(enemyGridManager, enemyFleet);
 
         // 7. Start Game
         ChangeState(_setupState);

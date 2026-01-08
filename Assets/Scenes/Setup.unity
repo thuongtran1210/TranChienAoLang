@@ -223,6 +223,7 @@ MonoBehaviour:
   ghostDuck: {fileID: 0}
   width: 10
   height: 10
+  cellSize: 1
   gridLayer:
     serializedVersion: 2
     m_Bits: 136
@@ -296,8 +297,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b7401642d193ad4a8a0c10f0826c668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  playerGrid: {fileID: 1897542689}
-  enemyGrid: {fileID: 387395764}
+  playerGridManager: {fileID: 1897542689}
+  enemyGridManager: {fileID: 387395764}
   fleetManager: {fileID: 967563622}
   gridRandomizer: {fileID: 387395766}
   cameraController: {fileID: 519420033}
@@ -1518,6 +1519,7 @@ MonoBehaviour:
   ghostDuck: {fileID: 4320243199634330419}
   width: 10
   height: 10
+  cellSize: 1
   gridLayer:
     serializedVersion: 2
     m_Bits: 72
