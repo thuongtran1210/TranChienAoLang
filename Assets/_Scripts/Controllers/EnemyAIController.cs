@@ -16,7 +16,6 @@ public class EnemyAIController : IEnemyAI
 
 
     // --- INITIALIZATION ---
-    // Hàm này cần được gọi từ GameManager lúc Start game
     public void Initialize(int width, int height)
     {
         _availableParityMoves = new List<Vector2Int>();
@@ -24,15 +23,12 @@ public class EnemyAIController : IEnemyAI
         {
             for (int y = 0; y < height; y++)
             {
-                // Chỉ thêm các ô thỏa mãn Parity (Bàn cờ vua: ô trắng/đen xen kẽ)
-                // Giúp giảm 50% số lượt bắn mù quáng
                 if ((x + y) % 2 == 0)
                 {
                     _availableParityMoves.Add(new Vector2Int(x, y));
                 }
             }
         }
-        // Xáo trộn danh sách ngay từ đầu (Fisher-Yates shuffle)
         ShuffleList(_availableParityMoves);
     }
     // --- CORE LOGIC ---
