@@ -13,12 +13,11 @@ public class GhostDuckView : MonoBehaviour
     [SerializeField] private Color validColor = Color.green;
     [SerializeField] private Color invalidColor = Color.red;
 
-    // --- CÁC BIẾN PRIVATE ---
+    // --- PRIVATE ---
     private List<GhostSegmentView> _segmentsPool = new List<GhostSegmentView>();
     private DuckDataSO _currentData;
     private bool _isCurrentPosValid = true;
 
-    // Mặc định là True (Ngang)
     private bool _isHorizontal = true;
     public bool IsHorizontal => _isHorizontal;
 
@@ -26,7 +25,6 @@ public class GhostDuckView : MonoBehaviour
     {
         if (data == null) return;
 
-        // Reset rotation về 0 mỗi khi hiện mới để đảm bảo tính nhất quán
         transform.rotation = Quaternion.identity;
         _isHorizontal = true;
 
@@ -48,9 +46,11 @@ public class GhostDuckView : MonoBehaviour
     {
         if (_currentData == null) return;
 
-        transform.Rotate(0, 0, 90);
 
         _isHorizontal = !_isHorizontal;
+
+        float targetAngle = _isHorizontal ? 0f : -90f;
+        transform.rotation = Quaternion.Euler(0, 0, targetAngle);
     }
 
     private void UpdateVisual(DuckDataSO data)

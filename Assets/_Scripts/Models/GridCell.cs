@@ -9,10 +9,9 @@ public class GridCell
     public GridCell(Vector2Int gridPosition)
     {
         GridPosition = gridPosition;
-        OccupiedUnit = null; // Mặc định là null
+        OccupiedUnit = null; 
         IsHit = false;
     }
-    // Kiểm tra ô có bị chiếm dụng không
 
     public bool IsOccupied => OccupiedUnit != null;
 }

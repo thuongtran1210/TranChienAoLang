@@ -27,7 +27,7 @@ public class DuckDataSO : ScriptableObject
         for (int i = 0; i < size; i++)
         {
             int x = pivot.x + (isHorizontal ? i : 0);
-            int y = pivot.y + (isHorizontal ? 0 : i); 
+            int y = pivot.y + (isHorizontal ? 0 : -i);
             cells.Add(new Vector2Int(x, y));
         }
         return cells;

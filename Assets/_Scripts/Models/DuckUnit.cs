@@ -55,7 +55,7 @@ public class DuckUnit : IGridOccupant
         }
     }
 
-    // Hàm này hữu ích để check xem một tọa độ (x,y) có thuộc về con vịt này không
+
     public bool IsOccupying(Vector2Int gridPoint)
     {
         for (int i = 0; i < Size; i++)
@@ -64,7 +64,8 @@ public class DuckUnit : IGridOccupant
             if (IsHorizontal)
                 checkPos = PivotGridPos + new Vector2Int(i, 0);
             else
-                checkPos = PivotGridPos + new Vector2Int(0, i); // Hoặc -i tùy hệ toạ độ Y của bạn
+               
+                checkPos = PivotGridPos + new Vector2Int(0, -i);
 
             if (checkPos == gridPoint) return true;
         }

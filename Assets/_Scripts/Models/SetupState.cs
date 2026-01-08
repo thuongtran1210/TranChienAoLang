@@ -9,7 +9,6 @@ public class SetupState : GameStateBase
     private GridInputController _inputController;
     private DuckDataSO _selectedDuckData;
 
-    // Cập nhật Constructor
     public SetupState(IGameContext gameContext, IGridContext playerGrid, FleetManager fleetManager, GridInputController inputController)
             : base(gameContext)
     {
