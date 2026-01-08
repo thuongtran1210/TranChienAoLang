@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System; // Để dùng Action
 
-public class GridManager : MonoBehaviour, IGridLogic
+public class GridManager : MonoBehaviour, IGridContext
 {
     [Header("Dependencies")]
     [SerializeField] private CameraController cameraController;
@@ -145,10 +145,9 @@ public class GridManager : MonoBehaviour, IGridLogic
     // --- INPUT HANDLING ---
     private void HandleCellClicked(Vector2Int gridPos, Owner clickedOwner)
     {
-        if (clickedOwner != this.GridOwner)
-        {
-            return;
-        }
+        if (clickedOwner != this.GridOwner) return;
+
+
         OnGridClicked?.Invoke(this, gridPos);
     }
 
@@ -174,7 +173,7 @@ public class GridManager : MonoBehaviour, IGridLogic
 
         return new Vector2Int(x, y);
     }
-    /*
+    
 
     public void UpdateGhostPosition(Vector3 worldPos)
     {
@@ -203,6 +202,6 @@ public class GridManager : MonoBehaviour, IGridLogic
             ghostDuck.gameObject.SetActive(true);
         }
     }
-    */
+    
 
 }

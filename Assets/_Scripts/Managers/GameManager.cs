@@ -6,13 +6,16 @@ using TMPro.Examples;
 public class GameManager : MonoBehaviour, IGameContext
 {
     [Header("--- COMPONENTS ---")]
-    [SerializeField] private IGridLogic playerGrid;
-    [SerializeField] private IGridLogic enemyGrid;
+    [SerializeField] private GridManager playerGridManager;
+    [SerializeField] private GridManager enemyGridManager;
     [SerializeField] private FleetManager fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController gridInputController;
+
+    private IGridContext _playerGrid => playerGridManager;
+    private IGridContext _enemyGrid => enemyGridManager;
 
     [Header("--- SETTINGS ---")]
     [SerializeField] private bool vsAI = true; 
@@ -42,9 +45,9 @@ public class GameManager : MonoBehaviour, IGameContext
             gridInputController.Initialize(Camera.main);
         }
 
-      
-        gridInputController.RegisterGrid(playerGrid);
-        gridInputController.RegisterGrid(enemyGrid);
+
+        gridInputController.RegisterGrid(_playerGrid);
+        gridInputController.RegisterGrid(_enemyGrid);
 
         // 2. Khởi tạo dữ liệu Grid
         playerGrid.Initialize(new GridSystem(10, 10), Owner.Player);
@@ -62,8 +65,8 @@ public class GameManager : MonoBehaviour, IGameContext
         }
 
         // 5. Khởi tạo States
-  
-        _setupState = new SetupState(this, playerGrid, fleetManager, gridInputController);
+
+        _setupState = new SetupState(this, _playerGrid, fleetManager, gridInputController);
 
         // BattleState 
         _battleState = new BattleState(this, playerGrid, enemyGrid, aiImplementation, gridInputController);
@@ -79,8 +82,8 @@ public class GameManager : MonoBehaviour, IGameContext
 
     private void OnDestroy()
     {
-        if (playerGrid != null) playerGrid.OnGridClicked -= HandleGridInteraction;
-        if (enemyGrid != null) enemyGrid.OnGridClicked -= HandleGridInteraction;
+        if (_playerGrid != null) _playerGrid.OnGridClicked -= HandleGridInteraction;
+        if (_enemyGrid != null) _enemyGrid.OnGridClicked -= HandleGridInteraction;
     }
 
     // --- STATE MACHINE CONTROL ---
@@ -103,11 +106,21 @@ public class GameManager : MonoBehaviour, IGameContext
     }
 
     // Hàm trung gian nhận Input từ GridManager và đẩy vào State hiện tại
-    private void HandleGridInteraction(IGridContext sourceGrid, Vector2Int gridPos)
+    private void HandleGridInteraction(IGridLogic sourceGrid, Vector2Int gridPos)
     {
-        if (_currentState != null)
+        // SENIOR PATTERN: Pattern Matching & Casting
+        // Chúng ta kiểm tra xem sourceGrid (Logic) có phải là IGridContext (Logic + Visuals) không.
+        // Nếu đúng, ta cast nó sang biến 'context' và truyền vào State.
+        if (sourceGrid is IGridContext context)
         {
-            _currentState.OnGridInteraction(sourceGrid, gridPos);
+            if (_currentState != null)
+            {
+                _currentState.OnGridInteraction(context, gridPos);
+            }
+        }
+        else
+        {
+            Debug.LogError("Grid Logic received does not implement IGridContext!");
         }
     }
 

@@ -10,7 +10,7 @@ public class GridInputController : MonoBehaviour
     [SerializeField] private InputReader inputReader;
     private Camera _inputCamera;
 
-    private List<GridManager> _managedGrids = new List<GridManager>();
+    private List<IGridLogic> _managedGrids = new List<IGridLogic>();
 
     public event Action<Vector2Int, Owner> OnGridCellClicked;
     public event Action<Vector3> OnPointerPositionChanged;
@@ -18,13 +18,11 @@ public class GridInputController : MonoBehaviour
 
     private bool _isInitialized = false;
 
-    // --- STATE MANAGEMENT ---
-    // Thay vì xử lý ngay, chúng ta dùng biến này để đánh dấu sự kiện
     private bool _isFireInputPending = false;
     private Vector2 _currentScreenPos;
 
     // --- INITIALIZATION (Giữ nguyên) ---
-    public void RegisterGrid(GridManager grid)
+    public void RegisterGrid(IGridLogic grid)
     {
         if (!_managedGrids.Contains(grid))
         {
@@ -123,7 +121,7 @@ public class GridInputController : MonoBehaviour
         Vector3 worldPos = GetMouseWorldPosition(_currentScreenPos);
 
         // 3. Duyệt qua danh sách các Grid
-        foreach (var grid in _managedGrids)
+        foreach (IGridLogic grid in _managedGrids)
         {
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {

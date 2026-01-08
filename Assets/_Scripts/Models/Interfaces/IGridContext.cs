@@ -4,6 +4,4 @@ using UnityEngine;
 
 public interface IGridContext : IGridLogic, IGridVisuals
 {
-    // Có thể chứa thêm Event chung
-    event Action<IGridContext, Vector2Int> OnGridClicked;
 }
