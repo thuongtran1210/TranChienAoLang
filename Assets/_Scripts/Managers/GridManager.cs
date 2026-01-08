@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System; // Để dùng Action
+using System;
 
 public class GridManager : MonoBehaviour, IGridContext
 {

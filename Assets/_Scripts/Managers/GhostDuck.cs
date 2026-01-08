@@ -69,7 +69,6 @@ public class GhostDuck : MonoBehaviour
         float zRot = IsHorizontal ? 0 : 90;
         transform.localRotation = Quaternion.Euler(0, 0, zRot);
 
-
     }
 
     public void SetPosition(Vector3 targetPosition)
