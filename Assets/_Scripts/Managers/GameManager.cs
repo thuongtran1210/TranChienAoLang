@@ -13,6 +13,8 @@ public class GameManager : MonoBehaviour, IGameContext
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController gridInputController;
+    //Event Channels
+    [SerializeField] private BattleEventChannelSO battleEventChannel;
 
     private IGridContext _playerGrid => playerGridManager;
     private IGridContext _enemyGrid => enemyGridManager;
@@ -26,6 +28,8 @@ public class GameManager : MonoBehaviour, IGameContext
     // Cache state 
     private SetupState _setupState;
     private BattleState _battleState;
+
+
 
     private void Start()
     {
@@ -69,7 +73,7 @@ public class GameManager : MonoBehaviour, IGameContext
         _setupState = new SetupState(this, _playerGrid, fleetManager, gridInputController);
 
         // BattleState 
-        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiImplementation, gridInputController);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiImplementation, gridInputController, battleEventChannel);
 
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();

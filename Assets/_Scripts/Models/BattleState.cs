@@ -9,18 +9,21 @@ public class BattleState : GameStateBase
     private GridInputController _inputController;
     private bool _isPlayerTurn;
     private bool _isGameOver;
+    private BattleEventChannelSO _battleEvents;
 
     public BattleState(IGameContext context,
                            IGridContext playerGrid,
                            IGridContext enemyGrid,
                            IEnemyAI enemyAI,
-                           GridInputController inputController) 
+                           GridInputController inputController,
+                           BattleEventChannelSO battleEvents) 
                 : base(context)
     {
         _playerGrid = playerGrid;
         _enemyGrid = enemyGrid;
         _enemyAI = enemyAI;
         _inputController = inputController;
+        _battleEvents = battleEvents;
     }
 
     public override void EnterState()
@@ -76,6 +79,7 @@ public class BattleState : GameStateBase
     {
         // 1. Logic bắn (Data)
         ShotResult result = targetGrid.GridSystem.ShootAt(pos);
+        _battleEvents.RaiseShotFired(Owner.Player, result, pos);
 
         // 2. Check Win Condition
         if (CheckWinCondition(targetGrid))
