@@ -23,24 +23,14 @@ public class DuckDataSO : ScriptableObject
     /// </summary>
     public IEnumerable<Vector2Int> GetOccupiedCells(Vector2Int pivot, bool isHorizontal)
     {
-        foreach (var offset in structure)
+        List<Vector2Int> cells = new List<Vector2Int>();
+        for (int i = 0; i < size; i++)
         {
-            int x, y;
-
-            if (isHorizontal)
-            {
-                x = offset.x;
-                y = offset.y;
-            }
-            else
-            {
-                // Xoay 90 độ: Biến chiều dài (x) thành chiều cao (y)
-                x = offset.y;
-                y = offset.x;
-            }
-
-            yield return new Vector2Int(pivot.x + x, pivot.y + y);
+            int x = pivot.x + (isHorizontal ? i : 0);
+            int y = pivot.y + (isHorizontal ? 0 : i); 
+            cells.Add(new Vector2Int(x, y));
         }
+        return cells;
     }
 
 }

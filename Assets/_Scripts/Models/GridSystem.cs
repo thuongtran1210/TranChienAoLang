@@ -37,19 +37,6 @@ public class GridSystem : IGridSystem
         return CheckPlacementLogic(data, position, isHorizontal);
     }
 
-
-    private bool CheckPlacementLogic(int size, Vector2Int position, bool isHorizontal)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            int x = position.x + (isHorizontal ? i : 0);
-            int y = position.y + (isHorizontal ? 0 : i);
-
-            if (!IsValidPosition(new Vector2Int(x, y))) return false;
-            if (Cells[x, y].IsOccupied) return false;
-        }
-        return true;
-    }
     private bool CheckPlacementLogic(DuckDataSO data, Vector2Int position, bool isHorizontal)
     {
         foreach (Vector2Int pos in GetTargetPositions(data, position, isHorizontal))
