@@ -4,7 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class DuckUnit : IGridOccupant
 {
-    // --- PROPERTIES (Dữ liệu) ---
+    // --- PROPERTIES  ---
 
     public Vector2Int PivotGridPos { get; private set; }
 
@@ -32,7 +32,7 @@ public class DuckUnit : IGridOccupant
         }
 
         Data = data;
-        PivotGridPos = gridPos; // <-- Lưu vị trí
+        PivotGridPos = gridPos; 
         IsHorizontal = isHorizontal;
         _currentHits = 0;
     }

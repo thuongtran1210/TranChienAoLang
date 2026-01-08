@@ -81,7 +81,7 @@ public class BattleState : GameStateBase
         if (CheckWinCondition(targetGrid))
         {
             _isGameOver = true;
-            bool playerWon = (targetGrid == _enemyGrid); // Nếu Grid bị bắn nát là Enemy -> Player thắng
+            bool playerWon = (targetGrid == _enemyGrid);
             _gameContext.EndGame(playerWon);
             return;
         }
@@ -121,16 +121,14 @@ public class BattleState : GameStateBase
     {
         yield return new WaitForSeconds(1.0f);
 
-        // State không quan tâm AI là ai, chỉ cần biết nó trả về target
+      
         Vector2Int aiTarget = _enemyAI.GetNextTarget(_playerGrid.GridSystem);
 
         ProcessShot(_playerGrid, aiTarget);
     }
 
-    private bool CheckWinCondition(IGridContext grid)
+    private bool CheckWinCondition(IGridContext gridContext)
     {
-        // Logic check tất cả thuyền chìm
-        // Đây là ví dụ, bạn nên cài đặt biến đếm trong GridSystem
-        return false;
+        return gridContext.GridSystem.IsAllShipsSunk;
     }
 }

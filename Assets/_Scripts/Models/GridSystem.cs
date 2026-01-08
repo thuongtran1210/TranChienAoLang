@@ -9,10 +9,12 @@ public class GridSystem : IGridSystem
     public int Height { get; private set; }
     public GridCell[,] Cells { get; private set; }
     public int AliveUnitsCount { get; private set; }
+
     public event Action OnGridReset;
 
     // Implement Interface Event
     public event Action<Vector2Int, ShotResult> OnGridStateChanged;
+    public bool IsAllShipsSunk => AliveUnitsCount <= 0;
 
     public GridSystem(int width, int height)
     {
@@ -138,7 +140,7 @@ public class GridSystem : IGridSystem
     // Helper private để lấy các ô sẽ bị chiếm
     private IEnumerable<Vector2Int> GetTargetPositions(DuckDataSO data, Vector2Int pivot, bool isHorizontal)
     {
-        // Gọi hàm helper chúng ta vừa viết trong SO
+        
         return data.GetOccupiedCells(pivot, isHorizontal);
     }
 

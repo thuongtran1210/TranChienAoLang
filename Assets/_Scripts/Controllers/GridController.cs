@@ -70,15 +70,6 @@ public class GridController : MonoBehaviour, IGridContext
     // ========================================================================
 
     /// <summary>
-    /// Kiểm tra xem vị trí và hướng xoay có hợp lệ không.
-    /// </summary>
-    public bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal)
-    {
-        if (_gridSystem == null || data == null) return false;
-        Vector2Int gridPos = gridView.WorldToGridPosition(worldPos);
-        return _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
-    }
-    /// <summary>
     /// Thực hiện hành động đặt tàu.
     /// Trả về true nếu thành công.
     /// </summary>
@@ -93,7 +84,7 @@ public class GridController : MonoBehaviour, IGridContext
 
         Vector2Int gridPos = gridView.WorldToGridPosition(worldPos);
 
-        // 2. Factory: Tạo instance DuckUnit
+        // 2. Tạo instance DuckUnit
         DuckUnit newDuck = new DuckUnit(data,gridPos ,isHorizontal);
 
         // 3. Cập nhật Data Model (GridSystem)
@@ -104,6 +95,15 @@ public class GridController : MonoBehaviour, IGridContext
 
         Debug.Log($"[GridManager] Đã đặt {data.duckName} tại {gridPos} với isHorizontal là {isHorizontal}");
         return true;
+    }
+    /// <summary>
+    /// Kiểm tra xem vị trí và hướng xoay có hợp lệ không.
+    /// </summary>
+    public bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal)
+    {
+        if (_gridSystem == null || data == null) return false;
+        Vector2Int gridPos = gridView.WorldToGridPosition(worldPos);
+        return _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
     }
 
     // --- HELPER METHODS ---
@@ -188,7 +188,6 @@ public class GridController : MonoBehaviour, IGridContext
 
     public void HideGhost()
     {
-        // Dùng ?. để code gọn hơn: "Nếu ghostDuck không null thì gọi Hide()"
         ghostDuck?.Hide();
     }
 
@@ -219,7 +218,6 @@ public class GridController : MonoBehaviour, IGridContext
 
     public void OnSetupPhaseCompleted()
     {
-        // Khi xong phase Setup, chắc chắn phải ẩn Ghost
         HideGhost();
         Debug.Log($"[{GridOwner}] Setup Phase Completed.");
     }
