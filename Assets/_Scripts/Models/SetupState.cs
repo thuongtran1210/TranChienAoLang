@@ -4,13 +4,13 @@ using static UnityEditor.Rendering.ShadowCascadeGUI;
 public class SetupState : GameStateBase
 {
     // Dependencies 
-    private IGridContext _playerGrid;
+    private IGridLogic _playerGrid;
     private FleetManager _fleetManager;
     private GridInputController _inputController;
     private DuckDataSO _selectedDuckData;
 
-    public SetupState(IGameContext context, IGridContext playerGrid, FleetManager fleetManager, GridInputController inputController)
-                : base(context)
+    public SetupState(IGameContext gameContext, IGridLogic playerGrid, FleetManager fleetManager, GridInputController inputController)
+            : base(gameContext)
     {
         _playerGrid = playerGrid;
         _fleetManager = fleetManager;

@@ -6,8 +6,8 @@ using TMPro.Examples;
 public class GameManager : MonoBehaviour, IGameContext
 {
     [Header("--- COMPONENTS ---")]
-    [SerializeField] private GridManager playerGrid;
-    [SerializeField] private GridManager enemyGrid;
+    [SerializeField] private IGridLogic playerGrid;
+    [SerializeField] private IGridLogic enemyGrid;
     [SerializeField] private FleetManager fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
 

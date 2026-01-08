@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using System; // Để dùng Action
 
-public class GridManager : MonoBehaviour, IGridContext
+public class GridManager : MonoBehaviour, IGridLogic
 {
     [Header("Dependencies")]
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController inputController;
     [SerializeField] private GridView gridView;
-    [SerializeField] private GhostDuck ghostDuck;
+ 
 
     [Header("Settings")]
     [SerializeField] private int width = 10;
@@ -20,7 +20,7 @@ public class GridManager : MonoBehaviour, IGridContext
     private IGridSystem _gridSystem;
 
     // --- EVENTS  ---
-    public event Action<IGridContext, Vector2Int> OnGridClicked;
+    public event Action<IGridLogic, Vector2Int> OnGridClicked;
 
     // --- INTERFACE IMPLEMENTATION ---
     public IGridSystem GridSystem => _gridSystem;
@@ -28,22 +28,18 @@ public class GridManager : MonoBehaviour, IGridContext
     public DuckDataSO SelectedDuck => null; 
 
     public GridInputController InputController => inputController;
-    public bool IsGhostHorizontal => ghostDuck != null && ghostDuck.IsHorizontal;
+    public bool IsGhostHorizontal => true;
     public Owner GridOwner { get; private set; }
+
+
 
     // --- INITIALIZATION ---
     public void Initialize(IGridSystem gridSystem, Owner owner)
     {
         _gridSystem = gridSystem;
         GridOwner = owner;
-
         cameraController.SetupCamera(width, height);
-
-        // Inject Camera dependency
         inputController.Initialize(cameraController.GetCamera());
-
-        // 3. Truyền Owner xuống View để View setup từng Cell (như đã bàn ở bước View)
-        // Lưu ý: Bạn cần cập nhật hàm InitializeBoard bên GridView để nhận thêm tham số 'owner'
         gridView.InitializeBoard(width, height, (GridSystem)_gridSystem, owner);
     }
 
@@ -110,6 +106,8 @@ public class GridManager : MonoBehaviour, IGridContext
         Debug.Log($"[GridManager] Đã đặt {data.duckName} tại {gridPos}");
         return true;
     }
+
+    // --- HELPER METHODS ---
     public Vector3 GetWorldPosition(Vector2Int gridPos)
     {
         // Tính toán vị trí World dựa trên Grid Index
@@ -149,7 +147,7 @@ public class GridManager : MonoBehaviour, IGridContext
     {
         if (clickedOwner != this.GridOwner)
         {
-            return; 
+            return;
         }
         OnGridClicked?.Invoke(this, gridPos);
     }
@@ -159,12 +157,11 @@ public class GridManager : MonoBehaviour, IGridContext
     public void OnDuckPlacedSuccess(DuckUnit unit, Vector2Int pos)
     {
         gridView.SpawnDuck(pos, unit.IsHorizontal, unit.Data, unit);
-        HideGhost();
     }
 
     public void OnSetupPhaseCompleted()
     {
-        HideGhost();
+        // [REMOVED] HideGhost();
     }
 
     public Vector2Int GetGridPosition(Vector3 worldPos)
@@ -177,6 +174,7 @@ public class GridManager : MonoBehaviour, IGridContext
 
         return new Vector2Int(x, y);
     }
+    /*
 
     public void UpdateGhostPosition(Vector3 worldPos)
     {
@@ -205,5 +203,6 @@ public class GridManager : MonoBehaviour, IGridContext
             ghostDuck.gameObject.SetActive(true);
         }
     }
+    */
 
 }

@@ -1,36 +1,34 @@
 ﻿using UnityEngine;
+using System.Collections.Generic; // Để dùng List<>
 
 public class DuckPlacementController : MonoBehaviour
 {
     [Header("Dependencies")]
-    [SerializeField] private FleetManager fleetManager; // Model (Inventory)
-    [SerializeField] private GridManager gridManager;   // Model (Logic)
-    [SerializeField] private GhostDuck ghostDuck;       // View (Visual)
-    [SerializeField] private InputReader inputReader;   // Input
-
-    [Header("Camera")]
+    [SerializeField] private FleetManager fleetManager;
+    [SerializeField] private GameObject gridManagerObject; 
+    private IGridLogic _gridLogic;
+    [SerializeField] private GhostDuck ghostDuck;
+    [SerializeField] private InputReader inputReader;
     [SerializeField] private Camera _mainCamera;
 
-    // Internal State
     private bool _isPlacingShip = false;
     private DuckDataSO _currentDuckData;
 
     private void Awake()
     {
         if (_mainCamera == null) _mainCamera = Camera.main;
+        if (gridManagerObject != null)
+            _gridLogic = gridManagerObject.GetComponent<IGridLogic>();
     }
 
     private void OnEnable()
     {
-        // 1. Lắng nghe FleetManager (Khi chọn tàu từ UI)
         if (fleetManager != null)
         {
             fleetManager.OnShipSelected += HandleShipSelected;
             fleetManager.OnFleetEmpty += StopPlacement;
             fleetManager.OnFleetChanged += HandleFleetChanged;
         }
-
-        // 2. Lắng nghe Input
         if (inputReader != null)
         {
             inputReader.RotateEvent += HandleRotateInput;
@@ -47,7 +45,6 @@ public class DuckPlacementController : MonoBehaviour
             fleetManager.OnFleetEmpty -= StopPlacement;
             fleetManager.OnFleetChanged -= HandleFleetChanged;
         }
-
         if (inputReader != null)
         {
             inputReader.RotateEvent -= HandleRotateInput;
@@ -58,99 +55,85 @@ public class DuckPlacementController : MonoBehaviour
 
     // --- LOGIC FLOW ---
 
-    // 1. BẮT ĐẦU: Khi chọn tàu từ UI
     private void HandleShipSelected(DuckDataSO shipData)
     {
         _isPlacingShip = true;
         _currentDuckData = shipData;
-
-      
-        ghostDuck.Show(shipData);
+        ghostDuck.Show(shipData); // Controller trực tiếp gọi Ghost
     }
 
-    // 2. DI CHUYỂN: Cập nhật vị trí và màu sắc (Valid/Invalid)
     private void HandleMoveInput(Vector2 screenPosition)
     {
         if (!_isPlacingShip || _currentDuckData == null) return;
 
-        // A. Lấy vị trí chuột trong World
         Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 10));
         worldPos.z = 0;
 
-        // B. (Optional) Snap vị trí Ghost vào giữa ô lưới cho đẹp
-        // Lấy tọa độ Grid
-        Vector2Int gridPos = gridManager.GetGridPosition(worldPos);
-        // Lấy lại tọa độ World chuẩn tâm ô
-        Vector3 snappedPos = gridManager.GetWorldPosition(gridPos);
+        // Snap logic: Vẫn dùng GridManager để tính toán tọa độ
+        Vector2Int gridPos = _gridLogic.GetGridPosition(worldPos);
+        Vector3 snappedPos = _gridLogic.GetWorldPosition(gridPos);
 
-        // C. Cập nhật vị trí Ghost
+        // Update Visual
         ghostDuck.SetPosition(snappedPos);
 
-        // D. Hỏi GridManager: "Chỗ này hợp lệ không?"
-        bool isValid = gridManager.IsPlacementValid(snappedPos, _currentDuckData, ghostDuck.IsHorizontal);
-
-        // E. Cập nhật màu xanh/đỏ
+        // Check luật
+        bool isValid = _gridLogic.IsPlacementValid(snappedPos, _currentDuckData, ghostDuck.IsHorizontal);
         ghostDuck.SetValidationState(isValid);
     }
 
-    // 3. XOAY: Xoay Visual và check lại Valid
     private void HandleRotateInput()
     {
         if (!_isPlacingShip) return;
 
+        ghostDuck.Rotate(); // Controller tự xoay Ghost
 
-        ghostDuck.Rotate();
-
-
+        // Re-validate ngay lập tức sau khi xoay (UX tốt hơn)
+        // Chúng ta giả lập lại sự kiện di chuyển chuột tại chỗ để cập nhật màu sắc
+        Vector3 currentWorldPos = ghostDuck.transform.position;
+        bool isValid = _gridLogic.IsPlacementValid(currentWorldPos, _currentDuckData, ghostDuck.IsHorizontal);
+        ghostDuck.SetValidationState(isValid);
     }
 
-    // 4. ĐẶT TÀU: Khi Click chuột trái
     private void HandleClickInput()
     {
         if (!_isPlacingShip || _currentDuckData == null) return;
 
         Vector3 currentPos = ghostDuck.transform.position;
-        bool isHorizontal = ghostDuck.IsHorizontal;
+        bool isHorizontal = ghostDuck.IsHorizontal; // Lấy dữ liệu từ Ghost
 
-        // Gọi GridManager thực hiện đặt tàu
-        bool success = gridManager.TryPlaceShip(currentPos, _currentDuckData, isHorizontal);
+        // Gửi lệnh xuống Model (GridManager)
+        bool success = _gridLogic.TryPlaceShip(currentPos, _currentDuckData, isHorizontal);
 
         if (success)
         {
-            // Nếu đặt thành công:
-            // 1. Trừ số lượng tàu trong kho (FleetManager)
             fleetManager.OnShipPlacedSuccess();
 
-            // 2. Logic FleetManager sẽ bắn event check xem còn tàu không để update trạng thái
-            // (Đã xử lý ở HandleFleetChanged/HandleFleetEmpty)
+            // [MỚI] Controller chịu trách nhiệm ẩn Ghost sau khi đặt xong
+            // (Nếu game cho phép đặt liên tiếp, logic ở HandleFleetChanged sẽ quyết định có hiện lại hay không)
+            ghostDuck.Hide();
         }
         else
         {
-            // Feedback âm thanh hoặc rung camera báo lỗi (nếu cần)
             Debug.Log("Không thể đặt tàu tại đây!");
         }
     }
 
-    private void HandleFleetChanged(System.Collections.Generic.List<DuckDataSO> list)
+    private void HandleFleetChanged(List<DuckDataSO> list)
     {
-        // Nếu con vịt đang cầm trên tay bị hết số lượng (ví dụ logic nào đó xóa nó), hủy đặt
         DuckDataSO selected = fleetManager.GetSelectedDuck();
+        // Nếu không còn vịt đang chọn trong kho, dừng đặt
         if (selected == null || selected != _currentDuckData)
         {
             StopPlacement();
         }
+        // Nếu vẫn còn, Ghost sẽ tiếp tục hiển thị (vì chúng ta chưa gọi StopPlacement)
+        // hoặc logic FleetManager sẽ kích hoạt lại HandleShipSelected.
     }
 
     private void StopPlacement()
     {
         _isPlacingShip = false;
         _currentDuckData = null;
-        ghostDuck.Hide();
-    }
-
-    private void HandleFleetEmpty()
-    {
-        StopPlacement();
-        Debug.Log("Đã đặt hết tàu!");
+        ghostDuck.Hide(); // Controller ẩn Ghost
     }
 }
