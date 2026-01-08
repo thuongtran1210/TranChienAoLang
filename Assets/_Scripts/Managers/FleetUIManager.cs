@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class FleetUIManager : MonoBehaviour
 {
     [Header("Dependencies")]
-    [SerializeField] private FleetManager fleetManager; // Sửa reference từ GridManager sang FleetManager
+    [SerializeField] private FleetManager fleetManager; 
     [SerializeField] private FleetDuckButton duckButtonPrefab;
     [SerializeField] private Transform buttonContainer;
     [SerializeField] private Button startBattleButton;
@@ -39,7 +39,7 @@ public class FleetUIManager : MonoBehaviour
 
             FleetDuckButton btn = Instantiate(duckButtonPrefab, buttonContainer);
             btn.Setup(duckData, (selectedDuck) => {
-                fleetManager.SelectShip(selectedDuck);
+                fleetManager.SelectDuck(selectedDuck);
             });
         }
 

@@ -7,7 +7,7 @@ public class GridController : MonoBehaviour, IGridContext
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController inputController;
     [SerializeField] private GridView gridView;
-    [SerializeField] private GhostDuck ghostDuck;
+    [SerializeField] private GhostDuckView ghostDuck;
 
     [Header("Settings")]
     [SerializeField] private int width = 10;
@@ -94,7 +94,7 @@ public class GridController : MonoBehaviour, IGridContext
         Vector2Int gridPos = gridView.WorldToGridPosition(worldPos);
 
         // 2. Factory: Tạo instance DuckUnit
-        DuckUnit newDuck = new DuckUnit(data, isHorizontal);
+        DuckUnit newDuck = new DuckUnit(data,gridPos ,isHorizontal);
 
         // 3. Cập nhật Data Model (GridSystem)
         _gridSystem.PlaceUnit(newDuck, gridPos, isHorizontal);
@@ -171,9 +171,9 @@ public class GridController : MonoBehaviour, IGridContext
     {
         get
         {
-            // Senior Tip: Đừng return true cứng, hãy hỏi thẳng object GhostDuck
+           
             if (ghostDuck != null) return ghostDuck.IsHorizontal;
-            return true; // Default safety
+            return true; 
         }
     }
 

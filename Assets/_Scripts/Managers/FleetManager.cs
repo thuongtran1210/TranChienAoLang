@@ -7,14 +7,16 @@ public class FleetManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private List<DuckDataSO> levelFleetConfig;
     [SerializeField] private List<DuckDataSO> levelFleetData;
-    // State Runtime
+    // Runtime
     private List<DuckDataSO> _availableShips;
-    private DuckDataSO _currentSelectedDuck;
 
     // Events
     public event Action<List<DuckDataSO>> OnFleetChanged;
-    public event Action<DuckDataSO> OnShipSelected;
+    public event Action<DuckDataSO> OnDuckSelected;
     public event Action OnFleetEmpty;
+    public event Action OnDuckPlaced;
+
+    private DuckDataSO _currentSelectedDuck;
 
     private void Awake()
     {
@@ -34,7 +36,7 @@ public class FleetManager : MonoBehaviour
 
         _currentSelectedDuck = null;
 
-        // Bắn event update UI
+ 
         OnFleetChanged?.Invoke(_availableShips);
     }
 
@@ -49,13 +51,13 @@ public class FleetManager : MonoBehaviour
         return new List<DuckDataSO>(levelFleetData);
     }
 
-    public void SelectShip(DuckDataSO shipData)
+    public void SelectDuck(DuckDataSO duckData)
     {
-        if (_availableShips.Contains(shipData))
+        if (_availableShips.Contains(duckData))
         {
-            _currentSelectedDuck = shipData;
-            OnShipSelected?.Invoke(shipData); 
-            Debug.Log($"FleetManager: Đã chọn {shipData.duckName}");
+            _currentSelectedDuck = duckData;
+            OnDuckSelected?.Invoke(duckData); 
+            Debug.Log($"FleetManager: Đã chọn {duckData.duckName}");
         }
     }
 

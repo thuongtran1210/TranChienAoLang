@@ -1,121 +1,162 @@
-﻿using UnityEngine;
-using UnityEngine.Rendering; // Dùng cho SortingGroup
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class DuckView : MonoBehaviour
 {
-    [Header("Setup")]
-    [SerializeField] private SortingGroup sortingGroup;
+    [Header("Prefabs References")]
+    [SerializeField] private GameObject lotusLeafPrefab;   // Prefab Visual Lá sen
+    [SerializeField] private GameObject duckSegmentPrefab; // Prefab Visual Vịt con
 
-    [Header("Visual Prefabs")]
-    [Tooltip("Prefab của 1 khúc thân vịt (hoặc 1 con vịt nhỏ)")]
-    [SerializeField] private GameObject realDuckSegmentPrefab;
+    [Header("Visual Settings")]
+    [SerializeField] private float cellSize = 1f;
+    [SerializeField] private int baseSortingOrder = 5; // Thấp hơn Ghost (thường là 10) để Ghost đè lên
 
-    [Tooltip("Prefab của chiếc lá sen")]
-    [SerializeField] private GameObject lotusLeafPrefab;
+    // Lưu trữ các renderer để sau này làm hiệu ứng (chớp nháy khi trúng đạn, chìm...)
+    private List<SpriteRenderer> _duckRenderers = new List<SpriteRenderer>();
+    private List<SpriteRenderer> _leafRenderers = new List<SpriteRenderer>();
 
-    [Header("Containers")]
-    [SerializeField] private Transform visualsContainer; // Chứa cả Vịt và Lá
-
-    [Header("Sorting Orders")]
-    [SerializeField] private int duckOrder = 10;
-    [SerializeField] private int leafOrder = 0;
-
-    private DuckUnit _linkedDuck;
-
-    public void Bind(DuckUnit duckModel, DuckDataSO data)
+    /// <summary>
+    /// Hàm nhận dữ liệu từ GridView để hiển thị (Thay thế tên Initialize cũ)
+    /// </summary>
+    /// <param name="data">Dữ liệu cấu hình con vịt (SO)</param>
+    /// <param name="isHorizontal">Trạng thái xoay</param>
+    public void Bind(DuckDataSO data, bool isHorizontal)
     {
-        _linkedDuck = duckModel;
-
-        // 1. Xóa sạch visual cũ (để tránh chồng chéo khi pool)
+        // 1. Dọn dẹp visual cũ (Clean up)
         ClearOldVisuals();
 
-        // 2. SINH RA CẶP "LÁ + VỊT" CHO TỪNG Ô
- 
-        foreach (var offset in data.structure)
+        if (data == null) return;
+
+        // 2. Xử lý xoay (Rotation Logic)
+        transform.localRotation = Quaternion.identity; // Reset trước
+        if (!isHorizontal)
         {
-            GenerateSegment(offset);
+            // Xoay -90 độ nếu là chiều dọc
+            transform.Rotate(0, 0, -90);
         }
 
-        // 3. Xoay toàn bộ DuckView theo hướng data
-        UpdateRotation(duckModel.IsHorizontal);
+        // 3. Spawn từng đốt (Segment Instantiation)
+        for (int i = 0; i < data.size; i++)
+        {
+            CreateSegment(i, data);
+        }
+    }
+    public void Bind(DuckUnit unit)
+    {
+        if (unit == null)
+        {
+            Debug.LogError("[DuckView] Cannot Bind null DuckUnit!");
+            return;
+        }
 
-        // 4. Các logic sự kiện (Health, Sunk...) giữ nguyên
-        SubscribeEvents();
+        Bind(unit.Data, unit.IsHorizontal);
     }
 
-    private void GenerateSegment(Vector2Int offset)
+    /// <summary>
+    /// Hàm này được gọi ngay sau khi Instantiate DuckUnit_Base
+    /// </summary>
+    /// <param name="data">Dữ liệu con vịt</param>
+    /// <param name="isHorizontal">Hướng đặt</param>
+    public void Initialize(DuckDataSO data, bool isHorizontal)
     {
-        // --- A. TẠO LÁ SEN ---
+        // 1. Xóa các visual cũ (nếu có - dành cho object pooling)
+        ClearOldVisuals();
+
+        // 2. Xử lý xoay
+        // Nếu nằm dọc thì xoay 90 độ (hoặc -90 tùy hệ toạ độ của bạn)
+        // Reset về identity trước để tính toán cho chuẩn
+        transform.localRotation = Quaternion.identity;
+        if (!isHorizontal)
+        {
+            transform.Rotate(0, 0, -90);
+        }
+
+        // 3. Spawn từng đốt (Segment)
+        for (int i = 0; i < data.size; i++)
+        {
+            CreateSegment(i, data);
+        }
+
+        // 4. Căn giữa (Centering) - Tùy chọn
+        // Nếu bạn muốn pivot của DuckUnit nằm ở ô đầu tiên (gốc tọa độ) -> KHÔNG cần căn giữa.
+        // Nếu bạn muốn pivot nằm ở chính giữa con vịt -> Cần code căn giữa giống GhostDuck.
+        // --> Với Logic Game Grid: Thường Pivot nằm ở ô đầu tiên (Head) là dễ tính toán nhất.
+    }
+
+    private void CreateSegment(int index, DuckDataSO data)
+    {
+        // Tạo container rỗng
+        GameObject segmentContainer = new GameObject($"Segment_{index}");
+        segmentContainer.transform.SetParent(transform, false);
+
+        // Tính vị trí local theo trục X (vì đã xoay cả object cha rồi)
+        segmentContainer.transform.localPosition = new Vector3(index * cellSize, 0, 0);
+
+        // --- A. Spawn Lá Sen ---
         if (lotusLeafPrefab != null)
         {
-            GameObject leaf = Instantiate(lotusLeafPrefab, visualsContainer);
-            leaf.transform.localPosition = new Vector3(offset.x, offset.y, 0);
+            GameObject leaf = Instantiate(lotusLeafPrefab, segmentContainer.transform);
+            leaf.transform.localPosition = Vector3.zero;
 
-            // Đẩy lá xuống dưới
-            if (leaf.TryGetComponent<SpriteRenderer>(out var srLeaf))
+            // Xử lý Sorting Order cho Lá
+            var leafRend = leaf.GetComponentInChildren<SpriteRenderer>();
+            if (leafRend)
             {
-                srLeaf.sortingOrder = leafOrder;
+                leafRend.sortingOrder = baseSortingOrder;
+                _leafRenderers.Add(leafRend);
             }
         }
 
-        // --- B. TẠO KHÚC VỊT (SEGMENT) ---
-        if (realDuckSegmentPrefab != null)
+        // --- B. Spawn Vịt ---
+        if (duckSegmentPrefab != null)
         {
-            GameObject duckSeg = Instantiate(realDuckSegmentPrefab, visualsContainer);
-            // Đặt cùng vị trí với lá
-            duckSeg.transform.localPosition = new Vector3(offset.x, offset.y, 0);
+            GameObject duck = Instantiate(duckSegmentPrefab, segmentContainer.transform);
+            duck.transform.localPosition = Vector3.zero;
 
-            // Đẩy vịt lên trên lá
-            if (duckSeg.TryGetComponent<SpriteRenderer>(out var srDuck))
+            // Xử lý Sorting Order cho Vịt
+            var duckRend = duck.GetComponentInChildren<SpriteRenderer>();
+            if (duckRend)
             {
-                srDuck.sortingOrder = duckOrder;
+                // Logic lấy Sprite: Ưu tiên lấy theo list nếu có, không thì lấy icon chung
+                // Nếu DuckDataSO của bạn có List<Sprite> segments, hãy dùng: data.segments[index]
+                if (data.icon != null)
+                {
+                    duckRend.sprite = data.icon;
+                }
+
+                duckRend.sortingOrder = baseSortingOrder + 1; // Đè lên lá
+                _duckRenderers.Add(duckRend);
             }
         }
     }
 
     private void ClearOldVisuals()
     {
-        if (visualsContainer == null) return;
-        foreach (Transform child in visualsContainer)
+        _duckRenderers.Clear();
+        _leafRenderers.Clear();
+
+        // Destroy toàn bộ con (children) để tái tạo lại từ đầu
+        foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
         }
     }
 
-    private void UpdateRotation(bool isHorizontal)
-    {
-        float zRot = isHorizontal ? 0f : 90f;
-        transform.localRotation = Quaternion.Euler(0, 0, zRot);
+    // --- CÁC HÀM VISUAL EFFECTS (Để dùng sau này) ---
 
+    public void OnHit()
+    {
+        // Ví dụ: Đổi màu đỏ nháy lên
+        foreach (var rend in _duckRenderers) rend.color = Color.red;
     }
 
-
-    private void SubscribeEvents()
+    public void OnDie()
     {
-        if (_linkedDuck != null)
+        // Ví dụ: Fade mờ đi và chìm xuống
+        foreach (var rend in _duckRenderers)
         {
-            _linkedDuck.OnHealthChanged += HandleHitVisual;
-            _linkedDuck.OnSunk += HandleSunkVisual;
-        }
-    }
-
-    private void HandleHitVisual(int currentHits, int maxHits)
-    {
-        Debug.Log($"[DuckView] {gameObject.name} bị bắn! HP: {currentHits}/{maxHits}");
-    }
-
-    private void HandleSunkVisual()
-    {
-        Debug.Log($"[DuckView] {gameObject.name} ĐÃ CHÌM!");
-  
-    }
-
-    private void OnDestroy()
-    {
-        if (_linkedDuck != null)
-        {
-            _linkedDuck.OnHealthChanged -= HandleHitVisual;
-            _linkedDuck.OnSunk -= HandleSunkVisual;
+            rend.color = Color.gray;
+            // Logic animation chìm...
         }
     }
 }

@@ -67,7 +67,7 @@ public class GridView : MonoBehaviour
         DuckView view = duckObj.GetComponent<DuckView>();
         if (view != null)
         {
-            view.Bind(logicUnit, data);
+            view.Bind(data, isHorizontal);
         }
     }
     public Vector3 GetWorldPositionOfCell(Vector2Int gridPos)

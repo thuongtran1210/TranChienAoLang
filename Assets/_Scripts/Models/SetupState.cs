@@ -22,7 +22,7 @@ public class SetupState : GameStateBase
     {
         Debug.Log("--- ENTER SETUP STATE ---");
 
-        _fleetManager.OnShipSelected += HandleDuckSelected;
+        _fleetManager.OnDuckSelected += HandleDuckSelected;
         _fleetManager.OnFleetEmpty += HandleFleetEmpty;
         _inputController.OnPointerPositionChanged += HandlePointerPositionChanged;
         _inputController.OnRightClick += HandleRotate;
@@ -32,7 +32,7 @@ public class SetupState : GameStateBase
 
     public override void ExitState()
     {
-        _fleetManager.OnShipSelected -= HandleDuckSelected;
+        _fleetManager.OnDuckSelected -= HandleDuckSelected;
         _fleetManager.OnFleetEmpty -= HandleFleetEmpty;
 
         if (_inputController != null)
@@ -84,7 +84,7 @@ public class SetupState : GameStateBase
         if (_playerGrid.GridSystem.CanPlaceUnit(_selectedDuckData, gridPos, isHorizontal))
         {
             // A. Cập nhật Model
-            DuckUnit newUnit = new DuckUnit(_selectedDuckData, isHorizontal);
+            DuckUnit newUnit = new DuckUnit(_selectedDuckData,gridPos, isHorizontal);
             _playerGrid.GridSystem.PlaceUnit(newUnit, gridPos, isHorizontal);
 
             // B. Cập nhật View

@@ -89,9 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50dca7167c4dbd64c8d96e4687ce13be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DuckView
-  sortingGroup: {fileID: 6450770994306701296}
-  realDuckSegmentPrefab: {fileID: 678413286085988823, guid: 815daea864cc1ca40b31afe898b76b05, type: 3}
   lotusLeafPrefab: {fileID: 2455922166101050043, guid: de4b42eea3cb05843b7575cb8a04ee8e, type: 3}
-  visualsContainer: {fileID: 8045564327550443574}
-  duckOrder: 10
-  leafOrder: 0
+  duckSegmentPrefab: {fileID: 678413286085988823, guid: 815daea864cc1ca40b31afe898b76b05, type: 3}
+  cellSize: 1
+  baseSortingOrder: 5
