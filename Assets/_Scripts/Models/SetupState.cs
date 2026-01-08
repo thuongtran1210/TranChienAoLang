@@ -113,14 +113,11 @@ public class SetupState : GameStateBase
         // 1. Hiển thị GhostDuck
         _playerGrid.ShowGhost(data);
 
-        // 2. [SENIOR TIP] Cập nhật vị trí NGAY LẬP TỨC không cần chờ chuột di chuyển
-        // Lấy vị trí hiện tại từ Controller (Hàm này em đã có trong GridInputController)
+
         Vector3 currentWorldPos = _inputController.GetCurrentMouseWorldPosition();
 
-        // Ép GhostDuck nhảy tới vị trí chuột ngay
         _playerGrid.UpdateGhostPosition(currentWorldPos);
 
-        // Validate ngay lập tức để hiện màu xanh/đỏ đúng
         Vector2Int gridPos = _playerGrid.GetGridPosition(currentWorldPos);
         bool isValid = _playerGrid.GridSystem.CanPlaceUnit(_selectedDuckData, gridPos, _playerGrid.IsGhostHorizontal);
         _playerGrid.SetGhostValidation(isValid);
@@ -142,21 +139,18 @@ public class SetupState : GameStateBase
     {
         if (_selectedDuckData == null) return;
 
-        // 1. [QUAN TRỌNG] Lấy tọa độ Grid chuẩn từ Manager (Single Source of Truth)
+
         Vector2Int gridPos = _playerGrid.GetGridPosition(worldPos);
 
-        // 2. Validate Logic dựa trên Grid Pos chuẩn này
-        bool isValid = _playerGrid.GridSystem.CanPlaceUnit(_selectedDuckData, gridPos, _playerGrid.IsGhostHorizontal);
-        _playerGrid.SetGhostValidation(isValid);
 
-        // 3. [SENIOR TRICK] Snap vị trí Ghost theo Grid Pos
-        // Thay vì để GhostDuck tự tính lại (có thể sai số), ta ép nó đứng vào vị trí của ô Grid
-        // GridManager cần có hàm lấy WorldPos từ GridPos (đã có sẵn là GetWorldPosition)
         Vector3 snapPos = _playerGrid.GetWorldPosition(gridPos);
 
-        // Cần chỉnh lại GhostDuck một chút để nhận vị trí đã Snap, 
-        // hoặc cứ truyền snapPos vào, GhostDuck tính lại FloorToInt của số nguyên thì vẫn đúng.
+  
         _playerGrid.UpdateGhostPosition(snapPos);
+
+
+        bool isValid = _playerGrid.GridSystem.CanPlaceUnit(_selectedDuckData, gridPos, _playerGrid.IsGhostHorizontal);
+        _playerGrid.SetGhostValidation(isValid);
     }
     private void HandleRotate()
     {

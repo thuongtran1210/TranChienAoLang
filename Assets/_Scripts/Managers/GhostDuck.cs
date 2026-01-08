@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class GhostDuck : MonoBehaviour
@@ -71,20 +72,9 @@ public class GhostDuck : MonoBehaviour
 
     }
 
-    public void SetPosition(Vector3 pointerWorldPos)
+    public void SetPosition(Vector3 targetPosition)
     {
-        if (CurrentData == null) return;
-
-        int gridX = Mathf.FloorToInt(pointerWorldPos.x / cellSize);
-        int gridY = Mathf.FloorToInt(pointerWorldPos.y / cellSize);
-
-        float offset = cellSize * 0.5f;
-
-        transform.position = new Vector3(
-            (gridX * cellSize) + offset,
-            (gridY * cellSize) + offset,
-            0
-        );
+        transform.position = targetPosition;
     }
 
     public void SetValidationState(bool isValid)
