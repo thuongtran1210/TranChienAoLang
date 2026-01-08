@@ -4,7 +4,7 @@ public class DuckEnergySystem : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private BattleEventChannelSO _battleEvents;
-    [SerializeField] private Owner _owner; // Gán Player hoặc Enemy
+    [SerializeField] private Owner _owner;
 
     [Header("Settings")]
     [SerializeField] private int _maxEnergy = 100;
