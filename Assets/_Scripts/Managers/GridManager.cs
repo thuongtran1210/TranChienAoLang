@@ -98,7 +98,7 @@ public class GridManager : MonoBehaviour, IGridContext
 
         Vector2Int gridPos = gridView.WorldToGridPosition(worldPos);
 
-        // 2. Factory: Tạo instance DuckUnit (Pure C#)
+        // 2. Factory: Tạo instance DuckUnit
         DuckUnit newDuck = new DuckUnit(data, isHorizontal);
 
         // 3. Cập nhật Data Model (GridSystem)
@@ -113,7 +113,6 @@ public class GridManager : MonoBehaviour, IGridContext
     public Vector3 GetWorldPosition(Vector2Int gridPos)
     {
         // Tính toán vị trí World dựa trên Grid Index
-        // Lưu ý: Cộng thêm offset (cellSize * 0.5) để lấy tâm ô, giống logic trong GhostDuck
         float offset = cellSize * 0.5f;
 
         Vector3 localPos = new Vector3(
@@ -170,10 +169,9 @@ public class GridManager : MonoBehaviour, IGridContext
 
     public Vector2Int GetGridPosition(Vector3 worldPos)
     {
-        // 1. Chuyển sang Local Space của Grid
+    
         Vector3 localPos = transform.InverseTransformPoint(worldPos);
 
-        // 2. Tính toán dùng FloorToInt và cellSize (Logic chuẩn)
         int x = Mathf.FloorToInt(localPos.x / cellSize);
         int y = Mathf.FloorToInt(localPos.y / cellSize);
 

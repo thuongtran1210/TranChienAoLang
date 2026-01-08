@@ -144,8 +144,9 @@ public class SetupState : GameStateBase
 
 
         Vector3 snapPos = _playerGrid.GetWorldPosition(gridPos);
+      
 
-  
+
         _playerGrid.UpdateGhostPosition(snapPos);
 
 

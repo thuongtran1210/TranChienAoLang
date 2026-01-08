@@ -81,7 +81,7 @@ public class GhostDuck : MonoBehaviour
     {
         Color targetColor = isValid ? validColor : invalidColor;
 
-        // Đổi màu toàn bộ (cả lá và vịt)
+        
         foreach (var obj in _currentVisuals)
         {
             if (obj && obj.TryGetComponent<SpriteRenderer>(out var sr))
