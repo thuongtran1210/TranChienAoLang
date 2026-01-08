@@ -78,30 +78,41 @@ public class SetupState : GameStateBase
     }
     private void AttemptPlaceDuck(Vector2Int gridPos)
     {
-        bool isHorizontal = _playerGrid.IsGhostHorizontal;
-
-        // Sử dụng GridSystem (Model) để check logic
-        if (_playerGrid.GridSystem.CanPlaceUnit(_selectedDuckData, gridPos, isHorizontal))
+        // 1. Kiểm tra xem _playerGrid có phải là GridController không để dùng tính năng cao cấp
+        if (_playerGrid is GridController gridController)
         {
-            // A. Cập nhật Model
-            DuckUnit newUnit = new DuckUnit(_selectedDuckData,gridPos, isHorizontal);
-            _playerGrid.GridSystem.PlaceUnit(newUnit, gridPos, isHorizontal);
+            // 2. Lấy vị trí World để truyền vào TryPlaceShip (Vì TryPlaceShip nhận Vector3)
+            // Senior Tip: Controller nên lo việc validate, State chỉ gửi yêu cầu.
+            Vector3 worldPos = gridController.GetWorldPosition(gridPos);
+            bool isHorizontal = _playerGrid.IsGhostHorizontal;
 
-            // B. Cập nhật View
-            _playerGrid.OnDuckPlacedSuccess(newUnit, gridPos);
-            _fleetManager.OnShipPlacedSuccess();
+            Debug.Log($"[SetupState] Attempting place at {gridPos}. IsHorizontal: {isHorizontal}");
 
-            // C. Reset State cho lần đặt tiếp theo
-            _selectedDuckData = null;
+            // 3. GỌI HÀM VÀ HỨNG KẾT QUẢ (QUAN TRỌNG NHẤT)
+            bool isSuccess = gridController.TryPlaceShip(worldPos, _selectedDuckData, isHorizontal);
 
-            // Quan trọng: Sau khi đặt xong, phải ẩn Ghost ngay hoặc reset input
-            _playerGrid.HideGhost();
+            // 4. Kiểm tra kết quả
+            if (isSuccess)
+            {
+                // Chỉ trừ tàu khi Controller xác nhận đặt thành công
+                _fleetManager.OnShipPlacedSuccess();
+
+                Debug.Log($"[SetupState] Đặt thành công {_selectedDuckData.duckName}");
+
+                // Reset trạng thái chọn
+                _selectedDuckData = null;
+                _playerGrid.HideGhost();
+            }
+            else
+            {
+                // Logic thất bại: Controller đã log warning rồi, ở đây ta có thể play sound
+                Debug.Log("[SetupState] Đặt thất bại - Controller trả về False");
+                // audioManager.PlayErrorSound(); 
+            }
         }
         else
         {
-            // Feedback Visual/Audio khi đặt lỗi
-            Debug.Log("Vị trí không hợp lệ!");
-            // _audioService.PlayErrorSound();
+            Debug.LogError("[SetupState] _playerGrid không phải là GridController! Kiểm tra lại DI.");
         }
     }
 

@@ -21,13 +21,13 @@ public class GridInputController : MonoBehaviour
     private bool _isFireInputPending = false;
     private Vector2 _currentScreenPos;
 
-    // --- INITIALIZATION (Giữ nguyên) ---
+    // --- INITIALIZATION  ---
     public void RegisterGrid(IGridLogic grid)
     {
         if (!_managedGrids.Contains(grid))
         {
             _managedGrids.Add(grid);
-            Debug.Log($"[GridInputController] Đã đăng ký Grid: {grid.GridOwner}");
+            
         }
     }
 
@@ -37,14 +37,13 @@ public class GridInputController : MonoBehaviour
 
         if (_inputCamera == null)
         {
-            Debug.LogError("[GridInputController] Camera NULL!");
             _isInitialized = false;
             return;
         }
 
         if (inputReader == null)
         {
-            Debug.LogError("[GridInputController] Thiếu InputReader!");
+           
             _isInitialized = false;
             return;
         }
@@ -113,7 +112,6 @@ public class GridInputController : MonoBehaviour
 
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
         {
-            Debug.Log("Blocked by UI");
             return;
         }
 

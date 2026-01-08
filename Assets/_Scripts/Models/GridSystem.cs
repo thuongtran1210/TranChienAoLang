@@ -58,14 +58,14 @@ public class GridSystem : IGridSystem
 
     public void PlaceUnit(IGridOccupant unit, Vector2Int position, bool isHorizontal)
     {
-        DuckDataSO data = unit.Data; 
+        DuckDataSO data = unit.Data;
 
         foreach (Vector2Int pos in GetTargetPositions(data, position, isHorizontal))
         {
             if (IsValidPosition(pos))
             {
                 Cells[pos.x, pos.y].OccupiedUnit = unit;
-                
+           
             }
         }
         AliveUnitsCount++;
