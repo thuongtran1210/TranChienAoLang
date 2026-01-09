@@ -13,8 +13,10 @@ public class BattleUIManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private Transform _skillButtonContainer;
     [SerializeField] private SkillButtonView _skillButtonPrefab;
-    [SerializeField] private Slider _energySlider;
-    [SerializeField] private TextMeshProUGUI _energyText;
+    [SerializeField] private Slider _playerEnergySlide;
+    [SerializeField] private Slider _enemynEnergySlider;
+    [SerializeField] private TextMeshProUGUI _playerEnergyText;
+    [SerializeField] private TextMeshProUGUI _enemyEnergyText;
 
     private List<SkillButtonView> _spawnedButtons = new List<SkillButtonView>();
 
@@ -72,18 +74,19 @@ public class BattleUIManager : MonoBehaviour
     private void UpdateEnergyUI(Owner owner, int current, int max)
     {
         // Chỉ quan tâm Energy của Player
-        if (owner != Owner.Player) return;
-
-        if (_energySlider != null)
+        if (owner != Owner.Player)
         {
-            _energySlider.maxValue = max;
-            _energySlider.value = current;
+            _playerEnergySlide.maxValue = max;
+            _playerEnergySlide.value = current;
+            _playerEnergyText.text = $"{current}/{max}";
+        }        
+        if (owner != Owner.Enemy)
+        {
+            _enemynEnergySlider.maxValue = max;
+            _enemynEnergySlider.value = current;
+            _enemyEnergyText.text = $"{current}/{max}";
         }
 
-        if (_energyText != null)
-        {
-            _energyText.text = $"{current}/{max}";
-        }
 
         // Cập nhật trạng thái sáng/tối của các nút skill
         foreach (var btn in _spawnedButtons)

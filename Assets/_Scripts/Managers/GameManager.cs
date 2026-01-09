@@ -13,7 +13,9 @@ public class GameManager : MonoBehaviour, IGameContext
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController gridInputController;
-    [SerializeField] private DuckEnergySystem duckEnergySystem;
+    [Header("--- ENERGY SYSTEMS ---")]
+    [SerializeField] private DuckEnergySystem _playerEnergySystem;
+    [SerializeField] private DuckEnergySystem _enemyEnergySystem;
     //Event Channels
     [SerializeField] private BattleEventChannelSO battleEventChannel;
 
@@ -75,7 +77,16 @@ public class GameManager : MonoBehaviour, IGameContext
         _setupState = new SetupState(this, _playerGrid, fleetManager, gridInputController);
 
         // BattleState 
-        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiImplementation, gridInputController, battleEventChannel, duckEnergySystem);
+        _battleState = new BattleState(
+        this,
+        _playerGrid,
+        _enemyGrid,
+        aiImplementation,
+        gridInputController,
+        battleEventChannel,
+        _playerEnergySystem, // <--- Inject Player System
+        _enemyEnergySystem   // <--- Inject Enemy System
+    );
 
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();

@@ -10,6 +10,7 @@ public class BattleState : GameStateBase
 
     private BattleEventChannelSO _battleEvents;
     private DuckEnergySystem _playerEnergy;
+    private DuckEnergySystem _enemyEnergy;
     private DuckSkillSO _currentSelectedSkill;
 
     private bool _isPlayerTurn;
@@ -20,7 +21,7 @@ public class BattleState : GameStateBase
                            IGridContext enemyGrid,
                            IEnemyAI enemyAI,
                            GridInputController inputController,
-                           BattleEventChannelSO battleEvents, DuckEnergySystem playerEnergy) 
+                           BattleEventChannelSO battleEvents, DuckEnergySystem playerEnergy, DuckEnergySystem enemyEnergy)
                 : base(context)
     {
         _playerGrid = playerGrid;
@@ -29,6 +30,7 @@ public class BattleState : GameStateBase
         _inputController = inputController;
         _battleEvents = battleEvents;
         _playerEnergy = playerEnergy;
+        _enemyEnergy = enemyEnergy;
     }
 
     public override void EnterState()
@@ -122,7 +124,7 @@ public class BattleState : GameStateBase
 
         if (!_isPlayerTurn)
         {
-            // Đến lượt Enemy -> Gọi Coroutine qua GameContext
+            Debug.Log("Enemy's turn...");
             _gameContext.StartCoroutine(EnemyRoutine());
         }
     }
