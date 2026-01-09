@@ -471,6 +471,7 @@ MonoBehaviour:
   width: 10
   height: 10
   cellSize: 1
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   gridLayer:
     serializedVersion: 2
     m_Bits: 136
@@ -2610,6 +2611,7 @@ MonoBehaviour:
   width: 10
   height: 10
   cellSize: 1
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   gridLayer:
     serializedVersion: 2
     m_Bits: 72

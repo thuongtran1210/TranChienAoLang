@@ -1,14 +1,15 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 [CreateAssetMenu(menuName = "Duck Battle/Skills/Sonar Skill")]
 public class SonarSkillSO : DuckSkillSO
 {
     // Cấu hình bán kính quét (1 = 3x3, 2 = 5x5)
     [SerializeField] private int _radius = 1;
+    [SerializeField] private Color _highlightColor = Color.yellow;
 
     public override bool Execute(IGridSystem targetGrid, Vector2Int centerPos, BattleEventChannelSO eventChannel)
     {
-        // 1. Validate: Không cho cast skill ra ngoài map quá xa (tùy game design)
         if (!targetGrid.IsValidPosition(centerPos))
         {
             eventChannel.RaiseSkillFeedback("Invalid Target!", centerPos);
@@ -17,40 +18,37 @@ public class SonarSkillSO : DuckSkillSO
 
         int foundParts = 0;
 
-        // 2. Logic quét vùng (Clean Code loop)
+        // Tạo danh sách các ô cần highlight
+        List<Vector2Int> highlightArea = new List<Vector2Int>();
+
         for (int x = -_radius; x <= _radius; x++)
         {
             for (int y = -_radius; y <= _radius; y++)
             {
                 Vector2Int checkPos = centerPos + new Vector2Int(x, y);
 
-                // Chỉ check ô hợp lệ
                 if (targetGrid.IsValidPosition(checkPos))
                 {
-                    var cell = targetGrid.GetCell(checkPos);
+                    // Add vào danh sách visual
+                    highlightArea.Add(checkPos);
 
-                    // Logic Sonar: Chỉ phát hiện có Unit, không quan tâm Unit gì, và chưa bị bắn
-                    // Lưu ý: Tùy game design, bạn có muốn Sonar phát hiện cả tàu đã chết không?
-                    // Ở đây tôi giả định là đếm các phần tàu CHƯA bị bắn trúng.
+                    var cell = targetGrid.GetCell(checkPos);
+                    // Logic check tàu (Giữ nguyên logic của bạn)
                     if (cell.OccupiedUnit != null && !cell.IsHit)
                     {
                         foundParts++;
                     }
-
-                    // TODO: Gửi sự kiện để Highlight ô này trên UI (Visual Feedback)
-                    // eventChannel.RaiseGridHighlight(checkPos, Color.green);
                 }
             }
         }
 
-        // 3. Feedback kết quả
-        string message = foundParts > 0
-            ? $"Sonar detected {foundParts} signals!"
-            : "No signals detected.";
+        // BẮN EVENT VISUAL: Gửi 1 lần duy nhất danh sách các ô cần tô màu
+        eventChannel.RaiseGridHighlight(highlightArea, _highlightColor);
 
-        Debug.Log($"[Sonar] Center: {centerPos} | Result: {foundParts}");
+        // Feedback Text
+        string message = foundParts > 0 ? $"Sonar detected {foundParts} signals!" : "No signals.";
         eventChannel.RaiseSkillFeedback(message, centerPos);
 
-        return true; // Skill thực thi thành công -> Trừ mana
+        return true;
     }
 }

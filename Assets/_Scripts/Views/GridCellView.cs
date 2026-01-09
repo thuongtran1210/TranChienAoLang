@@ -71,17 +71,14 @@ public class GridCellView : MonoBehaviour, IGridInteractable
         // 4. Áp dụng Scale mới
         transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
     }
-    public void SetHighlightState(bool isActive, Color highlightColor)
+    /// <summary>
+    /// Hàm đổi màu ô để highlight (được GridView gọi)
+    /// </summary>
+    public void SetHighlightState(bool isActive, Color color)
     {
         if (spriteRenderer == null) return;
 
-        if (isActive)
-        {
-            spriteRenderer.color = highlightColor;
-        }
-        else
-        {
-            spriteRenderer.color = _originalColor;
-        }
+        // Nếu active thì dùng màu highlight, không thì trả về màu gốc
+        spriteRenderer.color = isActive ? color : _originalColor;
     }
 }

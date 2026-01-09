@@ -14,6 +14,8 @@ public class GridView : MonoBehaviour
 
     private GridCellView[,] _cellViews;
 
+    private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
+
     public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
     {
         _cellViews = new GridCellView[width, height];
@@ -140,6 +142,44 @@ public class GridView : MonoBehaviour
     {
         
         return GetWorldPosition(gridPos.x, gridPos.y);
+    }
+    /// <summary>
+    /// Hàm làm sáng các ô dựa trên danh sách vị trí truyền vào
+    /// </summary>
+    public void HighlightCells(List<Vector2Int> positions, Color color)
+    {
+        // 1. Xóa highlight cũ trước khi vẽ mới
+        ClearHighlights();
+
+        // 2. Duyệt qua danh sách và bật màu
+        foreach (var pos in positions)
+        {
+            // Kiểm tra xem tọa độ có nằm trong bảng không
+            if (IsValidPosition(pos))
+            {
+                // Gọi hàm SetHighlightState vừa viết ở Bước 1
+                _cellViews[pos.x, pos.y].SetHighlightState(true, color);
+
+                // Lưu lại vào list để quản lý
+                _currentHighlights.Add(pos);
+            }
+        }
+    }
+    /// <summary>
+    /// Hàm tắt toàn bộ highlight (SỬA LỖI CS1061 TẠI ĐÂY)
+    /// </summary>
+    public void ClearHighlights()
+    {
+        foreach (var pos in _currentHighlights)
+        {
+            if (IsValidPosition(pos))
+            {
+                // Trả về màu trắng bình thường
+                _cellViews[pos.x, pos.y].SetHighlightState(false, Color.white);
+            }
+        }
+        // Xóa danh sách lưu trữ
+        _currentHighlights.Clear();
     }
 
 #if UNITY_EDITOR

@@ -13,7 +13,7 @@ public class BattleEventChannelSO : ScriptableObject
     public UnityAction<string, Vector2Int> OnSkillFeedback;
     public UnityAction<DuckSkillSO> OnSkillRequested;
     public UnityAction<List<Vector2Int>, Color> OnGridHighlightRequested;
-    public UnityAction OnGridHighlightCleared;
+    public UnityAction OnGridHighlightClearRequested;
     public void RaiseShotFired(Owner shooter, ShotResult result, Vector2Int pos)
     {
         OnShotFired?.Invoke(shooter, result, pos);
@@ -42,6 +42,6 @@ public class BattleEventChannelSO : ScriptableObject
 
     public void RaiseClearHighlight()
     {
-        OnGridHighlightCleared?.Invoke();
+        OnGridHighlightClearRequested?.Invoke();
     }
 }

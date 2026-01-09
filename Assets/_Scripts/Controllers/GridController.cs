@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
-using System; 
+using System;
+using System.Collections.Generic;
 
 public class GridController : MonoBehaviour, IGridContext
 {
@@ -13,7 +14,7 @@ public class GridController : MonoBehaviour, IGridContext
     [SerializeField] private int width = 10;
     [SerializeField] private int height = 10;
     [SerializeField] private float cellSize = 1f;
-
+    [SerializeField] private BattleEventChannelSO _battleChannel;
     [SerializeField] private LayerMask gridLayer;
 
     // --- CORE DATA ---
@@ -45,6 +46,13 @@ public class GridController : MonoBehaviour, IGridContext
     private void OnEnable()
     {
         inputController.OnGridCellClicked += HandleCellClicked;
+
+        // Đăng ký lắng nghe sự kiện highlight
+        if (_battleChannel != null)
+        {
+            _battleChannel.OnGridHighlightRequested += HandleHighlightRequest;
+            _battleChannel.OnGridHighlightClearRequested += gridView.ClearHighlights;
+        }
     }
 
     private void OnDisable()
@@ -54,8 +62,28 @@ public class GridController : MonoBehaviour, IGridContext
             inputController.OnGridCellClicked -= HandleCellClicked;
         }
         if (_gridSystem != null) _gridSystem.OnGridStateChanged -= gridView.UpdateCellState;
-    }
 
+        if (_battleChannel != null)
+        {
+            _battleChannel.OnGridHighlightRequested -= HandleHighlightRequest;
+            _battleChannel.OnGridHighlightClearRequested -= gridView.ClearHighlights;
+        }
+    }
+    private void HandleHighlightRequest(List<Vector2Int> positions, Color color)
+    {
+        // Chỉ vẽ nếu Grid này là Grid mục tiêu (Tuỳ thuộc vào game design của bạn)
+        // Nếu Skill tác động lên Enemy Grid, thì EnemyGridController sẽ nhận event này.
+        // Ở đây tôi giả định GridController hiện tại quản lý việc vẽ.
+        gridView.HighlightCells(positions, color);
+
+        // Optional: Auto clear sau 2 giây (Dùng Coroutine)
+        StartCoroutine(AutoClearHighlightDelay(2f));
+    }
+    private System.Collections.IEnumerator AutoClearHighlightDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        gridView.ClearHighlights();
+    }
     private void BindGridEvents()
     {
         if (_gridSystem != null)
