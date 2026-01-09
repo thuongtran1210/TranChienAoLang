@@ -69,14 +69,16 @@ public class GridController : MonoBehaviour, IGridContext
             _battleChannel.OnGridHighlightClearRequested -= gridView.ClearHighlights;
         }
     }
-    private void HandleHighlightRequest(List<Vector2Int> positions, Color color)
+    private void HandleHighlightRequest(Owner target, List<Vector2Int> positions, Color color)
     {
-        // Chỉ vẽ nếu Grid này là Grid mục tiêu (Tuỳ thuộc vào game design của bạn)
-        // Nếu Skill tác động lên Enemy Grid, thì EnemyGridController sẽ nhận event này.
-        // Ở đây tôi giả định GridController hiện tại quản lý việc vẽ.
+        // 1. FILTER: Chỉ xử lý nếu Grid này đúng là mục tiêu được yêu cầu
+        if (target != this.GridOwner) return;
+
+        // 2. Thực hiện highlight
         gridView.HighlightCells(positions, color);
 
-        // Optional: Auto clear sau 2 giây (Dùng Coroutine)
+        // Optional: Auto clear sau 2 giây
+        StopAllCoroutines(); 
         StartCoroutine(AutoClearHighlightDelay(2f));
     }
     private System.Collections.IEnumerator AutoClearHighlightDelay(float delay)

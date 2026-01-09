@@ -82,7 +82,7 @@ public class BattleState : GameStateBase
     private void CastSkill(Vector2Int targetPos)
     {
         // 1. Thực thi logic Skill (Nằm trong SO)
-        bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents);
+        bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents, Owner.Enemy);
 
         if (success)
         {

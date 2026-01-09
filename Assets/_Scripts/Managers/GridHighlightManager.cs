@@ -4,16 +4,39 @@ using UnityEngine;
 // Áp dụng Clean Code: Class này chỉ lo việc hiển thị Visual
 public class GridHighlightManager : MonoBehaviour
 {
-    // Giả sử bạn có class GridCellView để quản lý view của từng ô
-    // Dictionary để tra cứu nhanh từ Tọa độ (Vector2Int) ra View
-    private Dictionary<Vector2Int, GridCellView> _cellViews = new Dictionary<Vector2Int, GridCellView>();
+    [Header("Settings")]
+    [SerializeField] private Owner _gridOwner; 
+    [SerializeField] private BattleEventChannelSO _battleEvents; 
 
-    // Cache lại các ô đang được highlight để clear cho nhanh (Optimization)
+    private Dictionary<Vector2Int, GridCellView> _cellViews = new Dictionary<Vector2Int, GridCellView>();
     private List<GridCellView> _activeHighlights = new List<GridCellView>();
 
-    /// <summary>
-    /// Hàm khởi tạo, cần được gọi từ GridSystem hoặc GameManager khi tạo map xong.
-    /// </summary>
+    // --- 1. ĐĂNG KÝ SỰ KIỆN ---
+    private void OnEnable()
+    {
+        if (_battleEvents != null)
+        {
+            _battleEvents.OnGridHighlightRequested += HandleHighlightRequested;
+            _battleEvents.OnGridHighlightClearRequested += ClearHighlight;
+        }
+    }
+    private void OnDisable()
+    {
+        if (_battleEvents != null)
+        {
+            _battleEvents.OnGridHighlightRequested -= HandleHighlightRequested;
+            _battleEvents.OnGridHighlightClearRequested -= ClearHighlight;
+        }
+    }
+    // --- 2. XỬ LÝ SỰ KIỆN CÓ LỌC (FILTER) ---
+    private void HandleHighlightRequested(Owner target, List<Vector2Int> positions, Color color)
+    {
+        // QUAN TRỌNG: Chỉ xử lý nếu target trùng với _gridOwner của mình
+        if (target != _gridOwner) return;
+
+        HighlightPositions(positions, color);
+    }
+
     public void Initialize(Dictionary<Vector2Int, GridCellView> cellViews)
     {
         _cellViews = cellViews;
@@ -24,31 +47,26 @@ public class GridHighlightManager : MonoBehaviour
     /// </summary>
     public void HighlightPositions(List<Vector2Int> positions, Color color)
     {
-        // 1. Clear cũ trước khi vẽ mới để tránh chồng chéo
         ClearHighlight();
-
         foreach (var pos in positions)
         {
-            // Sử dụng TryGetValue để an toàn (tránh lỗi KeyNotFound)
             if (_cellViews.TryGetValue(pos, out GridCellView cellView))
             {
-                cellView.SetColor(color); // Giả định GridCellView có hàm này
+                cellView.SetColor(color);
                 _activeHighlights.Add(cellView);
             }
         }
     }
 
     /// <summary>
-    /// Xóa toàn bộ highlight hiện tại (Đây là hàm bạn đang thiếu)
+    /// Xóa toàn bộ highlight hiện tại 
     /// </summary>
     public void ClearHighlight()
     {
-        // Sử dụng Null-conditional operator (?.) của C# hiện đại nếu cần
         foreach (var cell in _activeHighlights)
         {
-            cell.ResetColor(); // Giả định GridCellView có hàm Reset về mặc định
+            cell.ResetColor();
         }
-
         _activeHighlights.Clear();
     }
 }

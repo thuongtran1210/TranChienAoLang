@@ -27,32 +27,34 @@ public class SonarSkillSO : DuckSkillSO
         return area;
     }
 
-    // Override lại Execute để xử lý logic riêng của Sonar (Feedback Text)
-    public override bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel)
+
+    public override bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
     {
-        // Gọi base để validate
-        if (!targetGrid.IsValidPosition(pivotPos)) return false;
-
-        List<Vector2Int> area = GetAffectedPositions(pivotPos, targetGrid);
-
-        // Logic Game: Đếm số tàu
-        int foundParts = 0;
-        foreach (var pos in area)
         {
-            var cell = targetGrid.GetCell(pos);
-            if (cell.OccupiedUnit != null && !cell.IsHit)
+            // Gọi base để validate
+            if (!targetGrid.IsValidPosition(pivotPos)) return false;
+
+            List<Vector2Int> area = GetAffectedPositions(pivotPos, targetGrid);
+
+            // Logic Game: Đếm số tàu
+            int foundParts = 0;
+            foreach (var pos in area)
             {
-                foundParts++;
+                var cell = targetGrid.GetCell(pos);
+                if (cell.OccupiedUnit != null && !cell.IsHit)
+                {
+                    foundParts++;
+                }
             }
+
+            // Visual
+            base.ApplyVisualFeedback(area, eventChannel, targetOwner);
+
+            // Text Feedback riêng của Sonar
+            string msg = foundParts > 0 ? $"Sonar detected {foundParts} signals!" : "No signals.";
+            eventChannel.RaiseSkillFeedback(msg, pivotPos);
+
+            return true;
         }
-
-        // Visual
-        base.ApplyVisualFeedback(area, eventChannel);
-
-        // Text Feedback riêng của Sonar
-        string msg = foundParts > 0 ? $"Sonar detected {foundParts} signals!" : "No signals.";
-        eventChannel.RaiseSkillFeedback(msg, pivotPos);
-
-        return true;
     }
 }

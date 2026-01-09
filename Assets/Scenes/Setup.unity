@@ -196,6 +196,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 790573392d94d5447b74a57b1a8081bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridHighlightManager
+  _gridOwner: 0
+  _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!1 &207213659
 GameObject:
   m_ObjectHideFlags: 0

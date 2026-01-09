@@ -24,7 +24,7 @@ public abstract class DuckSkillSO : ScriptableObject
     /// <summary>
     /// Hàm thực thi: Gọi lại GetAffectedPositions để xử lý logic game.
     /// </summary>
-    public virtual bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel)
+    public virtual bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
     {
         // 1. Validate
         if (!targetGrid.IsValidPosition(pivotPos))
@@ -47,12 +47,12 @@ public abstract class DuckSkillSO : ScriptableObject
         }
 
         // 4. Feedback
-        ApplyVisualFeedback(affectedArea, eventChannel);
+        ApplyVisualFeedback(affectedArea, eventChannel, targetOwner);
         return true;
     }
 
-    protected virtual void ApplyVisualFeedback(List<Vector2Int> area, BattleEventChannelSO channel)
+    protected virtual void ApplyVisualFeedback(List<Vector2Int> area, BattleEventChannelSO channel, Owner target)
     {
-        channel.RaiseGridHighlight(area, skillColor);
+        channel.RaiseGridHighlight(target, area, skillColor);
     }
 }
