@@ -2,9 +2,9 @@
 using UnityEngine;
 public enum SkillTargetType
 {
-    Self,   // Buff, đặt quân (Grid của Player)
-    Enemy,  // Tấn công (Grid của Enemy)
-    Any     // Trường hợp đặc biệt
+    Self,   
+    Enemy,  
+    Any     
 }
 public abstract class DuckSkillSO : ScriptableObject
 {
@@ -12,26 +12,20 @@ public abstract class DuckSkillSO : ScriptableObject
     public string skillName;
     public int energyCost;
     public Sprite icon;
-    public Color skillColor = Color.yellow; // Màu đặc trưng của skill
+    public Color skillColor = Color.yellow; 
 
     [Header("Targeting Rules")]
     public SkillTargetType targetType;
 
     [Header("Visual Config")]
-    public Color validColor = Color.green;  // Màu khi được phép bắn (Xanh)
-    public Color invalidColor = Color.red;  // Màu khi sai luật/vị trí (Đỏ)
+    public Color validColor = Color.green;  
+    public Color invalidColor = Color.red; 
 
     [TextArea] public string description;
 
-    /// <summary>
-    /// Hàm mới: Chỉ tính toán danh sách các ô sẽ bị tác động.
-    /// Dùng cho cả Preview (Hover) và Execute (Click).
-    /// </summary>
+
     public abstract List<Vector2Int> GetAffectedPositions(Vector2Int pivotPos, IGridSystem targetGrid);
 
-    /// <summary>
-    /// Hàm thực thi: Gọi lại GetAffectedPositions để xử lý logic game.
-    /// </summary>
     public virtual bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
     {
         // 1. Validate
