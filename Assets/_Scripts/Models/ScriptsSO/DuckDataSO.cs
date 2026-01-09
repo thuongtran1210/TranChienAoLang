@@ -18,6 +18,8 @@ public class DuckDataSO : ScriptableObject
     [Header("Visuals")]
     public Sprite icon;
     public GameObject unitPrefab;
+    [Header("Skill Info")]
+    public DuckSkillSO activeSkill;
     /// <summary>
     /// Trả về danh sách tọa độ thực tế trên Grid dựa trên vị trí gốc và hướng xoay.
     /// </summary>

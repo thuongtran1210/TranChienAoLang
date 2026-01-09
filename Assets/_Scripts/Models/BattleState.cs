@@ -7,16 +7,20 @@ public class BattleState : GameStateBase
     private IGridContext _enemyGrid;
     private IEnemyAI _enemyAI;
     private GridInputController _inputController;
+
+    private BattleEventChannelSO _battleEvents;
+    private DuckEnergySystem _playerEnergy;
+    private DuckSkillSO _currentSelectedSkill;
+
     private bool _isPlayerTurn;
     private bool _isGameOver;
-    private BattleEventChannelSO _battleEvents;
 
     public BattleState(IGameContext context,
                            IGridContext playerGrid,
                            IGridContext enemyGrid,
                            IEnemyAI enemyAI,
                            GridInputController inputController,
-                           BattleEventChannelSO battleEvents) 
+                           BattleEventChannelSO battleEvents, DuckEnergySystem playerEnergy) 
                 : base(context)
     {
         _playerGrid = playerGrid;
@@ -24,6 +28,7 @@ public class BattleState : GameStateBase
         _enemyAI = enemyAI;
         _inputController = inputController;
         _battleEvents = battleEvents;
+        _playerEnergy = playerEnergy;
     }
 
     public override void EnterState()
@@ -61,6 +66,7 @@ public class BattleState : GameStateBase
 
         ProcessShot(_enemyGrid, gridPos);
     }
+
 
     public override void OnGridInteraction(IGridContext source, Vector2Int gridPos)
     {
@@ -134,5 +140,20 @@ public class BattleState : GameStateBase
     private bool CheckWinCondition(IGridContext gridContext)
     {
         return gridContext.GridSystem.IsAllShipsSunk;
+    }
+    public void SelectSkill(DuckSkillSO skill)
+    {
+        if (!_isPlayerTurn) return;
+
+        // Kiểm tra đủ mana không
+        if (_playerEnergy.CurrentEnergy >= skill.energyCost)
+        {
+            _currentSelectedSkill = skill;
+            Debug.Log($"Selected Skill: {skill.skillName}. Click grid to cast!");
+        }
+        else
+        {
+            Debug.Log("Not enough energy!");
+        }
     }
 }

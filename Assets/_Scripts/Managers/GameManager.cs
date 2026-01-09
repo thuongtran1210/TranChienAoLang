@@ -13,8 +13,10 @@ public class GameManager : MonoBehaviour, IGameContext
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController gridInputController;
+    [SerializeField] private DuckEnergySystem duckEnergySystem;
     //Event Channels
     [SerializeField] private BattleEventChannelSO battleEventChannel;
+
 
     private IGridContext _playerGrid => playerGridManager;
     private IGridContext _enemyGrid => enemyGridManager;
@@ -73,7 +75,7 @@ public class GameManager : MonoBehaviour, IGameContext
         _setupState = new SetupState(this, _playerGrid, fleetManager, gridInputController);
 
         // BattleState 
-        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiImplementation, gridInputController, battleEventChannel);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiImplementation, gridInputController, battleEventChannel, duckEnergySystem);
 
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();
@@ -162,5 +164,23 @@ public class GameManager : MonoBehaviour, IGameContext
     public new Coroutine StartCoroutine(IEnumerator routine)
     {
         return base.StartCoroutine(routine);
+    }
+    public void TriggerSkillSelection(DuckSkillSO skill)
+    {
+        // Kiểm tra an toàn: Chỉ cho dùng skill khi đang ở BattleState
+        // Cách 1: So sánh biến state
+        if (_currentState == _battleState && _battleState != null)
+        {
+            _battleState.SelectSkill(skill);
+        }
+        // Cách 2 (An toàn hơn): Kiểm tra kiểu dữ liệu
+        else if (_currentState is BattleState currentBattleState)
+        {
+            currentBattleState.SelectSkill(skill);
+        }
+        else
+        {
+            Debug.LogWarning("Không thể chọn Skill: Không phải lượt Battle hoặc State chưa khởi tạo!");
+        }
     }
 }

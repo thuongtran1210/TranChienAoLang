@@ -13,6 +13,8 @@ public class DuckEnergySystem : MonoBehaviour
     // Runtime State
     private int _currentEnergy;
 
+    public int CurrentEnergy => _currentEnergy;
+
     private void OnEnable()
     {
         if (_battleEvents != null)

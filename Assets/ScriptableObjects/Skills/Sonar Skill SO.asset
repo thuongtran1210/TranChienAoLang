@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54b12901ea77c634a8d39ab55aa07f9b, type: 3}
+  m_Name: Sonar Skill SO
+  m_EditorClassIdentifier: Assembly-CSharp::SonarSkillSO
+  skillName: "V\u1ECBt soi m\xF3i"
+  energyCost: 50
+  icon: {fileID: -9018408806940583333, guid: 1868a66aa027d254398fda3a64cf2e9d, type: 3}
+  description: "skill n\xE0y qu\xE9t v\xF9ng 3x3 v\xE0 b\xE1o s\u1ED1 l\u01B0\u1EE3ng
+    \xF4 c\xF3 t\xE0u"
