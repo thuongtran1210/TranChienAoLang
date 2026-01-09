@@ -6,7 +6,7 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     [SerializeField] private Sprite defaultSprite; // Hình mặt nước
     [SerializeField] private Sprite hitSprite;  // Hình 'Nổ/Trúng' 
     [SerializeField] private Sprite missSprite; // Hình 'Nước bắn/Trượt' 
-
+    private Color _originalColor = Color.white;
     public Owner CellOwner { get; private set; }
 
     public GridCell _cellLogic { get; private set; }
@@ -70,5 +70,18 @@ public class GridCellView : MonoBehaviour, IGridInteractable
 
         // 4. Áp dụng Scale mới
         transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
+    }
+    public void SetHighlightState(bool isActive, Color highlightColor)
+    {
+        if (spriteRenderer == null) return;
+
+        if (isActive)
+        {
+            spriteRenderer.color = highlightColor;
+        }
+        else
+        {
+            spriteRenderer.color = _originalColor;
+        }
     }
 }
