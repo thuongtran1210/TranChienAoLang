@@ -4,23 +4,32 @@ public class DuckEnergySystem : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private BattleEventChannelSO _battleEvents;
+    [SerializeField] private GameBalanceConfigSO _balanceConfig; 
     [SerializeField] private Owner _owner;
 
-    [Header("Settings")]
-    [SerializeField] private int _maxEnergy = 100;
-    [SerializeField] private int _startingEnergy = 0;
-
-    // Runtime State
+    // Runtime State - Hide in Inspector
     private int _currentEnergy;
+    private int _maxEnergy; // Có thể thay đổi runtime nếu có buff/debuff
 
     public int CurrentEnergy => _currentEnergy;
+
+    private void Start() // Dùng Start hoặc Awake để init chỉ số
+    {
+        if (_balanceConfig == null)
+        {
+            Debug.LogError($"[DuckEnergySystem] Missing Balance Config on {_owner}");
+            return;
+        }
+
+        _maxEnergy = _balanceConfig.DefaultMaxEnergy;
+        // Reset năng lượng khi bắt đầu game
+        SetEnergy(_balanceConfig.DefaultStartingEnergy);
+    }
 
     private void OnEnable()
     {
         if (_battleEvents != null)
             _battleEvents.OnShotFired += HandleShotFired;
-
-        _currentEnergy = _startingEnergy;
     }
 
     private void OnDisable()
@@ -31,46 +40,45 @@ public class DuckEnergySystem : MonoBehaviour
 
     private void HandleShotFired(Owner shooter, ShotResult result, Vector2Int pos)
     {
-        // Chỉ xử lý nếu người bắn là Owner của System này
         if (shooter != _owner) return;
 
+        // REFACTORED: Sử dụng Config thay vì số cứng
         int energyGain = 0;
-
         switch (result)
         {
             case ShotResult.Miss:
-                energyGain = 10; // GDD: Miss +10
+                energyGain = _balanceConfig.EnergyGainOnMiss;
                 break;
             case ShotResult.Hit:
-                energyGain = 20; // GDD: Hit +20
+                energyGain = _balanceConfig.EnergyGainOnHit;
                 break;
-            // Giả sử ShotResult có Enum Sunk, nếu không bạn cần check biến bool IsSunk từ Grid
             case ShotResult.Sunk:
-                energyGain = 30; // GDD: Sunk +30
+                energyGain = _balanceConfig.EnergyGainOnSunk;
                 break;
         }
 
-        AddEnergy(energyGain);
+        if (energyGain > 0) AddEnergy(energyGain);
     }
 
     public void AddEnergy(int amount)
     {
-        _currentEnergy = Mathf.Clamp(_currentEnergy + amount, 0, _maxEnergy);
-
-
-        // Bắn sự kiện để UI cập nhật
-        _battleEvents.RaiseEnergyChanged(_owner, _currentEnergy, _maxEnergy);
+        SetEnergy(_currentEnergy + amount);
     }
 
-    // Hàm tiêu thụ Energy cho Skill (sẽ dùng sau)
     public bool TryConsumeEnergy(int amount)
     {
         if (_currentEnergy >= amount)
         {
-            _currentEnergy -= amount;
-            _battleEvents.RaiseEnergyChanged(_owner, _currentEnergy, _maxEnergy); // Cập nhật UI
+            SetEnergy(_currentEnergy - amount);
             return true;
         }
         return false;
+    }
+
+    private void SetEnergy(int value)
+    {
+        _currentEnergy = Mathf.Clamp(value, 0, _maxEnergy);
+        // Bắn event để UI cập nhật
+        _battleEvents.RaiseEnergyChanged(_owner, _currentEnergy, _maxEnergy);
     }
 }

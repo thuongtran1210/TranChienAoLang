@@ -1783,9 +1783,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DuckEnergySystem
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _balanceConfig: {fileID: 11400000, guid: 306dda77abf7ec948a3a11f57f35a21e, type: 2}
   _owner: 0
-  _maxEnergy: 100
-  _startingEnergy: 0
 --- !u!1 &1338700646
 GameObject:
   m_ObjectHideFlags: 0
@@ -2796,9 +2795,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DuckEnergySystem
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _balanceConfig: {fileID: 11400000, guid: 306dda77abf7ec948a3a11f57f35a21e, type: 2}
   _owner: 1
-  _maxEnergy: 100
-  _startingEnergy: 0
 --- !u!1 &2129012833
 GameObject:
   m_ObjectHideFlags: 0

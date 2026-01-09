@@ -34,9 +34,13 @@ public class SkillButtonView : MonoBehaviour
         if (_skillData == null) return;
 
         bool canUse = currentEnergy >= _skillData.energyCost;
-        _btn.interactable = canUse;
 
+        // UI Feedback: Disable nút và hiện overlay
+        _btn.interactable = canUse;
         if (_cooldownOverlay != null)
             _cooldownOverlay.SetActive(!canUse);
+
+        // Cập nhật text màu đỏ nếu không đủ tiền (Optional - Polishing)
+        _costText.color = canUse ? Color.white : Color.red;
     }
 }

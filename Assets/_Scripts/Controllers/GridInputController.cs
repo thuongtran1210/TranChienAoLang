@@ -14,6 +14,7 @@ public class GridInputController : MonoBehaviour
 
     public event Action<Vector2Int, Owner> OnGridCellClicked;
     public event Action<Vector3> OnPointerPositionChanged;
+    public event Action<Vector2Int, IGridLogic> OnGridCellHovered;
     public event Action OnRightClick;
 
     private bool _isInitialized = false;
@@ -85,15 +86,23 @@ public class GridInputController : MonoBehaviour
     private void HandleMove(Vector2 screenPos)
     {
         if (!_isInitialized) return;
-
-        // 1. Cập nhật vị trí màn hình (cho logic polling nếu cần)
         _currentScreenPos = screenPos;
-
-        // 2. Chuyển đổi sang World Position
         Vector3 worldPos = GetMouseWorldPosition(screenPos);
-
-        // 3. [QUAN TRỌNG] Bắn event để GhostDuck hoặc các hệ thống khác biết để cập nhật vị trí
         OnPointerPositionChanged?.Invoke(worldPos);
+
+        // --- ADDED: Check Hover Grid ---
+        foreach (IGridLogic grid in _managedGrids)
+        {
+            // Kiểm tra xem chuột có đang nằm trên Grid này không
+            if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
+            {
+                // Bắn event kèm theo Grid đang được hover
+                OnGridCellHovered?.Invoke(gridPos, grid);
+                return;
+            }
+        }
+        // Nếu không hover grid nào
+        OnGridCellHovered?.Invoke(new Vector2Int(-999, -999), null);
     }
 
     private void HandleFireInput()
