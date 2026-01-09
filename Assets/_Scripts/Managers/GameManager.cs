@@ -152,10 +152,18 @@ public class GameManager : MonoBehaviour, IGameContext
     // 1. State báo Setup xong -> Chuyển sang Battle
     public void EndSetupPhase()
     {
-        Debug.Log("GameManager: Setup finished. Starting Battle...");
-        OnSetupComplete();
+        Debug.Log("GameManager: Setup finished. Starting Battle..."); // Log 1
 
-        // Có thể thêm delay hoặc animation chuyển cảnh ở đây
+        // Thêm try-catch để đảm bảo lỗi logic bên trong không chặn luồng
+        try
+        {
+            OnSetupComplete();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[GameManager] Error in OnSetupComplete: {e.Message}");
+        }
+
         StartCoroutine(TransitionToBattle());
     }
 
