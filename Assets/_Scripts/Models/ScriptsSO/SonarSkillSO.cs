@@ -3,37 +3,54 @@
 [CreateAssetMenu(menuName = "Duck Battle/Skills/Sonar Skill")]
 public class SonarSkillSO : DuckSkillSO
 {
+    // Cấu hình bán kính quét (1 = 3x3, 2 = 5x5)
+    [SerializeField] private int _radius = 1;
+
     public override bool Execute(IGridSystem targetGrid, Vector2Int centerPos, BattleEventChannelSO eventChannel)
     {
-        int foundShips = 0;
-
-        // Quét vùng 3x3 (từ x-1 đến x+1, y-1 đến y+1)
-        for (int x = -1; x <= 1; x++)
+        // 1. Validate: Không cho cast skill ra ngoài map quá xa (tùy game design)
+        if (!targetGrid.IsValidPosition(centerPos))
         {
-            for (int y = -1; y <= 1; y++)
+            eventChannel.RaiseSkillFeedback("Invalid Target!", centerPos);
+            return false;
+        }
+
+        int foundParts = 0;
+
+        // 2. Logic quét vùng (Clean Code loop)
+        for (int x = -_radius; x <= _radius; x++)
+        {
+            for (int y = -_radius; y <= _radius; y++)
             {
                 Vector2Int checkPos = centerPos + new Vector2Int(x, y);
 
-                // Kiểm tra ô hợp lệ
+                // Chỉ check ô hợp lệ
                 if (targetGrid.IsValidPosition(checkPos))
                 {
-                    // Lấy thông tin ô (Bạn cần đảm bảo IGridSystem có API GetCell hoặc tương tự)
-                    // Ở đây tôi giả định logic check tàu. 
-                    // Lưu ý: Cần truy cập dữ liệu Unit mà không làm lộ sương mù.
                     var cell = targetGrid.GetCell(checkPos);
-                    if (cell != null && cell.OccupiedUnit != null)
+
+                    // Logic Sonar: Chỉ phát hiện có Unit, không quan tâm Unit gì, và chưa bị bắn
+                    // Lưu ý: Tùy game design, bạn có muốn Sonar phát hiện cả tàu đã chết không?
+                    // Ở đây tôi giả định là đếm các phần tàu CHƯA bị bắn trúng.
+                    if (cell.OccupiedUnit != null && !cell.IsHit)
                     {
-                        foundShips++;
+                        foundParts++;
                     }
+
+                    // TODO: Gửi sự kiện để Highlight ô này trên UI (Visual Feedback)
+                    // eventChannel.RaiseGridHighlight(checkPos, Color.green);
                 }
             }
         }
 
-        // Gửi thông báo kết quả (Cần thêm Event vào Channel ở Bước 3)
-        Debug.Log($"[SONAR] Phát hiện {foundShips} phần tàu địch trong vùng 3x3!");
-        eventChannel.RaiseSkillFeedback($"{foundShips} found!", centerPos);
+        // 3. Feedback kết quả
+        string message = foundParts > 0
+            ? $"Sonar detected {foundParts} signals!"
+            : "No signals detected.";
 
-        // Return true vì skill đã thực hiện xong
-        return true;
+        Debug.Log($"[Sonar] Center: {centerPos} | Result: {foundParts}");
+        eventChannel.RaiseSkillFeedback(message, centerPos);
+
+        return true; // Skill thực thi thành công -> Trừ mana
     }
 }

@@ -69,7 +69,7 @@ public class DuckEnergySystem : MonoBehaviour
         if (_currentEnergy >= amount)
         {
             _currentEnergy -= amount;
-            _battleEvents.RaiseEnergyChanged(_owner, _currentEnergy, _maxEnergy);
+            _battleEvents.RaiseEnergyChanged(_owner, _currentEnergy, _maxEnergy); // Cập nhật UI
             return true;
         }
         return false;

@@ -924,8 +924,8 @@ MonoBehaviour:
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _skillButtonContainer: {fileID: 758345865}
   _skillButtonPrefab: {fileID: 8089452659880810912, guid: d518546eabfa4664faaf05bb40169afc, type: 3}
-  _playerEnergySlide: {fileID: 1021296876}
-  _enemynEnergySlider: {fileID: 750594998}
+  _playerEnergySlider: {fileID: 1021296876}
+  _enemyEnergySlider: {fileID: 750594998}
   _playerEnergyText: {fileID: 258430394}
   _enemyEnergyText: {fileID: 421906810}
 --- !u!1 &619394800

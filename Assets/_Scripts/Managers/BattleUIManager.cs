@@ -13,8 +13,8 @@ public class BattleUIManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private Transform _skillButtonContainer;
     [SerializeField] private SkillButtonView _skillButtonPrefab;
-    [SerializeField] private Slider _playerEnergySlide;
-    [SerializeField] private Slider _enemynEnergySlider;
+    [SerializeField] private Slider _playerEnergySlider;
+    [SerializeField] private Slider _enemyEnergySlider;
     [SerializeField] private TextMeshProUGUI _playerEnergyText;
     [SerializeField] private TextMeshProUGUI _enemyEnergyText;
 
@@ -43,7 +43,6 @@ public class BattleUIManager : MonoBehaviour
 
     private void SpawnSkillButtons()
     {
-        // Xóa nút cũ
         foreach (Transform child in _skillButtonContainer) Destroy(child.gameObject);
         _spawnedButtons.Clear();
 
@@ -73,25 +72,40 @@ public class BattleUIManager : MonoBehaviour
 
     private void UpdateEnergyUI(Owner owner, int current, int max)
     {
-        // Chỉ quan tâm Energy của Player
-        if (owner != Owner.Player)
+        if (owner == Owner.Player)
         {
-            _playerEnergySlide.maxValue = max;
-            _playerEnergySlide.value = current;
-            _playerEnergyText.text = $"{current}/{max}";
-        }        
-        if (owner != Owner.Enemy)
-        {
-            _enemynEnergySlider.maxValue = max;
-            _enemynEnergySlider.value = current;
-            _enemyEnergyText.text = $"{current}/{max}";
+            // Update Player UI
+            if (_playerEnergySlider != null)
+            {
+                _playerEnergySlider.maxValue = max;
+                _playerEnergySlider.value = current;
+            }
+
+            if (_playerEnergyText != null)
+                _playerEnergyText.text = $"{current}/{max}";
+
+            // Cập nhật trạng thái nút Skill của Player
+            UpdateSkillButtonsInteractability(current);
         }
+        else if (owner == Owner.Enemy)
+        {
+            // Update Enemy UI
+            if (_enemyEnergySlider != null) 
+            {
+                _enemyEnergySlider.maxValue = max;
+                _enemyEnergySlider.value = current;
+            }
 
-
-        // Cập nhật trạng thái sáng/tối của các nút skill
+            if (_enemyEnergyText != null)
+                _enemyEnergyText.text = $"{current}/{max}";
+        }
+    }
+    private void UpdateSkillButtonsInteractability(int currentEnergy)
+    {
         foreach (var btn in _spawnedButtons)
         {
-            btn.UpdateInteractable(current);
+            if (btn != null)
+                btn.UpdateInteractable(currentEnergy);
         }
     }
 }
