@@ -18,7 +18,6 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private DuckEnergySystem _playerEnergySystem;
     [SerializeField] private DuckEnergySystem _enemyEnergySystem;
 
-    [SerializeField] private DuckDataSO _tempPlayerData;
 
     //Event Channels
     [SerializeField] private BattleEventChannelSO battleEventChannel;

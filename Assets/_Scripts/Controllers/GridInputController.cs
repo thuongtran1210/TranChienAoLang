@@ -130,12 +130,12 @@ public class GridInputController : MonoBehaviour
         }
     }
 
-    // --- UTILS (Giữ nguyên) ---
+    // --- UTILS  ---
 
     private Vector3 GetMouseWorldPosition(Vector2 screenPos)
     {
         if (_inputCamera == null) return Vector3.zero;
-        // Lưu ý: InputSystem trả về Vector2, cần đảm bảo Z distance phù hợp với Camera
+       
         Vector3 screenPosWithZ = new Vector3(screenPos.x, screenPos.y, -_inputCamera.transform.position.z);
         return _inputCamera.ScreenToWorldPoint(screenPosWithZ);
     }

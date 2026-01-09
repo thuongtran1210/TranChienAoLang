@@ -57,7 +57,6 @@ public class DuckEnergySystem : MonoBehaviour
     {
         _currentEnergy = Mathf.Clamp(_currentEnergy + amount, 0, _maxEnergy);
 
-        Debug.Log($"[{_owner}] Energy: {_currentEnergy}/{_maxEnergy} (+{amount})");
 
         // Bắn sự kiện để UI cập nhật
         _battleEvents.RaiseEnergyChanged(_owner, _currentEnergy, _maxEnergy);

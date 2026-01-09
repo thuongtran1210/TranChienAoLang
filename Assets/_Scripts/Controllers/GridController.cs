@@ -93,7 +93,6 @@ public class GridController : MonoBehaviour, IGridContext
         // 4. Cập nhật View (GridView)
         gridView.SpawnDuck(gridPos, isHorizontal, data, newDuck);
 
-        Debug.Log($"[GridManager] Đã đặt {data.duckName} tại {gridPos} với isHorizontal là {isHorizontal}");
         return true;
     }
     /// <summary>
