@@ -10,14 +10,19 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private GridController enemyGridManager;
     [SerializeField] private FleetManager fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
+    [SerializeField] private BattleUIManager _battleUIManager;
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController gridInputController;
     [Header("--- ENERGY SYSTEMS ---")]
     [SerializeField] private DuckEnergySystem _playerEnergySystem;
     [SerializeField] private DuckEnergySystem _enemyEnergySystem;
+
+    [SerializeField] private DuckDataSO _tempPlayerData;
+
     //Event Channels
     [SerializeField] private BattleEventChannelSO battleEventChannel;
+
 
 
     private IGridContext _playerGrid => playerGridManager;
@@ -94,6 +99,7 @@ public class GameManager : MonoBehaviour, IGameContext
 
         // 7. Start Game
         ChangeState(_setupState);
+    
 
     }
 
@@ -147,11 +153,36 @@ public class GameManager : MonoBehaviour, IGameContext
     public void EndSetupPhase()
     {
         Debug.Log("GameManager: Setup finished. Starting Battle...");
+        OnSetupComplete();
 
         // Có thể thêm delay hoặc animation chuyển cảnh ở đây
         StartCoroutine(TransitionToBattle());
     }
 
+    public void OnSetupComplete()
+    {
+        Debug.Log("Setup Complete! Initializing Battle Phase...");
+
+        // 1. LẤY DỮ LIỆU TỪ FLEET MANAGER
+        DuckDataSO activeDuckData = fleetManager.GetPlayerActiveDuckData();
+
+        // 2. CHECK NULL (Fail Fast Principle)
+        if (activeDuckData == null)
+        {
+            Debug.LogError("GameManager: Cannot start Battle UI because Duck Data is missing!");
+            // Có thể return hoặc xử lý lỗi tùy game design
+        }
+
+        // 3. KHỞI TẠO BATTLE UI VỚI DỮ LIỆU VỪA LẤY
+        if (_battleUIManager != null)
+        {
+            // Truyền Data vào hàm Initialize mà chúng ta đã viết ở bước trước
+            _battleUIManager.InitializeBattleUI(activeDuckData);
+        }
+
+
+   
+    }
     private IEnumerator TransitionToBattle()
     {
         yield return new WaitForSeconds(1.0f); // Delay nhẹ cho mượt

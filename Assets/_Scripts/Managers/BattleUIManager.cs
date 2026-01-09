@@ -33,41 +33,59 @@ public class BattleUIManager : MonoBehaviour
     }
 
     // Được gọi khi bắt đầu Battle (Bạn có thể gọi từ GameManager.EndSetupPhase hoặc Start)
-    public void InitializeBattleUI()
+    public void InitializeBattleUI(DuckDataSO playerData)
     {
-        SpawnSkillButtons();
-
-        // Reset UI Energy về 0 hoặc giá trị khởi điểm
         UpdateEnergyUI(Owner.Player, 0, 100);
+
+        // 2. Spawn Skill Buttons dựa trên Data của Player
+        SpawnSkillButtons(playerData);
     }
 
-    private void SpawnSkillButtons()
+    private void SpawnSkillButtons(DuckDataSO playerData)
     {
-        foreach (Transform child in _skillButtonContainer) Destroy(child.gameObject);
+        // Dọn dẹp nút cũ (nếu có) để tránh duplicate khi Restart game
+        foreach (var btn in _spawnedButtons)
+        {
+            if (btn != null) Destroy(btn.gameObject);
+        }
         _spawnedButtons.Clear();
 
-        // Lấy danh sách vịt hiện tại của người chơi
-        List<DuckDataSO> myFleet = _fleetManager.GetCurrentFleet();
-
-        foreach (var duck in myFleet)
+        // Validate dữ liệu
+        if (playerData == null)
         {
-            if (duck.activeSkill != null)
-            {
-                SkillButtonView btn = Instantiate(_skillButtonPrefab, _skillButtonContainer);
-
-                // Khi click nút -> Gọi hàm OnSkillClicked
-                btn.Setup(duck.activeSkill, OnSkillClicked);
-
-                _spawnedButtons.Add(btn);
-            }
+            Debug.LogError("BattleUIManager: Player Data is NULL!");
+            return;
         }
+
+        // --- SPAWN LOGIC ---
+        // Ví dụ: Unit có 1 Active Skill (hoặc bạn có thể dùng List<DuckSkillSO> nếu Unit có nhiều skill)
+        if (playerData.activeSkill != null)
+        {
+            CreateButton(playerData.activeSkill);
+        }
+
+        // Nếu sau này bạn có List skills:
+        // foreach(var skill in playerData.skills) { CreateButton(skill); }
+    }
+    private void CreateButton(DuckSkillSO skill)
+    {
+        if (_skillButtonPrefab == null || _skillButtonContainer == null) return;
+
+        SkillButtonView btnView = Instantiate(_skillButtonPrefab, _skillButtonContainer);
+
+        // Setup Button: Truyền skill và hàm callback khi click
+        btnView.Setup(skill, OnSkillClicked);
+
+        _spawnedButtons.Add(btnView);
     }
 
     private void OnSkillClicked(DuckSkillSO skill)
     {
         Debug.Log($"UI: Requesting skill {skill.skillName}");
-        // Gọi xuống GameManager để chuyển lệnh vào BattleState
-        _gameManager.TriggerSkillSelection(skill);
+
+        // CLEAN ARCHITECTURE: Không gọi _gameManager.Trigger...
+        // Hãy bắn Event để bất kỳ ai quan tâm (BattleState) tự xử lý
+        _battleEvents.RaiseSkillRequested(skill);
     }
 
     private void UpdateEnergyUI(Owner owner, int current, int max)

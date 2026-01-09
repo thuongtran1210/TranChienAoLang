@@ -43,12 +43,14 @@ public class BattleState : GameStateBase
 
 
         _inputController.OnGridCellClicked += HandleInput;
+        _battleEvents.OnSkillRequested += SelectSkill;
     }
 
     public override void ExitState()
     {
       
         _inputController.OnGridCellClicked -= HandleInput;
+        _battleEvents.OnSkillRequested -= SelectSkill;
     }
     private void HandleInput(Vector2Int gridPos, Owner owner)
     {

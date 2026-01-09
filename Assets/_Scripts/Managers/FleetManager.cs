@@ -80,6 +80,19 @@ public class FleetManager : MonoBehaviour
             }
         }
     }
+    public DuckDataSO GetPlayerActiveDuckData()
+    {
+        // Logic: Lấy con vịt đầu tiên trong đội hình làm "Tướng" để hiển thị Skill
+        // (Sau này nếu game cho chọn tướng, bạn sửa logic ở hàm này là xong)
+
+        if (levelFleetConfig != null && levelFleetConfig.Count > 0)
+        {
+            return levelFleetConfig[0]; // Trả về con đầu tiên
+        }
+
+        Debug.LogError("FleetManager: Config is empty or null!");
+        return null;
+    }
 
     public DuckDataSO GetSelectedDuck() => _currentSelectedDuck;
 }

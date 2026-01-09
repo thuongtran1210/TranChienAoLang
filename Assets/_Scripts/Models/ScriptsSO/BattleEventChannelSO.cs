@@ -10,6 +10,7 @@ public class BattleEventChannelSO : ScriptableObject
     // Sự kiện thay đổi Energy: (Chủ sở hữu, Energy hiện tại, Max Energy)
     public UnityAction<Owner, int, int> OnEnergyChanged;
     public UnityAction<string, Vector2Int> OnSkillFeedback;
+    public UnityAction<DuckSkillSO> OnSkillRequested;
 
     public void RaiseShotFired(Owner shooter, ShotResult result, Vector2Int pos)
     {
@@ -25,5 +26,11 @@ public class BattleEventChannelSO : ScriptableObject
     public void RaiseSkillFeedback(string message, Vector2Int position)
     {
         OnSkillFeedback?.Invoke(message, position);
+    }
+
+
+    public void RaiseSkillRequested(DuckSkillSO skill)
+    {
+        OnSkillRequested?.Invoke(skill);
     }
 }
