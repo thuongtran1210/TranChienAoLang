@@ -183,10 +183,8 @@ public class BattleState : GameStateBase
     {
         if (!_isPlayerTurn) return;
 
-        // Check Energy trước khi cho phép chọn (Fail Fast)
         if (_playerEnergy.CurrentEnergy < skill.energyCost)
         {
-            Debug.Log("Not enough energy!");
             _battleEvents.RaiseSkillFeedback("Not enough energy!", Vector2Int.zero);
             return;
         }

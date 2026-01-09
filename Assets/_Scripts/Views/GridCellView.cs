@@ -7,17 +7,26 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     [SerializeField] private Sprite hitSprite;  // Hình 'Nổ/Trúng' 
     [SerializeField] private Sprite missSprite; // Hình 'Nước bắn/Trượt' 
     private Color _originalColor = Color.white;
+
+    // Properties
     public Owner CellOwner { get; private set; }
-
     public GridCell _cellLogic { get; private set; }
-
-    public Vector2Int GridPosition => _cellLogic.GridPosition;
+    public Vector2Int GridPosition => _cellLogic != null ? _cellLogic.GridPosition : Vector2Int.zero;
 
     public void Setup(GridCell cellLogic, Owner owner)
     {
         _cellLogic = cellLogic;
         CellOwner = owner;
-        spriteRenderer.sprite = defaultSprite;
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sprite = defaultSprite;
+            _originalColor = spriteRenderer.color;
+        }
+        else
+        {
+            Debug.LogError($"[GridCellView] Missing SpriteRenderer on {gameObject.name}", this);
+        }
 
 #if UNITY_EDITOR
         gameObject.name = $"{owner}_Cell_{cellLogic.GridPosition.x}_{cellLogic.GridPosition.y}";
@@ -26,20 +35,18 @@ public class GridCellView : MonoBehaviour, IGridInteractable
 
     public void UpdateVisual(ShotResult shotResult)
     {
+        if (spriteRenderer == null) return;
+
         switch (shotResult)
         {
             case ShotResult.Hit:
             case ShotResult.Sunk:
-          
                 spriteRenderer.sprite = hitSprite;
                 break;
 
             case ShotResult.Miss:
-               
                 spriteRenderer.sprite = missSprite;
                 break;
-
-               
         }
     }
     /// <summary>
@@ -72,13 +79,38 @@ public class GridCellView : MonoBehaviour, IGridInteractable
         transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
     }
     /// <summary>
-    /// Hàm đổi màu ô để highlight (được GridView gọi)
+    /// Hàm xử lý trạng thái Highlight thống nhất.
+    /// Đáp ứng yêu cầu API từ GridView.
     /// </summary>
+    /// <param name="isActive">Bật hay tắt highlight</param>
+    /// <param name="color">Màu highlight (nếu bật)</param>
     public void SetHighlightState(bool isActive, Color color)
     {
+        if (isActive)
+        {
+            SetColor(color);
+        }
+        else
+        {
+            ResetColor();
+        }
+    }
+    /// <summary>
+    /// Đặt màu trực tiếp cho Cell (Dùng cho Highlight)
+    /// </summary>
+    /// <param name="color">Màu cần hiển thị</param>
+    public void SetColor(Color color)
+    {
         if (spriteRenderer == null) return;
+        spriteRenderer.color = color;
+    }
 
-        // Nếu active thì dùng màu highlight, không thì trả về màu gốc
-        spriteRenderer.color = isActive ? color : _originalColor;
+    /// <summary>
+    /// Đưa màu về trạng thái ban đầu (Tắt Highlight)
+    /// </summary>
+    public void ResetColor()
+    {
+        if (spriteRenderer == null) return;
+        spriteRenderer.color = _originalColor;
     }
 }

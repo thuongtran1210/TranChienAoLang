@@ -38,11 +38,11 @@ public class SkillTargetingSystem : MonoBehaviour
 
     private void HandleGridHover(Vector2Int gridPos, IGridLogic gridLogic)
     {
-        // 1. Nếu không có skill nào đang chọn -> Return
+        // 1. Guard Clause: Nếu không có skill nào đang chọn -> Return
         if (_selectedSkill == null) return;
 
-        // 2. Nếu chuột ra khỏi grid -> Xóa highlight
-        if (gridLogic == null || gridLogic is not IGridSystem gridSystem)
+        // 2. Pattern Matching: Kiểm tra type an toàn và cast trong một dòng
+        if (gridLogic is not IGridSystem gridSystem)
         {
             _highlightManager.ClearHighlight();
             return;
@@ -53,10 +53,9 @@ public class SkillTargetingSystem : MonoBehaviour
 
         // 4. Validation & Coloring
         bool isValidPos = gridSystem.IsValidPosition(gridPos);
+
         Color previewColor = isValidPos ? _selectedSkill.skillColor : _selectedSkill.invalidColor;
 
-        // Nếu muốn Advanced: Highlight màu đỏ cho các ô nằm ngoài phạm vi
-        // Ở đây ta highlight toàn bộ vùng trả về
-        _highlightManager.ShowHighlight(affectedCells, previewColor);
+        _highlightManager.HighlightPositions(affectedCells, previewColor);
     }
 }

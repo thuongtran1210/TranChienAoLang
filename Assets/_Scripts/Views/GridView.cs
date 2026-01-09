@@ -166,7 +166,7 @@ public class GridView : MonoBehaviour
         }
     }
     /// <summary>
-    /// Hàm tắt toàn bộ highlight (SỬA LỖI CS1061 TẠI ĐÂY)
+    /// Hàm tắt toàn bộ highlight
     /// </summary>
     public void ClearHighlights()
     {
