@@ -1,6 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-
+public enum SkillTargetType
+{
+    Self,   // Buff, đặt quân (Grid của Player)
+    Enemy,  // Tấn công (Grid của Enemy)
+    Any     // Trường hợp đặc biệt
+}
 public abstract class DuckSkillSO : ScriptableObject
 {
     [Header("Skill Info")]
@@ -9,9 +14,12 @@ public abstract class DuckSkillSO : ScriptableObject
     public Sprite icon;
     public Color skillColor = Color.yellow; // Màu đặc trưng của skill
 
-    // Config cho Validation
-    public Color validColor = Color.green;
-    public Color invalidColor = Color.red;
+    [Header("Targeting Rules")]
+    public SkillTargetType targetType;
+
+    [Header("Visual Config")]
+    public Color validColor = Color.green;  // Màu khi được phép bắn (Xanh)
+    public Color invalidColor = Color.red;  // Màu khi sai luật/vị trí (Đỏ)
 
     [TextArea] public string description;
 

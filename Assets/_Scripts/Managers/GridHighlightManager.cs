@@ -28,10 +28,9 @@ public class GridHighlightManager : MonoBehaviour
             _battleEvents.OnGridHighlightClearRequested -= ClearHighlight;
         }
     }
-    // --- 2. XỬ LÝ SỰ KIỆN CÓ LỌC (FILTER) ---
+    // --- 2. XỬ LÝ SỰ KIỆN CÓ LỌC  ---
     private void HandleHighlightRequested(Owner target, List<Vector2Int> positions, Color color)
     {
-        // QUAN TRỌNG: Chỉ xử lý nếu target trùng với _gridOwner của mình
         if (target != _gridOwner) return;
 
         HighlightPositions(positions, color);
