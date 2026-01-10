@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 163678688}
   - component: {fileID: 163678689}
   m_Layer: 0
-  m_Name: GridHightlightManager
+  m_Name: Grid Hightlight Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -785,7 +785,7 @@ GameObject:
   - component: {fileID: 475255855}
   - component: {fileID: 475255856}
   m_Layer: 0
-  m_Name: SkillHoverController
+  m_Name: Skill Interaction Controller
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

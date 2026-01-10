@@ -75,7 +75,7 @@ public class GridController : MonoBehaviour, IGridContext
     }
     private void HandleHighlightRequest(Owner target, List<Vector2Int> positions, Color color)
     {
-        // 1. FILTER: Chỉ xử lý nếu Grid này đúng là mục tiêu được yêu cầu
+        // 1. FILTER
         if (target != this.GridOwner) return;
 
         // 2. Thực hiện highlight

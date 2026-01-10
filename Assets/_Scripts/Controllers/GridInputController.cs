@@ -4,6 +4,29 @@ using UnityEngine;
 using UnityEngine.EventSystems; // Cần thiết để gọi EventSystem
 using UnityEngine.InputSystem;
 
+
+/// <summary>
+/// <para><b>VAI TRÒ (ROLE):</b></para>
+/// <para>
+/// Class này đóng vai trò là <b>Input Mediator (Trung gian xử lý Input)</b>. 
+/// Nhiệm vụ duy nhất của nó là chuyển đổi các tín hiệu Input thô (Raw Input từ <see cref="InputReader"/>) 
+/// thành các sự kiện có ý nghĩa trong ngữ cảnh Grid (Domain Events) như: Hover vào ô nào, Click vào ô nào.
+/// </para>
+/// <para><b>NGUYÊN TẮC ÁP DỤNG:</b></para>
+/// <list type="bullet">
+/// <item><b>Single Responsibility Principle (SRP):</b> Chỉ chịu trách nhiệm "phiên dịch" Input, không chứa logic game (như đặt tàu, tấn công).</item>
+/// <item><b>Observer Pattern:</b> Lắng nghe sự kiện từ InputReader và phát lại qua GridInputChannelSO.</item>
+/// </list>
+/// </summary>
+/// <remarks>
+/// <para><b>RÀNG BUỘC (CONSTRAINTS):</b></para>
+/// <list type="number">
+/// <item><b>Initialization Required:</b> BẮT BUỘC phải gọi hàm <see cref="Initialize(Camera)"/> trước khi sử dụng để tham chiếu Camera dùng cho Raycast.</item>
+/// <item><b>Input System:</b> Phụ thuộc chặt chẽ vào <see cref="InputReader"/> (New Input System Wrapper).</item>
+/// <item><b>UI Blocking:</b> Tự động chặn Raycast xuống Grid nếu chuột đang nằm trên UI (thông qua <see cref="EventSystem"/>).</item>
+/// </list>
+/// </remarks>
+
 public class GridInputController : MonoBehaviour
 {
     [Header("Broadcasting Channels")]
