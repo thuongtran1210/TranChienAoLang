@@ -455,7 +455,6 @@ GameObject:
   m_Component:
   - component: {fileID: 387395761}
   - component: {fileID: 387395764}
-  - component: {fileID: 387395765}
   - component: {fileID: 387395762}
   - component: {fileID: 387395766}
   m_Layer: 0
@@ -511,7 +510,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
   _cameraController: {fileID: 519420033}
-  _inputController: {fileID: 387395765}
+  _inputController: {fileID: 684107922}
   _gridView: {fileID: 387395762}
   _ghostDuck: {fileID: 0}
   _width: 10
@@ -522,20 +521,6 @@ MonoBehaviour:
     m_Bits: 136
   _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
---- !u!114 &387395765
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 387395760}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9008d3315eaceb45a65f4862ab9b2ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GridInputController
-  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
-  inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
 --- !u!114 &387395766
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -599,7 +584,7 @@ MonoBehaviour:
   gridRandomizer: {fileID: 387395766}
   _battleUIManager: {fileID: 565100309}
   cameraController: {fileID: 519420033}
-  _gridInputController: {fileID: 1897542692}
+  _gridInputController: {fileID: 684107922}
   _playerEnergySystem: {fileID: 1317504785}
   _enemyEnergySystem: {fileID: 2108850430}
   _battleEventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
@@ -819,7 +804,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18003136e2a60c741bf29314b6ab5d87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillInteractionController
-  _inputController: {fileID: 1897542692}
+  _inputController: {fileID: 684107922}
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
 --- !u!1 &519420028
@@ -1187,6 +1172,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 632939406}
   m_CullTransparentMesh: 1
+--- !u!1 &684107920
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 684107921}
+  - component: {fileID: 684107922}
+  m_Layer: 0
+  m_Name: GridInputControlle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &684107921
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684107920}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 935333836}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &684107922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684107920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9008d3315eaceb45a65f4862ab9b2ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridInputController
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
+  inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
 --- !u!1 &750594996
 GameObject:
   m_ObjectHideFlags: 0
@@ -1547,6 +1578,7 @@ Transform:
   - {fileID: 565100308}
   - {fileID: 163678688}
   - {fileID: 475255855}
+  - {fileID: 684107921}
   - {fileID: 1889328862}
   - {fileID: 1338700647}
   m_Father: {fileID: 0}
@@ -2712,7 +2744,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1897542688}
   - component: {fileID: 1897542689}
-  - component: {fileID: 1897542692}
   - component: {fileID: 1897542691}
   m_Layer: 0
   m_Name: PlayerBoard
@@ -2752,7 +2783,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
   _cameraController: {fileID: 519420033}
-  _inputController: {fileID: 1897542692}
+  _inputController: {fileID: 684107922}
   _gridView: {fileID: 1897542691}
   _ghostDuck: {fileID: 4320243199634330419}
   _width: 10
@@ -2779,20 +2810,6 @@ MonoBehaviour:
   originPosition: {x: 0, y: 0, z: 0}
   cellPrefab: {fileID: 6224677590339466640, guid: eca8634e7a6e612429f3a10bdba94e5a, type: 3}
   gridContainer: {fileID: 1705080516}
---- !u!114 &1897542692
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1897542687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9008d3315eaceb45a65f4862ab9b2ac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GridInputController
-  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
-  inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
 --- !u!1 &2043023258
 GameObject:
   m_ObjectHideFlags: 0
@@ -3124,6 +3141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63a88dabefef89545a40f183751aa080, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GhostDuck
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
   lotusLeafPrefab: {fileID: 2455922166101050043, guid: de4b42eea3cb05843b7575cb8a04ee8e, type: 3}
   duckSegmentPrefab: {fileID: 678413286085988823, guid: 815daea864cc1ca40b31afe898b76b05, type: 3}
   cellSize: {x: 1, y: 1}

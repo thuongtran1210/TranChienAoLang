@@ -55,6 +55,10 @@ public class GridInputController : MonoBehaviour
     private void OnEnable()
     {
         if (inputReader == null) return;
+        inputReader.MoveEvent -= HandleMove;
+        inputReader.FireEvent -= HandleFireInput;
+        inputReader.RotateEvent -= HandleRotateInput;
+
         inputReader.MoveEvent += HandleMove;
         inputReader.FireEvent += HandleFireInput; 
         inputReader.RotateEvent += HandleRotateInput;
@@ -123,7 +127,11 @@ public class GridInputController : MonoBehaviour
         _isFireInputPending = true;
     }
 
-    private void HandleRotateInput() => _gridInputChannel.RaiseRightClick();
+    private void HandleRotateInput()
+    {
+        if (!_isInitialized) return;
+        _gridInputChannel.RaiseRotateAction();
+    }
 
     // --- GAME LOGIC (PROCESSING) ---
 

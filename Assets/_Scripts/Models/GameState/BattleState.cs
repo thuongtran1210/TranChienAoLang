@@ -49,7 +49,7 @@ public class BattleState : GameStateBase
 
 
         _gridInputChannel.OnGridCellClicked += HandleCellClicked;
-        _gridInputChannel.OnRolateClick += HandleCancelSkill;
+        _gridInputChannel.OnRotateAction += HandleCancelSkill;
         _battleEvents.OnSkillRequested += HandleSkillRequested;
 
     }
@@ -58,7 +58,7 @@ public class BattleState : GameStateBase
     {
 
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
-        _gridInputChannel.OnRolateClick += HandleCancelSkill;
+        _gridInputChannel.OnRotateAction += HandleCancelSkill;
         _battleEvents.OnSkillRequested -= HandleSkillRequested;
     }
     // --- INPUT HANDLERS ---

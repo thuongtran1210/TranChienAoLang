@@ -91,7 +91,7 @@ public class BattleUIManager : MonoBehaviour
         if (playerData.activeSkill != null)
         {
             CreateButton(playerData.activeSkill);
-            Debug.Log($"BattleUIManager: Spawned Skill Button for {playerData.activeSkill.skillName}");
+            
         }
         else
         {

@@ -26,15 +26,32 @@ public class SetupState : GameStateBase
     public override void EnterState()
     {
         Debug.Log("--- ENTER SETUP STATE ---");
+        CleanupEvents();
 
         _fleetManager.OnDuckSelected += HandleDuckSelected;
         _fleetManager.OnFleetEmpty += HandleFleetEmpty;
         _gridInputChannel.OnPointerPositionChanged += HandlePointerPositionChanged;
-        _gridInputChannel.OnRolateClick += HandleRotate;
+        _gridInputChannel.OnRotateAction += HandleRotate;
         _gridInputChannel.OnGridCellClicked += HandleGridInput;
     }
 
     public override void ExitState()
+    {
+        CleanupEvents();
+
+        _fleetManager.OnDuckSelected -= HandleDuckSelected;
+        _fleetManager.OnFleetEmpty -= HandleFleetEmpty;
+
+        if (_gridInputChannel != null)
+        {
+            _gridInputChannel.OnPointerPositionChanged -= HandlePointerPositionChanged;
+            _gridInputChannel.OnRotateAction -= HandleRotate;
+            _gridInputChannel.OnGridCellClicked -= HandleGridInput;
+        }
+
+        _playerGrid.HideGhost();
+    }
+    private void CleanupEvents()
     {
         _fleetManager.OnDuckSelected -= HandleDuckSelected;
         _fleetManager.OnFleetEmpty -= HandleFleetEmpty;
@@ -42,11 +59,9 @@ public class SetupState : GameStateBase
         if (_gridInputChannel != null)
         {
             _gridInputChannel.OnPointerPositionChanged -= HandlePointerPositionChanged;
-            _gridInputChannel.OnRolateClick -= HandleRotate;
+            _gridInputChannel.OnRotateAction -= HandleRotate;
             _gridInputChannel.OnGridCellClicked -= HandleGridInput;
         }
-
-        _playerGrid.HideGhost();
     }
 
     private void HandleGridInput(Vector2Int gridPos, Owner owner)
@@ -124,7 +139,6 @@ public class SetupState : GameStateBase
     private void HandleDuckSelected(DuckDataSO data)
     {
         _selectedDuckData = data;
-        Debug.Log($"SetupState: Picked duck {data.duckName}");
 
         // 1. Hiển thị GhostDuck
         _playerGrid.ShowGhost(data);
@@ -171,7 +185,11 @@ public class SetupState : GameStateBase
     }
     private void HandleRotate()
     {
-        if (_selectedDuckData == null) return;
+        if (_selectedDuckData == null)
+        {
+            Debug.LogWarning("Không thể xoay Ghost khi chưa chọn tàu!");
+            return;
+        }
 
         _playerGrid.ToggleGhostRotation(); 
         Vector3 currentWorldPos = _inputController.GetCurrentMouseWorldPosition(); 

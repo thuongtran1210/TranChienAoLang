@@ -18,7 +18,7 @@ public class GridInputChannelSO : ScriptableObject
     public UnityAction<Vector3> OnPointerPositionChanged;
 
     // Sự kiện chuột phải (Hủy/Quay lại)
-    public UnityAction OnRolateClick;
+    public UnityAction OnRotateAction;
 
     // --- RAISERS ---
     public void RaiseGridCellClicked(Vector2Int gridPos, Owner owner)
@@ -30,6 +30,6 @@ public class GridInputChannelSO : ScriptableObject
     public void RaisePointerPositionChanged(Vector3 worldPos)
         => OnPointerPositionChanged?.Invoke(worldPos);
 
-    public void RaiseRightClick()
-        => OnRolateClick?.Invoke();
+    public void RaiseRotateAction()
+        => OnRotateAction?.Invoke();
 }
