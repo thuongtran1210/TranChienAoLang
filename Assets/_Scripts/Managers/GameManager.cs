@@ -23,7 +23,8 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private BattleEventChannelSO _battleEventChannel;
     [SerializeField] private GridInputChannelSO _gridInputChannel;
 
-
+    [Header("--- GAME BALANCE CONFIG ---")]
+    [SerializeField] private GameBalanceConfigSO _gameBalanceConfig;
 
     private IGridContext _playerGrid => _playerGridManager;
     private IGridContext _enemyGrid => _enemyGridManager;
@@ -80,7 +81,7 @@ public class GameManager : MonoBehaviour, IGameContext
         // 5. Khởi tạo States
 
         _setupState = new SetupState(this, _playerGrid, _fleetManager, _gridInputController, _gridInputChannel);
-        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel, _playerEnergySystem, _enemyEnergySystem);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel,_gameBalanceConfig, _playerEnergySystem, _enemyEnergySystem);
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = _fleetManager.GetFleetData();
         gridRandomizer.RandomizePlacement(_enemyGridManager, enemyFleet);

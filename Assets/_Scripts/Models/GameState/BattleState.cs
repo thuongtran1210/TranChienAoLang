@@ -6,12 +6,14 @@ public class BattleState : GameStateBase
     private IGridContext _playerGrid;
     private IGridContext _enemyGrid;
     private IEnemyAI _enemyAI;
-    private GridInputChannelSO _gridInputChannel;
 
+    private GridInputChannelSO _gridInputChannel;
     private BattleEventChannelSO _battleEvents;
     private DuckEnergySystem _playerEnergy;
     private DuckEnergySystem _enemyEnergy;
     private DuckSkillSO _currentSelectedSkill;
+
+    private readonly GameBalanceConfigSO _balanceConfig;
 
     private bool _isPlayerTurn;
     private bool _isGameOver;
@@ -24,6 +26,7 @@ public class BattleState : GameStateBase
                                IEnemyAI enemyAI,
                                GridInputChannelSO gridInputChannel, 
                                BattleEventChannelSO battleEvents,
+                               GameBalanceConfigSO balanceConfig,
                                DuckEnergySystem playerEnergy,
                                DuckEnergySystem enemyEnergy)
                     : base(context)
@@ -33,6 +36,7 @@ public class BattleState : GameStateBase
         _enemyAI = enemyAI;
         _gridInputChannel = gridInputChannel;
         _battleEvents = battleEvents;
+        _balanceConfig = balanceConfig;
         _playerEnergy = playerEnergy;
         _enemyEnergy = enemyEnergy;
     }
@@ -57,80 +61,71 @@ public class BattleState : GameStateBase
         _gridInputChannel.OnRolateClick += HandleCancelSkill;
         _battleEvents.OnSkillRequested -= HandleSkillRequested;
     }
+    // --- INPUT HANDLERS ---
+
     private void HandleSkillRequested(DuckSkillSO skill)
     {
-        if (!_isPlayerTurn) return;
+        if (!_isPlayerTurn || _isGameOver) return;
 
-        // Check Energy 
         if (_playerEnergy.CurrentEnergy < skill.energyCost)
         {
-            // Feedback UI
             _battleEvents.RaiseSkillFeedback("Not enough energy!", Vector2Int.zero);
             return;
         }
+
         _pendingSkill = skill;
-
         _battleEvents.RaiseSkillSelected(skill);
-
     }
     private void HandleCancelSkill()
     {
-        if (_pendingSkill != null)
-        {
-            _pendingSkill = null;
+        if (_pendingSkill == null) return;
 
-            // Bắn sự kiện để UI tắt highlight nút Skill, tắt highlight Grid
-            _battleEvents.RaiseSkillDeselected();
-            _battleEvents.RaiseClearHighlight();
-
-            Debug.Log("Skill cancelled by Right Click.");
-        }
+        _pendingSkill = null;
+        _battleEvents.RaiseSkillDeselected();
+        _battleEvents.RaiseClearHighlight();
+        Debug.Log("Skill cancelled.");
     }
 
     // Nếu đang PendingSkill -> Cast Skill. Nếu không -> Bắn thường. 
-    // TODO: STATE SKILL với STATE bắn thường
     private void HandleCellClicked(Vector2Int gridPos, Owner owner)
     {
         if (_isGameOver || !_isPlayerTurn) return;
-        if (owner != Owner.Enemy) return; // Chỉ cho phép tương tác bên sân đối thủ
+        if (owner != Owner.Enemy) return;
 
-        // A. Nếu đang có Skill chờ -> Thực thi Skill
         if (_pendingSkill != null)
         {
             _gameContext.StartCoroutine(ExecuteSkillRoutine(gridPos));
-            return;
         }
-
-        // B. Nếu không -> Bắn thường
-        ExecuteNormalShot(gridPos);
+        else
+        {
+            ExecuteNormalShot(gridPos);
+        }
     }
+    // --- GAMEPLAY LOGIC ---
+
     private IEnumerator ExecuteSkillRoutine(Vector2Int targetPos)
     {
-        // 1. Thực thi Logic & Visual (Sonar hiển thị vùng xanh)
+        // Execute Logic
         bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents, Owner.Enemy);
 
         if (success)
         {
-            // Trừ năng lượng ngay lập tức
             _playerEnergy.TryConsumeEnergy(_pendingSkill.energyCost);
-
-            // Lưu lại skill tạm thời để log hoặc xử lý nếu cần, rồi null
-            var usedSkill = _pendingSkill;
             _pendingSkill = null;
 
+            // Sử dụng Config cho thời gian delay
+            float skillDelay = _balanceConfig != null ? _balanceConfig.SkillExecutionDelay : 2.0f;
+            yield return new WaitForSeconds(skillDelay);
 
-            yield return new WaitForSeconds(2.0f);
-
-            // 2. Sau khi đã nhìn xong -> Mới dọn dẹp hiện trường
             _battleEvents.RaiseSkillDeselected();
             _battleEvents.RaiseClearHighlight();
 
-            // 3. Logic chuyển lượt (nếu Skill có tốn lượt)
+            // Nếu skill tốn lượt (hiện tại logic bạn comment SwitchTurn, tôi giữ nguyên)
             // SwitchTurn(); 
         }
         else
         {
-            Debug.Log("Skill cast failed (Invalid target?).");
+            _battleEvents.RaiseSkillFeedback("Invalid Target!", targetPos);
         }
     }
 
@@ -139,79 +134,40 @@ public class BattleState : GameStateBase
         if (_enemyGrid.GridSystem.GetCell(targetPos).IsHit) return;
         ProcessShot(_enemyGrid, targetPos, Owner.Player);
     }
-    private void CastSkill(Vector2Int targetPos)
-    {
-        // 1. Thực thi logic Skill (Nằm trong SO)
-        bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents, Owner.Enemy);
-
-        if (success)
-        {
-            // 2. Trừ Energy
-            _playerEnergy.TryConsumeEnergy(_pendingSkill.energyCost); // Bạn cần viết hàm này bên DuckEnergySystem
-
-            // 3. Reset trạng thái
-            Debug.Log($"Casted {_pendingSkill.skillName} at {targetPos}");
-            _pendingSkill = null;
-
-            // 4. (Optional) Skill có tốn lượt không?
-            // Nếu tốn lượt -> SwitchTurn();
-            // Nếu không tốn lượt -> Player bắn tiếp.
-        }
-        else
-        {
-            // Skill thất bại (do logic trong SO trả về false), giữ nguyên trạng thái chọn skill
-            Debug.Log("Skill cast failed (Invalid target?). Try again.");
-        }
-    }
 
 
     public override void OnGridInteraction(IGridContext source, Vector2Int gridPos)
-    { 
-        if (_isGameOver || !_isPlayerTurn) return;
-
-        // Player chỉ được bắn vào Enemy Grid
-        if (source != _enemyGrid) return;
-
-        // Validate: Ô đã bắn chưa?
-        if (_enemyGrid.GridSystem.GetCell(gridPos).IsHit) return;
-
-        ProcessShot(_enemyGrid, gridPos, Owner.Player);
+    {
+        // Không dùng nữa, xử lý trong HandleCellClicked
     }
 
 
     // Bắn thường 
     private void ProcessShot(IGridContext targetGrid, Vector2Int pos, Owner shooter)
     {
-        // 1. Logic bắn
         ShotResult result = targetGrid.GridSystem.ShootAt(pos);
-
         _battleEvents.RaiseShotFired(shooter, result, pos);
 
-        // 2. Check Win Condition
         if (CheckWinCondition(targetGrid))
         {
-            _isGameOver = true;
-            bool playerWon = (targetGrid == _enemyGrid);
-            _gameContext.EndGame(playerWon);
+            EndBattle(targetGrid == _enemyGrid);
             return;
         }
 
-        // 3. Xử lý lượt
         if (result == ShotResult.Miss)
         {
             SwitchTurn();
         }
-        else // HIT hoặc SUNK
+        else
         {
-            Debug.Log($"{shooter} Hit! Shoot again."); 
-
-            // Logic bắn bồi (Shoot again)
-            if (shooter == Owner.Enemy) // Nếu Enemy bắn trúng
+            // HIT logic: Bắn tiếp
+            Debug.Log($"{shooter} Hit! Shoot again.");
+            if (shooter == Owner.Enemy)
             {
                 _enemyAI.NotifyHit(pos, targetGrid.GridSystem);
+                // Enemy bắn trúng thì bắn tiếp sau 1 khoảng delay nhỏ
                 _gameContext.StartCoroutine(EnemyRoutine());
             }
-            // Nếu Player bắn trúng thì không cần làm gì, đợi Input tiếp theo
         }
     }
 
@@ -222,19 +178,26 @@ public class BattleState : GameStateBase
 
         if (!_isPlayerTurn)
         {
-            Debug.Log("Enemy's turn...");
             _gameContext.StartCoroutine(EnemyRoutine());
         }
+    }
+    private void EndBattle(bool isPlayerWon)
+    {
+        _isGameOver = true;
+        _gameContext.EndGame(isPlayerWon);
     }
 
     private IEnumerator EnemyRoutine()
     {
-        yield return new WaitForSeconds(1.0f);
+        // Delay trước khi AI bắn để tạo cảm giác tự nhiên
+        float aiDelay = _balanceConfig != null ? _balanceConfig.EnemyTurnDelay : 1.0f;
+        yield return new WaitForSeconds(aiDelay);
 
-      
-        Vector2Int aiTarget = _enemyAI.GetNextTarget(_playerGrid.GridSystem);
-
-        ProcessShot(_playerGrid, aiTarget, Owner.Enemy);
+        if (!_isGameOver) // Check lại vì có thể game over trong lúc wait
+        {
+            Vector2Int aiTarget = _enemyAI.GetNextTarget(_playerGrid.GridSystem);
+            ProcessShot(_playerGrid, aiTarget, Owner.Enemy);
+        }
     }
 
     private bool CheckWinCondition(IGridContext gridContext)

@@ -11,4 +11,9 @@ public class GameBalanceConfigSO : ScriptableObject
     [Header("Starting Stats")]
     public int DefaultMaxEnergy = 100;
     public int DefaultStartingEnergy = 0;
+
+    [Header("Grid Settings")]
+    public float GridCellSize = 1.0f;
+    public float SkillExecutionDelay = 1f;
+    public float EnemyTurnDelay = 1f;
 }

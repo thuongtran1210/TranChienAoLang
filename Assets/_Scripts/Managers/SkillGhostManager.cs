@@ -6,19 +6,16 @@ public class SkillGhostManager : MonoBehaviour
     [SerializeField] private BattleEventChannelSO _battleEvents;
 
     [Header("Settings")]
-    [SerializeField] private float _gridCellSize = 1f; // Kích thước 1 ô lưới trong Unity World Unit
+    [SerializeField] private GameBalanceConfigSO _gameBalanceConfig;
     [SerializeField] private SpriteRenderer _ghostRenderer; // Kéo SpriteRenderer của Ghost vào đây
 
     private void Awake()
     {
         if (_ghostRenderer == null)
         {
-            // Tự tạo nếu chưa gán
-            GameObject go = new GameObject("GhostVisual");
-            go.transform.SetParent(transform);
-            _ghostRenderer = go.AddComponent<SpriteRenderer>();
+            Debug.LogError($"{name}: Missing SpriteRenderer reference! Disabling component.");
+            enabled = false;
         }
-        _ghostRenderer.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -49,25 +46,29 @@ public class SkillGhostManager : MonoBehaviour
         _ghostRenderer.sprite = sprite;
         _ghostRenderer.transform.position = worldPos;
 
-        // 1. Handle Color (Xanh nếu đúng, Đỏ nếu sai)
-        Color c = isValid ? Color.white : Color.red;
-        c.a = 0.5f; // Độ trong suốt
-        _ghostRenderer.color = c;
+        // 1. Color Feedback
+        Color targetColor = isValid ? Color.white : Color.red;
+        targetColor.a = 0.5f;
+        _ghostRenderer.color = targetColor;
 
-        // 2. Handle Scaling (Auto-fit Grid)
-        // Công thức: Scale = (TargetSizeInWorld) / (OriginalSpriteSize)
+        // 2. Scale Calculation
+        UpdateGhostScale(sprite, sizeInCells);
+    }
+    private void UpdateGhostScale(Sprite sprite, Vector2Int sizeInCells)
+    {
+        // Lấy GridCellSize từ Config (Single Source of Truth)
+        // Giả sử trong GameBalanceConfigSO bạn đã thêm field gridSize
+        float cellSize = _gameBalanceConfig != null ? _gameBalanceConfig.GridCellSize : 1f;
 
-        float targetWidth = sizeInCells.x * _gridCellSize;
-        float targetHeight = sizeInCells.y * _gridCellSize;
+        float targetWidth = sizeInCells.x * cellSize;
+        float targetHeight = sizeInCells.y * cellSize;
 
-        Vector2 spriteSize = sprite.bounds.size; // Kích thước gốc của Sprite trong World Unit
+        Vector2 originalSize = sprite.bounds.size;
 
-        if (spriteSize.x > 0 && spriteSize.y > 0)
+        if (originalSize.x > 0 && originalSize.y > 0)
         {
-            float newScaleX = targetWidth / spriteSize.x;
-            float newScaleY = targetHeight / spriteSize.y;
-
-            // Áp dụng scale (giữ Z = 1)
+            float newScaleX = targetWidth / originalSize.x;
+            float newScaleY = targetHeight / originalSize.y;
             _ghostRenderer.transform.localScale = new Vector3(newScaleX, newScaleY, 1f);
         }
     }

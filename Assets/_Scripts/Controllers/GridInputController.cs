@@ -33,11 +33,12 @@ public class GridInputController : MonoBehaviour
     // --- INITIALIZATION  ---
     public void RegisterGrid(IGridLogic grid)
     {
-        if (!_activeGrids.Contains(grid))
-        {
-            _activeGrids.Add(grid);
-            
-        }
+        if (!_activeGrids.Contains(grid)) _activeGrids.Add(grid);
+    }
+
+    public void UnregisterGrid(IGridLogic grid) 
+    {
+        if (_activeGrids.Contains(grid)) _activeGrids.Remove(grid);
     }
 
     public void Initialize(Camera cameraToUse)
@@ -78,7 +79,7 @@ public class GridInputController : MonoBehaviour
         }
     }
 
-    // --- INPUT HANDLERS (SIGNAL ONLY) ---
+    // --- INPUT HANDLERS ---
 
     private void HandleMove(Vector2 screenPos)
     {
@@ -86,6 +87,7 @@ public class GridInputController : MonoBehaviour
         _currentScreenPos = screenPos;
         Vector3 worldPos = GetMouseWorldPosition(screenPos);
 
+        // 1. Báo cáo vị trí chuột (cho VFX, Ghost, etc.)
         _gridInputChannel.RaisePointerPositionChanged(worldPos);
 
         bool foundGrid = false;
@@ -106,7 +108,7 @@ public class GridInputController : MonoBehaviour
             }
         }
 
-        // Nếu không tìm thấy grid nào và trước đó đang hover (để tránh spam null liên tục)
+        // Nếu không tìm thấy grid nào và trước đó đang hover 
         if (!foundGrid && _lastHoveredGrid != null)
         {
             _lastHoveredPos = new Vector2Int(-999, -999);
