@@ -44,17 +44,17 @@ public class BattleState : GameStateBase
         _isGameOver = false;
 
 
-        _gridInputChannel.OnGridCellClicked += HandleInput;
+        _gridInputChannel.OnGridCellClicked += HandleCellClicked;
         _battleEvents.OnSkillRequested += SelectSkill;
     }
 
     public override void ExitState()
     {
 
-        _gridInputChannel.OnGridCellClicked -= HandleInput;
+        _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
         _battleEvents.OnSkillRequested -= SelectSkill;
     }
-    private void HandleInput(Vector2Int gridPos, Owner owner)
+    private void HandleCellClicked(Vector2Int gridPos, Owner owner)
     {
         if (_isGameOver || !_isPlayerTurn) return;
 

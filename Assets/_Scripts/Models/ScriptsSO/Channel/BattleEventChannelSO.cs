@@ -10,7 +10,7 @@ public class BattleEventChannelSO : ScriptableObject
     public UnityAction<Owner, int, int> OnEnergyChanged;
 
     [Header("Skill Events")]
-    public UnityAction<DuckSkillSO> OnSkillRequested; // Skill được kích hoạt (bắn)
+    public UnityAction<DuckSkillSO> OnSkillRequested; 
     public UnityAction<string, Vector2Int> OnSkillFeedback;
 
     // --- ADDED: Sự kiện chọn Skill (để Preview) ---

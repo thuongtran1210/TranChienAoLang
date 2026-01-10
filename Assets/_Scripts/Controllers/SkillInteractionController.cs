@@ -45,10 +45,16 @@ public class SkillInteractionController : MonoBehaviour
 
     private void HandleGridHover(Vector2Int gridPos, IGridLogic gridLogic)
     {
-    
+
         // 1. Fail Fast
-        if (_currentSelectedSkill == null || gridLogic == null)
+        if (_currentSelectedSkill == null)
         { 
+            ClearAllHighlights();
+            return;
+        }
+        if (gridLogic == null)
+        {
+            Debug.LogWarning("SkillInteractionController: Hovered gridLogic is null.");
             ClearAllHighlights();
             return;
         }
