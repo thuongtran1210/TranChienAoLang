@@ -44,11 +44,11 @@ public class SetupState : GameStateBase
         _playerGrid.HideGhost();
     }
 
-    private void HandleGridInput(Vector2Int gridPos, Owner owner)
+    private void HandleGridInput(Vector2Int pos, IGridLogic gridLogic)
     {
-        Debug.Log($"[DEBUG] SetupState Received Click: {gridPos}, Owner: {owner}");
+        Debug.Log($"[DEBUG] SetupState Received Click: {pos}, Owner: {gridLogic.GridOwner}");
         // 1. Validate Input
-        if (owner != Owner.Player)
+        if (gridLogic.GridOwner == Owner.Player)
         {
             Debug.LogWarning("Chỉ được đặt tàu lên bảng của Player!");
             return;
@@ -62,7 +62,7 @@ public class SetupState : GameStateBase
         }
 
         // 3. Thực hiện hành động
-        AttemptPlaceDuck(gridPos);
+        AttemptPlaceDuck(pos);
     }
     public override void OnGridInteraction(IGridContext source, Vector2Int gridPos)
     {

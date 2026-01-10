@@ -12,7 +12,7 @@ public class GridInputController : MonoBehaviour
 
     private List<IGridLogic> _managedGrids = new List<IGridLogic>();
 
-    public event Action<Vector2Int, Owner> OnGridCellClicked;
+    public event Action<Vector2Int, IGridLogic> OnGridCellClicked;
     public event Action<Vector3> OnPointerPositionChanged;
     public event Action<Vector2Int, IGridLogic> OnGridCellHovered;
     public event Action OnRightClick;
@@ -133,7 +133,7 @@ public class GridInputController : MonoBehaviour
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
                 Debug.Log($"Click vào {grid.GridOwner} tại {gridPos}");
-                OnGridCellClicked?.Invoke(gridPos, grid.GridOwner);
+                OnGridCellClicked?.Invoke(gridPos, grid);
                 return;
             }
         }

@@ -42,22 +42,22 @@ public class BattleState : GameStateBase
         _isGameOver = false;
 
 
-        _inputController.OnGridCellClicked += HandleInput;
+        _inputController.OnGridCellClicked += HandleCellClicked;
         _battleEvents.OnSkillRequested += SelectSkill;
     }
 
     public override void ExitState()
     {
       
-        _inputController.OnGridCellClicked -= HandleInput;
+        _inputController.OnGridCellClicked -= HandleCellClicked;
         _battleEvents.OnSkillRequested -= SelectSkill;
     }
-    private void HandleInput(Vector2Int gridPos, Owner owner)
+    private void HandleCellClicked(Vector2Int pos, IGridLogic gridLogic)
     {
         if (_isGameOver || !_isPlayerTurn) return;
 
         // Validate cơ bản: Luôn phải click vào Enemy Grid
-        if (owner != Owner.Enemy)
+        if (gridLogic.GridOwner == Owner.Player)
         {
             // Nếu click vào nhà mình thì hủy chọn skill (UX)
             if (_pendingSkill != null)
@@ -71,13 +71,13 @@ public class BattleState : GameStateBase
         // --- LOGIC MỚI: XỬ LÝ SKILL ---
         if (_pendingSkill != null)
         {
-            CastSkill(gridPos);
+            CastSkill(pos);
             return; // Dừng, không xử lý bắn thường
         }
 
         // --- LOGIC CŨ: BẮN THƯỜNG ---
-        if (_enemyGrid.GridSystem.GetCell(gridPos).IsHit) return;
-        ProcessShot(_enemyGrid, gridPos, Owner.Player);
+        if (_enemyGrid.GridSystem.GetCell(pos).IsHit) return;
+        ProcessShot(_enemyGrid, pos, Owner.Player);
     }
     private void CastSkill(Vector2Int targetPos)
     {
