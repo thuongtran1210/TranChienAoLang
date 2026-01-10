@@ -16,7 +16,7 @@ public class GridHighlightManager : MonoBehaviour
     {
         if (_battleEvents != null)
         {
-            _battleEvents.OnGridHighlightRequested += HandleHighlightRequested;
+            _battleEvents.OnGridHighlightRequested += HandleEffectOnGrid;
             _battleEvents.OnGridHighlightClearRequested += ClearHighlight;
         }
     }
@@ -24,12 +24,12 @@ public class GridHighlightManager : MonoBehaviour
     {
         if (_battleEvents != null)
         {
-            _battleEvents.OnGridHighlightRequested -= HandleHighlightRequested;
+            _battleEvents.OnGridHighlightRequested -= HandleEffectOnGrid;
             _battleEvents.OnGridHighlightClearRequested -= ClearHighlight;
         }
     }
     // --- 2. XỬ LÝ SỰ KIỆN CÓ LỌC  ---
-    private void HandleHighlightRequested(Owner target, List<Vector2Int> positions, Color color)
+    private void HandleEffectOnGrid(Owner target, List<Vector2Int> positions, Color color)
     {
         if (target != _gridOwner) return;
 

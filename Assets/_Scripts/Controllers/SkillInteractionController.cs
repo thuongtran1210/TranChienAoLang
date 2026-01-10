@@ -14,7 +14,7 @@ public class SkillInteractionController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_inputController != null)
+        if (_gridInputChannel != null)
         {
             _gridInputChannel.OnGridCellHovered += HandleGridHover;
         }
@@ -24,20 +24,22 @@ public class SkillInteractionController : MonoBehaviour
             // Đăng ký sự kiện chọn Skill từ UI
             _battleEvents.OnSkillSelected += SelectSkill;
             _battleEvents.OnSkillDeselected += DeselectSkill;
+
         }
     }
 
     private void OnDisable()
     {
-        if (_inputController != null)
-        {
-            _gridInputChannel.OnGridCellHovered -= HandleGridHover;
-        }
 
         if (_battleEvents != null)
         {
             _battleEvents.OnSkillSelected -= SelectSkill;
             _battleEvents.OnSkillDeselected -= DeselectSkill;
+
+        }
+        if (_gridInputChannel != null)
+        {
+            _gridInputChannel.OnGridCellHovered -= HandleGridHover;
         }
     }
 

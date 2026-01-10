@@ -16,7 +16,7 @@ public class BattleState : GameStateBase
     private bool _isPlayerTurn;
     private bool _isGameOver;
 
-    private DuckSkillSO _pendingSkill; // Skill đang được chọn chờ target
+    private DuckSkillSO _pendingSkill; 
 
     public BattleState(IGameContext context,
                                IGridContext playerGrid,
@@ -45,41 +45,86 @@ public class BattleState : GameStateBase
 
 
         _gridInputChannel.OnGridCellClicked += HandleCellClicked;
-        _battleEvents.OnSkillRequested += SelectSkill;
+        _gridInputChannel.OnRolateClick += HandleCancelSkill;
+        _battleEvents.OnSkillRequested += HandleSkillRequested;
+
     }
 
     public override void ExitState()
     {
 
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
-        _battleEvents.OnSkillRequested -= SelectSkill;
+        _gridInputChannel.OnRolateClick += HandleCancelSkill;
+        _battleEvents.OnSkillRequested -= HandleSkillRequested;
     }
-    private void HandleCellClicked(Vector2Int gridPos, Owner owner)
+    private void HandleSkillRequested(DuckSkillSO skill)
     {
-        if (_isGameOver || !_isPlayerTurn) return;
+        if (!_isPlayerTurn) return;
 
-        // Validate cơ bản: Luôn phải click vào Enemy Grid
-        if (owner != Owner.Enemy)
+        // Check Energy 
+        if (_playerEnergy.CurrentEnergy < skill.energyCost)
         {
-            // Nếu click vào nhà mình thì hủy chọn skill (UX)
-            if (_pendingSkill != null)
-            {
-                _pendingSkill = null;
-                Debug.Log("Cancelled Skill.");
-            }
+            // Feedback UI
+            _battleEvents.RaiseSkillFeedback("Not enough energy!", Vector2Int.zero);
             return;
         }
 
-        // --- LOGIC MỚI: XỬ LÝ SKILL ---
+        // Chuyển sang trạng thái "Chờ chọn mục tiêu"
+        _pendingSkill = skill;
+
+        // Bắn sự kiện để UI biết Skill đã được chọn thành công (để highlight nút chẳng hạn)
+        _battleEvents.RaiseSkillSelected(skill);
+
+        Debug.Log($"Skill {skill.skillName} selected. Waiting for target...");
+    }
+    private void HandleCancelSkill()
+    {
         if (_pendingSkill != null)
         {
-            CastSkill(gridPos);
-            return; // Dừng, không xử lý bắn thường
+            _pendingSkill = null;
+
+            // Bắn sự kiện để UI tắt highlight nút Skill, tắt highlight Grid
+            _battleEvents.RaiseSkillDeselected();
+            _battleEvents.RaiseClearHighlight();
+
+            Debug.Log("Skill cancelled by Right Click.");
+        }
+    }
+
+    // Nếu đang PendingSkill -> Cast Skill. Nếu không -> Bắn thường. 
+    // TODO: STATE SKILL với STATE bắn thường
+    private void HandleCellClicked(Vector2Int gridPos, Owner owner)
+    {
+        if (_isGameOver || !_isPlayerTurn) return;
+        if (owner != Owner.Enemy) return; // Chỉ cho phép tương tác bên sân đối thủ
+
+        // A. Nếu đang có Skill chờ -> Thực thi Skill
+        if (_pendingSkill != null)
+        {
+            ExecuteSkillLogic(gridPos);
+            return;
         }
 
-        // --- LOGIC CŨ: BẮN THƯỜNG ---
-        if (_enemyGrid.GridSystem.GetCell(gridPos).IsHit) return;
-        ProcessShot(_enemyGrid, gridPos, Owner.Player);
+        // B. Nếu không -> Bắn thường
+        ExecuteNormalShot(gridPos);
+    }
+    private void ExecuteSkillLogic(Vector2Int targetPos)
+    {
+        bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents, Owner.Enemy);
+        if (success)
+        {
+            _playerEnergy.TryConsumeEnergy(_pendingSkill.energyCost);
+            _pendingSkill = null; // Reset sau khi dùng xong
+            _battleEvents.RaiseSkillDeselected(); 
+
+            // Skill xong có hết lượt không? 
+            // Nếu có: SwitchTurn();
+        }
+    }
+    private void ExecuteNormalShot(Vector2Int targetPos)
+    {
+        if (_enemyGrid.GridSystem.GetCell(targetPos).IsHit) return;
+        ProcessShot(_enemyGrid, targetPos, Owner.Player);
     }
     private void CastSkill(Vector2Int targetPos)
     {
@@ -120,6 +165,8 @@ public class BattleState : GameStateBase
         ProcessShot(_enemyGrid, gridPos, Owner.Player);
     }
 
+
+    // Bắn thường 
     private void ProcessShot(IGridContext targetGrid, Vector2Int pos, Owner shooter)
     {
         // 1. Logic bắn

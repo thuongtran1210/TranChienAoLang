@@ -22,6 +22,8 @@ public class BattleEventChannelSO : ScriptableObject
     public UnityAction OnGridHighlightClearRequested;
 
     // --- RAISERS ---
+
+    // Khi bắn xong một phát súng
     public void RaiseShotFired(Owner shooter, ShotResult result, Vector2Int pos) => OnShotFired?.Invoke(shooter, result, pos);
     public void RaiseEnergyChanged(Owner owner, int current, int max) => OnEnergyChanged?.Invoke(owner, current, max);
     public void RaiseSkillFeedback(string message, Vector2Int position) => OnSkillFeedback?.Invoke(message, position);

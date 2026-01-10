@@ -30,7 +30,7 @@ public class SetupState : GameStateBase
         _fleetManager.OnDuckSelected += HandleDuckSelected;
         _fleetManager.OnFleetEmpty += HandleFleetEmpty;
         _gridInputChannel.OnPointerPositionChanged += HandlePointerPositionChanged;
-        _gridInputChannel.OnRightClick += HandleRotate;
+        _gridInputChannel.OnRolateClick += HandleRotate;
         _gridInputChannel.OnGridCellClicked += HandleGridInput;
     }
 
@@ -42,7 +42,7 @@ public class SetupState : GameStateBase
         if (_gridInputChannel != null)
         {
             _gridInputChannel.OnPointerPositionChanged -= HandlePointerPositionChanged;
-            _gridInputChannel.OnRightClick -= HandleRotate;
+            _gridInputChannel.OnRolateClick -= HandleRotate;
             _gridInputChannel.OnGridCellClicked -= HandleGridInput;
         }
 
