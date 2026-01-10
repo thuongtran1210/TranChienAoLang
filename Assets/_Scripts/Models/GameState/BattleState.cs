@@ -99,26 +99,43 @@ public class BattleState : GameStateBase
         // A. Nếu đang có Skill chờ -> Thực thi Skill
         if (_pendingSkill != null)
         {
-            ExecuteSkillLogic(gridPos);
+            _gameContext.StartCoroutine(ExecuteSkillRoutine(gridPos));
             return;
         }
 
         // B. Nếu không -> Bắn thường
         ExecuteNormalShot(gridPos);
     }
-    private void ExecuteSkillLogic(Vector2Int targetPos)
+    private IEnumerator ExecuteSkillRoutine(Vector2Int targetPos)
     {
+        // 1. Thực thi Logic & Visual (Sonar hiển thị vùng xanh)
         bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents, Owner.Enemy);
+
         if (success)
         {
+            // Trừ năng lượng ngay lập tức
             _playerEnergy.TryConsumeEnergy(_pendingSkill.energyCost);
-            _pendingSkill = null; // Reset sau khi dùng xong
-            _battleEvents.RaiseSkillDeselected(); 
 
-            // Skill xong có hết lượt không? 
-            // Nếu có: SwitchTurn();
+            // Lưu lại skill tạm thời để log hoặc xử lý nếu cần, rồi null
+            var usedSkill = _pendingSkill;
+            _pendingSkill = null;
+
+
+            yield return new WaitForSeconds(2.0f);
+
+            // 2. Sau khi đã nhìn xong -> Mới dọn dẹp hiện trường
+            _battleEvents.RaiseSkillDeselected();
+            _battleEvents.RaiseClearHighlight();
+
+            // 3. Logic chuyển lượt (nếu Skill có tốn lượt)
+            // SwitchTurn(); 
+        }
+        else
+        {
+            Debug.Log("Skill cast failed (Invalid target?).");
         }
     }
+
     private void ExecuteNormalShot(Vector2Int targetPos)
     {
         if (_enemyGrid.GridSystem.GetCell(targetPos).IsHit) return;
