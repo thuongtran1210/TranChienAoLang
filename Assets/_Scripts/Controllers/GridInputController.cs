@@ -6,7 +6,7 @@ using UnityEngine.InputSystem;
 
 
 /// <summary>
-/// <para><b>VAI TRÒ (ROLE):</b></para>
+/// <para><b>ROLE:</b></para>
 /// <para>
 /// Class này đóng vai trò là <b>Input Mediator (Trung gian xử lý Input)</b>. 
 /// Nhiệm vụ duy nhất của nó là chuyển đổi các tín hiệu Input thô (Raw Input từ <see cref="InputReader"/>) 
@@ -19,7 +19,7 @@ using UnityEngine.InputSystem;
 /// </list>
 /// </summary>
 /// <remarks>
-/// <para><b>RÀNG BUỘC (CONSTRAINTS):</b></para>
+/// <para><b>CONSTRAINTS:</b></para>
 /// <list type="number">
 /// <item><b>Initialization Required:</b> BẮT BUỘC phải gọi hàm <see cref="Initialize(Camera)"/> trước khi sử dụng để tham chiếu Camera dùng cho Raycast.</item>
 /// <item><b>Input System:</b> Phụ thuộc chặt chẽ vào <see cref="InputReader"/> (New Input System Wrapper).</item>

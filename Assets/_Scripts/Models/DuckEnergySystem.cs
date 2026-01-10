@@ -42,7 +42,7 @@ public class DuckEnergySystem : MonoBehaviour
     {
         if (shooter != _owner) return;
 
-        // REFACTORED: Sử dụng Config thay vì số cứng
+       
         int energyGain = 0;
         switch (result)
         {

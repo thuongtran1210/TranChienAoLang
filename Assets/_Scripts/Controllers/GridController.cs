@@ -1,6 +1,40 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
+/// <summary>
+/// [CONTROLLER LAYER] - Đóng vai trò là bộ điều phối trung tâm (Orchestrator) kết nối giữa Logic dữ liệu (GridSystem) 
+/// và Hiển thị trực quan (View Components) cho một bảng đấu cụ thể.
+/// </summary>
+/// <remarks>
+/// <para><b>Vai trò chính (Responsibilities):</b></para>
+/// <list type="bullet">
+///     <item>
+///         <b>Context Bridge:</b> Hiện thực hóa giao diện <see cref="IGridContext"/> để cung cấp ngữ cảnh Grid cho các hệ thống bên ngoài.
+///     </item>
+///     <item>
+///         <b>Input Translation:</b> Chuyển đổi tín hiệu Input từ World Space (thông qua <see cref="GridInputChannelSO"/>) thành Grid Coordinates (Vector2Int) để Model xử lý.
+///     </item>
+///     <item>
+///         <b>Placement Logic Orchestration:</b> Điều phối quy trình đặt tàu: Validate vị trí (Model) -> Cập nhật dữ liệu -> Gọi View sinh Unit/Ghost.
+///     </item>
+///     <item>
+///         <b>Event Handling:</b> Lắng nghe các sự kiện từ Architecture Layer (<see cref="BattleEventChannelSO"/>) để thực hiện các visual feedback như Highlight cell.
+///     </item>
+/// </list>
+/// 
+/// <para><b>Ràng buộc & Thiết kế (Constraints & Design):</b></para>
+/// <list type="bullet">
+///     <item>
+///         <b>Initialization Required:</b> Class này bắt buộc phải được gọi hàm <see cref="Initialize(IGridSystem, Owner)"/> từ Manager cấp cao hơn trước khi hoạt động.
+///     </item>
+///     <item>
+///         <b>Decoupled Input:</b> Không trực tiếp xử lý phần cứng Input (Mouse/Keyboard). Phụ thuộc hoàn toàn vào <see cref="GridInputChannelSO"/> và <see cref="GridInputController"/> (Dependency Inversion).
+///     </item>
+///     <item>
+///         <b>Logic Delegation:</b> Không được chứa logic tính toán thắng thua hay trạng thái ô (Hit/Miss). Mọi thay đổi trạng thái phải thông qua <see cref="IGridSystem"/>.
+///     </item>
+/// </list>
+/// </remarks>
 
 public class GridController : MonoBehaviour, IGridContext
 {
