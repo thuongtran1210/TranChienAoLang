@@ -117,8 +117,6 @@ public class BattleUIManager : MonoBehaviour
     {
         Debug.Log($"UI: Requesting skill {skill.skillName}");
 
-        // CLEAN ARCHITECTURE: Không gọi _gameManager.Trigger...
-        // Hãy bắn Event để bất kỳ ai quan tâm (BattleState) tự xử lý
         _battleEvents.RaiseSkillRequested(skill);
     }
 

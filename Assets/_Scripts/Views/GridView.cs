@@ -6,7 +6,7 @@ public class GridView : MonoBehaviour
 {
     [Header("Visual Settings")]
     [SerializeField] private float cellSize = 1f;
-    [SerializeField] private Vector3 originPosition; // Vị trí bắt đầu của lưới (góc dưới trái)
+    [SerializeField] private Vector3 originPosition; // Local x ,y của ô (0,0)
 
     [Header("References")]
     [SerializeField] private GridCellView cellPrefab;
@@ -15,6 +15,8 @@ public class GridView : MonoBehaviour
     private GridCellView[,] _cellViews;
 
     private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
+
+
 
     public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
     {
@@ -33,7 +35,7 @@ public class GridView : MonoBehaviour
 
                 GridCellView cellView = Instantiate(cellPrefab, gridContainer);
 
-                // 3. Đặt View vào tâm, thay vì đặt vào góc
+                // 3. Đặt View vào tâm
                 cellView.transform.localPosition = centerPos;
 
                 // 4. Đồng bộ kích thước Visual 
