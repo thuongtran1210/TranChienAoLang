@@ -517,10 +517,11 @@ MonoBehaviour:
   width: 10
   height: 10
   cellSize: 1
-  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   gridLayer:
     serializedVersion: 2
     m_Bits: 136
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
 --- !u!114 &387395765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -533,6 +534,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9008d3315eaceb45a65f4862ab9b2ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridInputController
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
   inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
 --- !u!114 &387395766
 MonoBehaviour:
@@ -591,16 +593,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b7401642d193ad4a8a0c10f0826c668, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  playerGridManager: {fileID: 1897542689}
-  enemyGridManager: {fileID: 387395764}
-  fleetManager: {fileID: 967563622}
+  _playerGridManager: {fileID: 1897542689}
+  _enemyGridManager: {fileID: 387395764}
+  _fleetManager: {fileID: 967563622}
   gridRandomizer: {fileID: 387395766}
   _battleUIManager: {fileID: 565100309}
   cameraController: {fileID: 519420033}
-  gridInputController: {fileID: 1897542692}
+  _gridInputController: {fileID: 1897542692}
   _playerEnergySystem: {fileID: 1317504785}
   _enemyEnergySystem: {fileID: 2108850430}
-  battleEventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _battleEventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
   vsAI: 1
 --- !u!1 &400194531
 GameObject:
@@ -817,6 +820,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillInteractionController
   _inputController: {fileID: 1897542692}
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -2704,10 +2708,11 @@ MonoBehaviour:
   width: 10
   height: 10
   cellSize: 1
-  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   gridLayer:
     serializedVersion: 2
     m_Bits: 72
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
 --- !u!114 &1897542691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2736,6 +2741,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9008d3315eaceb45a65f4862ab9b2ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridInputController
+  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
   inputReader: {fileID: 11400000, guid: 1cc05e0b434575140baae7359dbaf8e5, type: 2}
 --- !u!1 &2043023258
 GameObject:

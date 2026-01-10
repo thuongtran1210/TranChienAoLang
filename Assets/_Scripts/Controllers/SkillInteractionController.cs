@@ -5,7 +5,10 @@ public class SkillInteractionController : MonoBehaviour
 {
     [Header("Dependencies")]
     [SerializeField] private GridInputController _inputController;
+
+    [Header("EVENTS CHANNEL")]
     [SerializeField] private BattleEventChannelSO _battleEvents;
+    [SerializeField] private GridInputChannelSO _gridInputChannel;
 
     private DuckSkillSO _currentSelectedSkill;
 
@@ -13,7 +16,7 @@ public class SkillInteractionController : MonoBehaviour
     {
         if (_inputController != null)
         {
-            _inputController.OnGridCellHovered += HandleGridHover;
+            _gridInputChannel.OnGridCellHovered += HandleGridHover;
         }
 
         if (_battleEvents != null)
@@ -28,7 +31,7 @@ public class SkillInteractionController : MonoBehaviour
     {
         if (_inputController != null)
         {
-            _inputController.OnGridCellHovered -= HandleGridHover;
+            _gridInputChannel.OnGridCellHovered -= HandleGridHover;
         }
 
         if (_battleEvents != null)

@@ -6,15 +6,21 @@ public class SetupState : GameStateBase
     // Dependencies 
     private IGridContext _playerGrid; 
     private FleetManager _fleetManager;
+    private GridInputChannelSO _gridInputChannel;
     private GridInputController _inputController;
     private DuckDataSO _selectedDuckData;
 
-    public SetupState(IGameContext gameContext, IGridContext playerGrid, FleetManager fleetManager, GridInputController inputController)
-            : base(gameContext)
+    public SetupState(IGameContext gameContext,
+                          IGridContext playerGrid,
+                          FleetManager fleetManager,
+                          GridInputController inputController, 
+                          GridInputChannelSO gridInputChannel) 
+                : base(gameContext)
     {
         _playerGrid = playerGrid;
         _fleetManager = fleetManager;
         _inputController = inputController;
+        _gridInputChannel = gridInputChannel;
     }
 
     public override void EnterState()
@@ -23,10 +29,9 @@ public class SetupState : GameStateBase
 
         _fleetManager.OnDuckSelected += HandleDuckSelected;
         _fleetManager.OnFleetEmpty += HandleFleetEmpty;
-        _inputController.OnPointerPositionChanged += HandlePointerPositionChanged;
-        _inputController.OnRightClick += HandleRotate;
-
-        _inputController.OnGridCellClicked += HandleGridInput;
+        _gridInputChannel.OnPointerPositionChanged += HandlePointerPositionChanged;
+        _gridInputChannel.OnRightClick += HandleRotate;
+        _gridInputChannel.OnGridCellClicked += HandleGridInput;
     }
 
     public override void ExitState()
@@ -34,11 +39,11 @@ public class SetupState : GameStateBase
         _fleetManager.OnDuckSelected -= HandleDuckSelected;
         _fleetManager.OnFleetEmpty -= HandleFleetEmpty;
 
-        if (_inputController != null)
+        if (_gridInputChannel != null)
         {
-            _inputController.OnPointerPositionChanged -= HandlePointerPositionChanged;
-            _inputController.OnRightClick -= HandleRotate;
-            _inputController.OnGridCellClicked -= HandleGridInput;
+            _gridInputChannel.OnPointerPositionChanged -= HandlePointerPositionChanged;
+            _gridInputChannel.OnRightClick -= HandleRotate;
+            _gridInputChannel.OnGridCellClicked -= HandleGridInput;
         }
 
         _playerGrid.HideGhost();

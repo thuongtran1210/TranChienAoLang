@@ -14,8 +14,11 @@ public class GridController : MonoBehaviour, IGridContext
     [SerializeField] private int width = 10;
     [SerializeField] private int height = 10;
     [SerializeField] private float cellSize = 1f;
-    [SerializeField] private BattleEventChannelSO _battleChannel;
     [SerializeField] private LayerMask gridLayer;
+
+    [Header("EVENTS CHANEL")]
+    [SerializeField] private BattleEventChannelSO _battleChannel;
+    [SerializeField] private GridInputChannelSO _gridInputChannel;
 
     // --- CORE DATA ---
     private IGridSystem _gridSystem;
@@ -41,11 +44,12 @@ public class GridController : MonoBehaviour, IGridContext
         cameraController.SetupCamera(width, height);
         inputController.Initialize(cameraController.GetCamera());
         gridView.InitializeBoard(width, height, (GridSystem)_gridSystem, owner);
+
     }
 
     private void OnEnable()
     {
-        inputController.OnGridCellClicked += HandleCellClicked;
+        _gridInputChannel.OnGridCellClicked += HandleCellClicked;
 
         // Đăng ký lắng nghe sự kiện highlight
         if (_battleChannel != null)
@@ -59,7 +63,7 @@ public class GridController : MonoBehaviour, IGridContext
     {
         if (inputController != null)
         {
-            inputController.OnGridCellClicked -= HandleCellClicked;
+            _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
         }
         if (_gridSystem != null) _gridSystem.OnGridStateChanged -= gridView.UpdateCellState;
 

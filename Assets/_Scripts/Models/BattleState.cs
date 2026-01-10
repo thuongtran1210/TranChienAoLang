@@ -6,7 +6,7 @@ public class BattleState : GameStateBase
     private IGridContext _playerGrid;
     private IGridContext _enemyGrid;
     private IEnemyAI _enemyAI;
-    private GridInputController _inputController;
+    private GridInputChannelSO _gridInputChannel;
 
     private BattleEventChannelSO _battleEvents;
     private DuckEnergySystem _playerEnergy;
@@ -19,17 +19,19 @@ public class BattleState : GameStateBase
     private DuckSkillSO _pendingSkill; // Skill đang được chọn chờ target
 
     public BattleState(IGameContext context,
-                           IGridContext playerGrid,
-                           IGridContext enemyGrid,
-                           IEnemyAI enemyAI,
-                           GridInputController inputController,
-                           BattleEventChannelSO battleEvents, DuckEnergySystem playerEnergy, DuckEnergySystem enemyEnergy)
-                : base(context)
+                               IGridContext playerGrid,
+                               IGridContext enemyGrid,
+                               IEnemyAI enemyAI,
+                               GridInputChannelSO gridInputChannel, 
+                               BattleEventChannelSO battleEvents,
+                               DuckEnergySystem playerEnergy,
+                               DuckEnergySystem enemyEnergy)
+                    : base(context)
     {
         _playerGrid = playerGrid;
         _enemyGrid = enemyGrid;
         _enemyAI = enemyAI;
-        _inputController = inputController;
+        _gridInputChannel = gridInputChannel;
         _battleEvents = battleEvents;
         _playerEnergy = playerEnergy;
         _enemyEnergy = enemyEnergy;
@@ -42,14 +44,14 @@ public class BattleState : GameStateBase
         _isGameOver = false;
 
 
-        _inputController.OnGridCellClicked += HandleInput;
+        _gridInputChannel.OnGridCellClicked += HandleInput;
         _battleEvents.OnSkillRequested += SelectSkill;
     }
 
     public override void ExitState()
     {
-      
-        _inputController.OnGridCellClicked -= HandleInput;
+
+        _gridInputChannel.OnGridCellClicked -= HandleInput;
         _battleEvents.OnSkillRequested -= SelectSkill;
     }
     private void HandleInput(Vector2Int gridPos, Owner owner)

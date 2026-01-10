@@ -6,16 +6,15 @@ using UnityEngine.InputSystem;
 
 public class GridInputController : MonoBehaviour
 {
+    [Header("Broadcasting Channels")]
+    [SerializeField] private GridInputChannelSO _gridInputChannel;
+
     [Header("References")]
     [SerializeField] private InputReader inputReader;
     private Camera _inputCamera;
 
     private List<IGridLogic> _managedGrids = new List<IGridLogic>();
 
-    public event Action<Vector2Int, Owner> OnGridCellClicked;
-    public event Action<Vector3> OnPointerPositionChanged;
-    public event Action<Vector2Int, IGridLogic> OnGridCellHovered;
-    public event Action OnRightClick;
 
     private bool _isInitialized = false;
 
@@ -35,21 +34,10 @@ public class GridInputController : MonoBehaviour
     public void Initialize(Camera cameraToUse)
     {
         _inputCamera = cameraToUse;
+        _isInitialized = (_inputCamera != null && inputReader != null && _gridInputChannel != null);
 
-        if (_inputCamera == null)
-        {
-            _isInitialized = false;
-            return;
-        }
-
-        if (inputReader == null)
-        {
-           
-            _isInitialized = false;
-            return;
-        }
-
-        _isInitialized = true;
+        if (_gridInputChannel == null)
+            Debug.LogError("GridInputChannelSO is missing in GridInputController!");
     }
 
     // --- UNITY EVENTS ---
@@ -88,21 +76,20 @@ public class GridInputController : MonoBehaviour
         if (!_isInitialized) return;
         _currentScreenPos = screenPos;
         Vector3 worldPos = GetMouseWorldPosition(screenPos);
-        OnPointerPositionChanged?.Invoke(worldPos);
 
-        // --- ADDED: Check Hover Grid ---
+        // Thay vì Invoke C# Event, ta Raise qua Channel
+        _gridInputChannel.RaisePointerPositionChanged(worldPos);
+
         foreach (IGridLogic grid in _managedGrids)
         {
-            // Kiểm tra xem chuột có đang nằm trên Grid này không
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
-                // Bắn event kèm theo Grid đang được hover
-                OnGridCellHovered?.Invoke(gridPos, grid);
+                _gridInputChannel.RaiseGridCellHovered(gridPos, grid);
                 return;
             }
         }
-        // Nếu không hover grid nào
-        OnGridCellHovered?.Invoke(new Vector2Int(-999, -999), null);
+        // Báo hiệu không hover vào đâu cả
+        _gridInputChannel.RaiseGridCellHovered(new Vector2Int(-999, -999), null);
     }
 
     private void HandleFireInput()
@@ -111,29 +98,25 @@ public class GridInputController : MonoBehaviour
         _isFireInputPending = true;
     }
 
-    private void HandleRotateInput() => OnRightClick?.Invoke();
+    private void HandleRotateInput() => _gridInputChannel.RaiseRightClick();
 
     // --- GAME LOGIC (PROCESSING) ---
 
     private void ProcessFireLogic()
     {
-        // 1. Chặn click xuyên UI
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        // 2. Lấy vị trí chuột trong World
         Vector3 worldPos = GetMouseWorldPosition(_currentScreenPos);
 
-        // 3. Duyệt qua danh sách các Grid
         foreach (IGridLogic grid in _managedGrids)
         {
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
-                Debug.Log($"Click vào {grid.GridOwner} tại {gridPos}");
-                OnGridCellClicked?.Invoke(gridPos, grid.GridOwner);
+                // DEBUG LOG CŨNG NÊN BỎ HOẶC DÙNG CONDITIONAL
+                // Debug.Log($"Click vào {grid.GridOwner} tại {gridPos}");
+
+                // Raise event qua Channel
+                _gridInputChannel.RaiseGridCellClicked(gridPos, grid.GridOwner);
                 return;
             }
         }

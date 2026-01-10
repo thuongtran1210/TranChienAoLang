@@ -6,26 +6,27 @@ using TMPro.Examples;
 public class GameManager : MonoBehaviour, IGameContext
 {
     [Header("--- COMPONENTS ---")]
-    [SerializeField] private GridController playerGridManager;
-    [SerializeField] private GridController enemyGridManager;
-    [SerializeField] private FleetManager fleetManager;
+    [SerializeField] private GridController _playerGridManager;
+    [SerializeField] private GridController _enemyGridManager;
+    [SerializeField] private FleetManager _fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
     [SerializeField] private BattleUIManager _battleUIManager;
 
     [SerializeField] private CameraController cameraController;
-    [SerializeField] private GridInputController gridInputController;
+    [SerializeField] private GridInputController _gridInputController;
     [Header("--- ENERGY SYSTEMS ---")]
     [SerializeField] private DuckEnergySystem _playerEnergySystem;
     [SerializeField] private DuckEnergySystem _enemyEnergySystem;
 
 
-    //Event Channels
-    [SerializeField] private BattleEventChannelSO battleEventChannel;
+    [Header("--- EVENTS CHANEL ---")]
+    [SerializeField] private BattleEventChannelSO _battleEventChannel;
+    [SerializeField] private GridInputChannelSO _gridInputChannel;
 
 
 
-    private IGridContext _playerGrid => playerGridManager;
-    private IGridContext _enemyGrid => enemyGridManager;
+    private IGridContext _playerGrid => _playerGridManager;
+    private IGridContext _enemyGrid => _enemyGridManager;
 
     [Header("--- SETTINGS ---")]
     [SerializeField] private bool vsAI = true; 
@@ -49,21 +50,21 @@ public class GameManager : MonoBehaviour, IGameContext
         // 1. SETUP HỆ THỐNG INPUT 
         if (cameraController != null)
         {
-            gridInputController.Initialize(cameraController.GetCamera());
+            _gridInputController.Initialize(cameraController.GetCamera());
         }
         else
         {
             Debug.LogError("GameManager: Chưa gán CameraController trong Inspector!");
-            gridInputController.Initialize(Camera.main);
+            _gridInputController.Initialize(Camera.main);
         }
 
 
-        gridInputController.RegisterGrid(_playerGrid);
-        gridInputController.RegisterGrid(_enemyGrid);
+        _gridInputController.RegisterGrid(_playerGrid);
+        _gridInputController.RegisterGrid(_enemyGrid);
 
         // 2. Khởi tạo dữ liệu Grid
-        playerGridManager.Initialize(new GridSystem(10, 10), Owner.Player);
-        enemyGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
+        _playerGridManager.Initialize(new GridSystem(10, 10), Owner.Player);
+        _enemyGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
 
         // 3. Setup AI
         EnemyAIController aiController = new EnemyAIController();
@@ -78,23 +79,11 @@ public class GameManager : MonoBehaviour, IGameContext
 
         // 5. Khởi tạo States
 
-        _setupState = new SetupState(this, _playerGrid, fleetManager, gridInputController);
-
-        // BattleState 
-        _battleState = new BattleState(
-        this,
-        _playerGrid,
-        _enemyGrid,
-        aiImplementation,
-        gridInputController,
-        battleEventChannel,
-        _playerEnergySystem, // <--- Inject Player System
-        _enemyEnergySystem   // <--- Inject Enemy System
-    );
-
+        _setupState = new SetupState(this, _playerGrid, _fleetManager, _gridInputController, _gridInputChannel);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel, _playerEnergySystem, _enemyEnergySystem);
         // 6. Setup Enemy Fleet 
-        List<DuckDataSO> enemyFleet = fleetManager.GetFleetData();
-        gridRandomizer.RandomizePlacement(enemyGridManager, enemyFleet);
+        List<DuckDataSO> enemyFleet = _fleetManager.GetFleetData();
+        gridRandomizer.RandomizePlacement(_enemyGridManager, enemyFleet);
 
         // 7. Start Game
         ChangeState(_setupState);
@@ -171,7 +160,7 @@ public class GameManager : MonoBehaviour, IGameContext
         Debug.Log("Setup Complete! Initializing Battle Phase...");
 
         // 1. LẤY DỮ LIỆU TỪ FLEET MANAGER
-        DuckDataSO activeDuckData = fleetManager.GetPlayerActiveDuckData();
+        DuckDataSO activeDuckData = _fleetManager.GetPlayerActiveDuckData();
 
         // 2. CHECK NULL (Fail Fast Principle)
         if (activeDuckData == null)
