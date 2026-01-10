@@ -19,7 +19,7 @@ public class GridInputController : MonoBehaviour
     [SerializeField] private InputReader inputReader;
     private Camera _inputCamera;
 
-    private List<IGridLogic> _managedGrids = new List<IGridLogic>();
+    private List<IGridLogic> _activeGrids = new List<IGridLogic>();
 
 
     private bool _isInitialized = false;
@@ -33,9 +33,9 @@ public class GridInputController : MonoBehaviour
     // --- INITIALIZATION  ---
     public void RegisterGrid(IGridLogic grid)
     {
-        if (!_managedGrids.Contains(grid))
+        if (!_activeGrids.Contains(grid))
         {
-            _managedGrids.Add(grid);
+            _activeGrids.Add(grid);
             
         }
     }
@@ -90,7 +90,7 @@ public class GridInputController : MonoBehaviour
 
         bool foundGrid = false;
 
-        foreach (IGridLogic grid in _managedGrids)
+        foreach (IGridLogic grid in _activeGrids)
         {
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
@@ -131,7 +131,7 @@ public class GridInputController : MonoBehaviour
 
         Vector3 worldPos = GetMouseWorldPosition(_currentScreenPos);
 
-        foreach (IGridLogic grid in _managedGrids)
+        foreach (IGridLogic grid in _activeGrids)
         {
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
