@@ -141,7 +141,7 @@ public class BattleState : GameStateBase
         }
         else // HIT hoặc SUNK
         {
-            Debug.Log($"{shooter} Hit! Shoot again."); // Log rõ ai bắn trúng
+            Debug.Log($"{shooter} Hit! Shoot again."); 
 
             // Logic bắn bồi (Shoot again)
             if (shooter == Owner.Enemy) // Nếu Enemy bắn trúng
@@ -190,7 +190,6 @@ public class BattleState : GameStateBase
         }
 
         _pendingSkill = skill;
-        Debug.Log($"Selected Skill: {skill.skillName}. Select target on Enemy Grid.");
-        // TODO: Đổi cursor chuột hoặc highlight grid enemy để báo hiệu đang aim skill
+        _battleEvents.RaiseSkillSelected(skill);
     }
 }

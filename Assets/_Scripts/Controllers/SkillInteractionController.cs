@@ -42,16 +42,17 @@ public class SkillInteractionController : MonoBehaviour
 
     private void HandleGridHover(Vector2Int gridPos, IGridLogic gridLogic)
     {
+    
         // 1. Fail Fast
         if (_currentSelectedSkill == null || gridLogic == null)
-        {
+        { 
             ClearAllHighlights();
             return;
         }
 
         // 2. Validate Target
         if (!IsValidTargetGrid(gridLogic.GridOwner, _currentSelectedSkill.targetType))
-        {
+        { 
             ClearAllHighlights();
             return;
         }
@@ -60,10 +61,10 @@ public class SkillInteractionController : MonoBehaviour
         if (gridLogic is IGridSystem gridSystem)
         {
             List<Vector2Int> affectedCells = _currentSelectedSkill.GetAffectedPositions(gridPos, gridSystem);
-
-            // Highlight vùng ảnh hưởng
             _battleEvents.RaiseGridHighlight(gridLogic.GridOwner, affectedCells, _currentSelectedSkill.validColor);
         }
+
+
     }
 
     private bool IsValidTargetGrid(Owner gridOwner, SkillTargetType skillTargetType)
