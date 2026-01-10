@@ -171,12 +171,12 @@ public class GridController : MonoBehaviour, IGridContext
     }
 
     // --- INPUT HANDLING ---
-    private void HandleCellClicked(Vector2Int pos, IGridLogic gridLogic)
+    private void HandleCellClicked(Vector2Int gridPos, Owner clickedOwner)
     {
-        if (gridLogic.GridOwner == Owner.Player)
-        {
-            OnGridClicked?.Invoke(this, pos);
-        }    
+        if (clickedOwner != this.GridOwner) return;
+
+
+        OnGridClicked?.Invoke(this, gridPos);
     }
 
     // --- INTERFACE VISUAL METHODS  ---
