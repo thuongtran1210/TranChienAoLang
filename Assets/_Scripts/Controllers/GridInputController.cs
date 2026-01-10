@@ -129,8 +129,18 @@ public class GridInputController : MonoBehaviour
 
     private void HandleRotateInput()
     {
-        if (!_isInitialized) return;
-        _gridInputChannel.RaiseRotateAction();
+        Vector3 mousePos = GetMouseWorldPosition(_currentScreenPos);
+
+        // Kiểm tra xem chuột có đang nằm trên bất kỳ grid nào mà Controller này quản lý không
+        foreach (var grid in _activeGrids)
+        {
+            if (grid.IsWorldPositionInside(mousePos, out _))
+            {
+                // Chỉ bắn sự kiện nếu chuột đang trỏ vào Grid này
+                _gridInputChannel.RaiseRotateAction();
+                return;
+            }
+        }
     }
 
     // --- GAME LOGIC (PROCESSING) ---
