@@ -72,10 +72,8 @@ public class BattleState : GameStateBase
         // Chuyển sang trạng thái "Chờ chọn mục tiêu"
         _pendingSkill = skill;
 
-        // Bắn sự kiện để UI biết Skill đã được chọn thành công (để highlight nút chẳng hạn)
         _battleEvents.RaiseSkillSelected(skill);
 
-        Debug.Log($"Skill {skill.skillName} selected. Waiting for target...");
     }
     private void HandleCancelSkill()
     {

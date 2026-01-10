@@ -47,35 +47,37 @@ public class SkillInteractionController : MonoBehaviour
 
     private void HandleGridHover(Vector2Int gridPos, IGridLogic gridLogic)
     {
-
         // 1. Fail Fast
         if (_currentSelectedSkill == null)
-        { 
+        {
             ClearAllHighlights();
             return;
         }
+
+        // Handle trường hợp chuột ra khỏi bàn cờ
         if (gridLogic == null)
         {
-            Debug.LogWarning("SkillInteractionController: Hovered gridLogic is null.");
             ClearAllHighlights();
             return;
         }
+        // 1. Tính toán vị trí World
+        // Giả sử Grid của bạn có cellSize = 1. Nếu khác, bạn cần lấy từ GridSystem.
+        Vector3 cellWorldPos = gridLogic.GetWorldPosition(gridPos);
 
-        // 2. Validate Target
-        if (!IsValidTargetGrid(gridLogic.GridOwner, _currentSelectedSkill.targetType))
-        { 
-            ClearAllHighlights();
-            return;
-        }
+        // 2. Lấy Data Visual từ Skill
+        Sprite ghostSprite = _currentSelectedSkill.ghostSprite;
+        Vector2Int ghostSize = _currentSelectedSkill.areaSize;
+        bool isValid = IsValidTargetGrid(gridLogic.GridOwner, _currentSelectedSkill.targetType);
 
-        // 3. Logic & Visual
+        // 3. RAISE EVENT với đầy đủ thông tin
+        _battleEvents.RaiseSkillGhostUpdate(ghostSprite, ghostSize, cellWorldPos, isValid);
+
+        // 5. Logic Highlight các ô 
         if (gridLogic is IGridSystem gridSystem)
         {
             List<Vector2Int> affectedCells = _currentSelectedSkill.GetAffectedPositions(gridPos, gridSystem);
             _battleEvents.RaiseGridHighlight(gridLogic.GridOwner, affectedCells, _currentSelectedSkill.validColor);
         }
-
-
     }
 
     private bool IsValidTargetGrid(Owner gridOwner, SkillTargetType skillTargetType)
@@ -91,8 +93,8 @@ public class SkillInteractionController : MonoBehaviour
 
     private void ClearAllHighlights()
     {
-    
         _battleEvents.RaiseClearHighlight();
+        _battleEvents.RaiseSkillGhostClear(); 
     }
 
     // --- PUBLIC METHODS (Event Handlers) ---

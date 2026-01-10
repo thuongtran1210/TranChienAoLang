@@ -23,6 +23,16 @@ public abstract class DuckSkillSO : ScriptableObject
 
     [TextArea] public string description;
 
+    [Header("VISUAL SETTINGS")]
+
+    [Tooltip("Prefab hiển thị vùng ảnh hưởng (Ghost) khi di chuột")]
+    public GameObject ghostPrefab;
+    [Tooltip("Hình ảnh hiển thị dưới dạng Ghost trên bàn cờ")]
+    public Sprite ghostSprite;
+
+    [Tooltip("Kích thước vùng Skill (Ví dụ: 1x1, 3x3). Dùng để tính Scale.")]
+    public Vector2Int areaSize = Vector2Int.one; // Mặc định 1x1
+
 
     public abstract List<Vector2Int> GetAffectedPositions(Vector2Int pivotPos, IGridSystem targetGrid);
 

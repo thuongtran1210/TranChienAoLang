@@ -15,5 +15,13 @@ MonoBehaviour:
   skillName: "V\u1ECBt soi m\xF3i"
   energyCost: 50
   icon: {fileID: -9018408806940583333, guid: 1868a66aa027d254398fda3a64cf2e9d, type: 3}
+  skillColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  targetType: 1
+  validColor: {r: 0, g: 1, b: 0, a: 1}
+  invalidColor: {r: 1, g: 0, b: 0, a: 1}
   description: "skill n\xE0y qu\xE9t v\xF9ng 3x3 v\xE0 b\xE1o s\u1ED1 l\u01B0\u1EE3ng
     \xF4 c\xF3 t\xE0u"
+  ghostPrefab: {fileID: 6492697460367462693, guid: 70a63ab8ef37dfd4bae8f8538c7b254e, type: 3}
+  ghostSprite: {fileID: -9018408806940583333, guid: 1868a66aa027d254398fda3a64cf2e9d, type: 3}
+  areaSize: {x: 3, y: 3}
+  _radius: 1

@@ -44,6 +44,9 @@ public class GridInputController : MonoBehaviour
     private bool _isFireInputPending = false;
     private Vector2 _currentScreenPos;
 
+    private Vector2Int _lastHoveredPos = new Vector2Int(-999, -999);
+    private IGridLogic _lastHoveredGrid = null;
+
     // --- INITIALIZATION  ---
     public void RegisterGrid(IGridLogic grid)
     {
@@ -100,19 +103,33 @@ public class GridInputController : MonoBehaviour
         _currentScreenPos = screenPos;
         Vector3 worldPos = GetMouseWorldPosition(screenPos);
 
-        // Thay vì Invoke C# Event, ta Raise qua Channel
         _gridInputChannel.RaisePointerPositionChanged(worldPos);
+
+        bool foundGrid = false;
 
         foreach (IGridLogic grid in _managedGrids)
         {
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
-                _gridInputChannel.RaiseGridCellHovered(gridPos, grid);
-                return;
+                // TỐI ƯU: Chỉ raise khi tọa độ hoặc Grid thay đổi
+                if (gridPos != _lastHoveredPos || grid != _lastHoveredGrid)
+                {
+                    _lastHoveredPos = gridPos;
+                    _lastHoveredGrid = grid;
+                    _gridInputChannel.RaiseGridCellHovered(gridPos, grid);
+                }
+                foundGrid = true;
+                return; // Tìm thấy rồi thì thoát luôn
             }
         }
-        // Báo hiệu không hover vào đâu cả
-        _gridInputChannel.RaiseGridCellHovered(new Vector2Int(-999, -999), null);
+
+        // Nếu không tìm thấy grid nào và trước đó đang hover (để tránh spam null liên tục)
+        if (!foundGrid && _lastHoveredGrid != null)
+        {
+            _lastHoveredPos = new Vector2Int(-999, -999);
+            _lastHoveredGrid = null;
+            _gridInputChannel.RaiseGridCellHovered(_lastHoveredPos, null);
+        }
     }
 
     private void HandleFireInput()
@@ -135,10 +152,6 @@ public class GridInputController : MonoBehaviour
         {
             if (grid.IsWorldPositionInside(worldPos, out Vector2Int gridPos))
             {
-                // DEBUG LOG CŨNG NÊN BỎ HOẶC DÙNG CONDITIONAL
-                // Debug.Log($"Click vào {grid.GridOwner} tại {gridPos}");
-
-                // Raise event qua Channel
                 _gridInputChannel.RaiseGridCellClicked(gridPos, grid.GridOwner);
                 return;
             }

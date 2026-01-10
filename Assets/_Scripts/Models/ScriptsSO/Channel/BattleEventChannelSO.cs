@@ -20,6 +20,8 @@ public class BattleEventChannelSO : ScriptableObject
     [Header("Visual Events")]
     public UnityAction<Owner, List<Vector2Int>, Color> OnGridHighlightRequested;
     public UnityAction OnGridHighlightClearRequested;
+    public UnityAction<Sprite, Vector2Int, Vector3, bool> OnSkillGhostUpdate;
+    public UnityAction OnSkillGhostClear;
 
     // --- RAISERS ---
 
@@ -36,4 +38,9 @@ public class BattleEventChannelSO : ScriptableObject
     public void RaiseGridHighlight(Owner target, List<Vector2Int> cells, Color color) => OnGridHighlightRequested?.Invoke(target, cells, color);
 
     public void RaiseClearHighlight() => OnGridHighlightClearRequested?.Invoke();
+    public void RaiseSkillGhostUpdate(Sprite sprite, Vector2Int size, Vector3 worldPos, bool isValid)
+            => OnSkillGhostUpdate?.Invoke(sprite, size, worldPos, isValid);
+
+    public void RaiseSkillGhostClear()
+        => OnSkillGhostClear?.Invoke();
 }
