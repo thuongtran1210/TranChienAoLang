@@ -3,8 +3,6 @@ using UnityEngine;
 
 public class GhostDuckView : MonoBehaviour
 {
-    [Header("Broadcasting Channels")]
-    [SerializeField] private GridInputChannelSO _gridInputChannel;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject lotusLeafPrefab;
@@ -34,28 +32,7 @@ public class GhostDuckView : MonoBehaviour
         UpdateVisual(data);
         gameObject.SetActive(true);
     }
-    private void OnEnable()
-    {
-        if (_gridInputChannel != null)
-        {
-            _gridInputChannel.OnRotateAction += HandleRotateEvent;
-        }
-    }
-    private void OnDisable()
-    {
-        if (_gridInputChannel != null)
-        {
-            _gridInputChannel.OnRotateAction -= HandleRotateEvent;
-        }
-    }
-    private void HandleRotateEvent()
-    {
-        // Chỉ xoay khi Ghost đang hiển thị (Active)
-        if (gameObject.activeSelf)
-        {
-            Rotate();
-        }
-    }
+
 
     public void Hide()
     {
@@ -74,6 +51,8 @@ public class GhostDuckView : MonoBehaviour
         if (_currentData == null) return;
 
         _isHorizontal = !_isHorizontal;
+
+        Debug.Log($"[GhostDuckView] Rotating ONCE! New State: {(_isHorizontal ? "Horizontal" : "Vertical")}");
 
         float targetAngle = _isHorizontal ? 0f : -90f;
         transform.rotation = Quaternion.Euler(0, 0, targetAngle);
