@@ -88,7 +88,6 @@ public class FleetManager : MonoBehaviour
             return levelFleetConfig[0]; 
         }
 
-        Debug.LogError("FleetManager: Config is empty or null!");
         return null;
     }
 

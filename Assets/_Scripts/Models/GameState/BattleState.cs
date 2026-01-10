@@ -68,8 +68,6 @@ public class BattleState : GameStateBase
             _battleEvents.RaiseSkillFeedback("Not enough energy!", Vector2Int.zero);
             return;
         }
-
-        // Chuyển sang trạng thái "Chờ chọn mục tiêu"
         _pendingSkill = skill;
 
         _battleEvents.RaiseSkillSelected(skill);
