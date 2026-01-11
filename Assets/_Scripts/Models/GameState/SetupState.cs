@@ -104,9 +104,6 @@ public class SetupState : GameStateBase
             // Senior Tip: Controller nên lo việc validate, State chỉ gửi yêu cầu.
             Vector3 worldPos = gridController.GetWorldPosition(gridPos);
             bool isHorizontal = _playerGrid.IsGhostHorizontal;
-
-            Debug.Log($"[SetupState] Attempting place at {gridPos}. IsHorizontal: {isHorizontal}");
-
             // 3. GỌI HÀM VÀ HỨNG KẾT QUẢ (QUAN TRỌNG NHẤT)
             bool isSuccess = gridController.TryPlaceShip(worldPos, _selectedDuckData, isHorizontal);
 

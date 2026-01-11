@@ -53,7 +53,9 @@ public class GridView : MonoBehaviour
 
                 GridCell cellLogic = gridSystem.GetCell(new Vector2Int(x, y));
 
-                cellView.Setup(cellLogic);
+                bool isPlayerBoard = (owner == Owner.Player);
+
+                cellView.Setup(cellLogic, isPlayerBoard);
 
                 _cellViews[x, y] = cellView;
             }

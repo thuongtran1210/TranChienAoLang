@@ -11,15 +11,20 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     [SerializeField] private Sprite fogSprite;
 
     private Color _originalColor = Color.white;
+    private bool _isPlayerCell; 
 
     // Properties
     public Owner CellOwner { get; private set; }
     public GridCell _cellLogic { get; private set; }
     public Vector2Int GridPosition => _cellLogic != null ? _cellLogic.GridPosition : Vector2Int.zero;
-
-    public void Setup(GridCell cellLogic)
+    private void Awake()
+    {
+        gameObject.SetActive(true);
+    }
+    public void Setup(GridCell cellLogic, bool isPlayerCell)
     {
         _cellLogic = cellLogic;
+        _isPlayerCell = isPlayerCell;
 
         if (fogRenderer != null) fogRenderer.sprite = fogSprite;
         if (baseRenderer != null)
@@ -38,8 +43,7 @@ public class GridCellView : MonoBehaviour, IGridInteractable
         // 1. Xử lý Fog (Thuần túy dựa trên IsRevealed của Model)
         if (fogRenderer != null)
         {
-            // Nếu đã Revealed (lộ) -> Tắt fog. Ngược lại -> Bật fog.
-            bool shouldShowFog = !_cellLogic.IsRevealed;
+            bool shouldShowFog = !_isPlayerCell && !_cellLogic.IsRevealed;
             fogRenderer.gameObject.SetActive(shouldShowFog);
         }
 
@@ -77,7 +81,7 @@ public class GridCellView : MonoBehaviour, IGridInteractable
         }
 
         // 2. Xử lý Mây: Khi đã bắn (có kết quả), ta tắt lớp mây đi để lộ kết quả bên dưới
-        if (fogRenderer != null && shotResult != ShotResult.None) // Giả định None là chưa bắn
+        if (fogRenderer != null && shotResult != ShotResult.None) 
         {
             // Có thể thêm hiệu ứng Fade out ở đây sau này (DOTween)
             fogRenderer.gameObject.SetActive(false);
@@ -89,10 +93,8 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     /// <param name="targetSize">Kích thước mong muốn (cellSize)</param>
     public void SetVisualSize(float targetSize)
     {
-        // Scale base renderer
-        ScaleRenderer(baseRenderer, targetSize);
-        // Scale fog renderer
-        ScaleRenderer(fogRenderer, targetSize);
+        ApplyScaleToRenderer(baseRenderer, targetSize);
+        ApplyScaleToRenderer(fogRenderer, targetSize);
     }
     private void ScaleRenderer(SpriteRenderer renderer, float targetSize)
     {
@@ -113,6 +115,23 @@ public class GridCellView : MonoBehaviour, IGridInteractable
         // ta chỉ cần scale transform của GameObject cha là đủ.
 
         transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
+    }
+    private void ApplyScaleToRenderer(SpriteRenderer renderer, float targetSize)
+    {
+        if (renderer == null || renderer.sprite == null) return;
+
+        // Reset localScale của RENDERER CON, không phải transform (Parent)
+        renderer.transform.localScale = Vector3.one;
+
+        Vector2 spriteSize = renderer.sprite.bounds.size;
+        if (spriteSize.x == 0 || spriteSize.y == 0) return;
+
+        // Tính toán scale factor
+        float scaleFactorX = targetSize / spriteSize.x;
+        float scaleFactorY = targetSize / spriteSize.y;
+
+        // Áp dụng vào chính Renderer đó
+        renderer.transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
     }
     /// <summary>
     /// Hàm xử lý trạng thái Highlight thống nhất.
