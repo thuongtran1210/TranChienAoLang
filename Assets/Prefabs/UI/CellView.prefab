@@ -105,7 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridCellView
   baseRenderer: {fileID: 1799527633632210396}
-  fogRenderer: {fileID: 1799527633632210396}
+  fogRenderer: {fileID: 6580638561555120157}
   defaultSprite: {fileID: 6750033715232265413, guid: 194b517a05555eb4884a471f555be2cf, type: 3}
   hitSprite: {fileID: -2459939690561232940, guid: 7f0d8a4a9e1b1bf44ade3d04decd77d0, type: 3}
   missSprite: {fileID: 2571525915002049152, guid: 542d4c188f552364ab725ac172740bc9, type: 3}
@@ -119,7 +119,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1026604309932241305}
-  - component: {fileID: 1544098179724063194}
+  - component: {fileID: 6580638561555120157}
   m_Layer: 3
   m_Name: FogVisual
   m_TagString: Untagged
@@ -142,7 +142,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3979743507806524800}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &1544098179724063194
+--- !u!212 &6580638561555120157
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
