@@ -41,5 +41,11 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Board
+    uniqueID: 1266679205
+    locked: 0
+  - name: Water
+    uniqueID: 3070980239
+    locked: 0
   m_RenderingLayers:
   - Default

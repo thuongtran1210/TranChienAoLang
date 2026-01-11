@@ -52,7 +52,8 @@ public class GridView : MonoBehaviour
                 cellView.SetVisualSize(cellSize);
 
                 GridCell cellLogic = gridSystem.GetCell(new Vector2Int(x, y));
-                cellView.Setup(cellLogic, owner);
+
+                cellView.Setup(cellLogic);
 
                 _cellViews[x, y] = cellView;
             }

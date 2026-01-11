@@ -8,7 +8,6 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     [SerializeField] private Sprite defaultSprite; // Hình mặt nước
     [SerializeField] private Sprite hitSprite;  // Hình 'Nổ/Trúng' 
     [SerializeField] private Sprite missSprite; // Hình 'Nước bắn/Trượt' 
-
     [SerializeField] private Sprite fogSprite;
 
     private Color _originalColor = Color.white;
@@ -18,38 +17,46 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     public GridCell _cellLogic { get; private set; }
     public Vector2Int GridPosition => _cellLogic != null ? _cellLogic.GridPosition : Vector2Int.zero;
 
-    public void Setup(GridCell cellLogic, Owner owner)
+    public void Setup(GridCell cellLogic)
     {
         _cellLogic = cellLogic;
-        CellOwner = owner;
 
-        // Setup lớp nền (Kết quả/Nước)
+        if (fogRenderer != null) fogRenderer.sprite = fogSprite;
         if (baseRenderer != null)
         {
             baseRenderer.sprite = defaultSprite;
             _originalColor = baseRenderer.color;
         }
-        else
-        {
-            Debug.LogError($"[GridCellView] Missing Base Renderer on {gameObject.name}", this);
-        }
 
-        // Setup lớp Mây (Fog)
+        // Đồng bộ visual ngay lập tức theo data của Model
+        UpdateVisualState();
+    }
+    public void UpdateVisualState()
+    {
+        if (_cellLogic == null) return;
+
+        // 1. Xử lý Fog (Thuần túy dựa trên IsRevealed của Model)
         if (fogRenderer != null)
         {
-            fogRenderer.sprite = fogSprite;
-            // Logic quan trọng:
-            // Đối với Enemy: Mặc định là CÓ mây (chưa khám phá).
-            // Đối với Player: KHÔNG có mây (để thấy tàu mình sắp xếp).
-            bool showFog = (owner == Owner.Enemy);
-            fogRenderer.gameObject.SetActive(showFog);
+            // Nếu đã Revealed (lộ) -> Tắt fog. Ngược lại -> Bật fog.
+            bool shouldShowFog = !_cellLogic.IsRevealed;
+            fogRenderer.gameObject.SetActive(shouldShowFog);
         }
 
-#if UNITY_EDITOR
-        gameObject.name = $"{owner}_Cell_{cellLogic.GridPosition.x}_{cellLogic.GridPosition.y}";
-#endif
+        // 2. Xử lý Sprite Nền (Hit/Miss/Default)
+        if (baseRenderer != null)
+        {
+            if (_cellLogic.IsHit)
+            {
+                // Logic hiển thị Hit/Miss dựa trên việc có Unit hay không
+                baseRenderer.sprite = _cellLogic.IsOccupied ? hitSprite : missSprite;
+            }
+            else
+            {
+                baseRenderer.sprite = defaultSprite;
+            }
+        }
     }
-
     public void UpdateVisual(ShotResult shotResult)
     {
         // 1. Cập nhật Sprite kết quả ở lớp dưới
