@@ -4,8 +4,11 @@ using UnityEngine.UIElements;
 
 public class GridView : MonoBehaviour
 {
-    [Header("Visual Settings")]
+    [Header("Grid Config")]
     [SerializeField] private float cellSize = 1f;
+    [SerializeField] private float cellSpacing = 0.1f;
+
+    [Header("Visual Settings")]
     [SerializeField] private Vector3 originPosition; // Local x ,y của ô (0,0)
 
     [Header("References")]
@@ -15,12 +18,18 @@ public class GridView : MonoBehaviour
     private GridCellView[,] _cellViews;
 
     private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
+    private GridSystem _gridSystem;
 
-
-
+    /// <summary>
+    /// Khởi tạo bàn cờ và đăng ký sự kiện.
+    /// </summary>
     public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
     {
+        ClearBoard();
+        _gridSystem = gridSystem;
+
         _cellViews = new GridCellView[width, height];
+
         Vector3 halfCellOffset = new Vector3(cellSize * 0.5f, cellSize * 0.5f, 0);
 
         for (int x = 0; x < width; x++)
@@ -42,14 +51,59 @@ public class GridView : MonoBehaviour
          
                 cellView.SetVisualSize(cellSize);
 
-                var cellLogic = gridSystem.GetCell(new Vector2Int(x, y));
+                GridCell cellLogic = gridSystem.GetCell(new Vector2Int(x, y));
                 cellView.Setup(cellLogic, owner);
 
                 _cellViews[x, y] = cellView;
             }
         }
     }
+    /// <summary>
+    /// Xử lý khi Model thông báo có thay đổi (Bắn trúng/trượt)
+    /// </summary>
+    private void HandleGridStateChanged(Vector2Int position, ShotResult result)
+    {
+        if (IsValidPosition(position))
+        {
+            // O(1) Access - Cực nhanh
+            GridCellView view = _cellViews[position.x, position.y];
+            view.UpdateVisual(result);
+        }
+    }
+    /// <summary>
+    /// Dọn dẹp sạch sẽ các object cũ và hủy đăng ký sự kiện
+    /// </summary>
+    public void ClearBoard()
+    {
+        // Unsubscribe Event để tránh lỗi MissingReferenceException
+        if (_gridSystem != null)
+        {
+            _gridSystem.OnGridStateChanged -= HandleGridStateChanged;
+            _gridSystem = null;
+        }
 
+        // Xóa visual cũ
+        if (_cellViews != null)
+        {
+            foreach (var cellView in _cellViews)
+            {
+                if (cellView != null) Destroy(cellView.gameObject);
+            }
+            _cellViews = null;
+        }
+
+        // Nếu gridContainer có con lạ (do editor), xóa hết
+        foreach (Transform child in gridContainer)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    // Bảo vệ Memory Leak khi GameObject này bị hủy
+    private void OnDestroy()
+    {
+        ClearBoard();
+    }
     // --- SPAWN DUCK ---
 
     public void SpawnDuck(Vector2Int gridPos, bool isHorizontal, DuckDataSO data, DuckUnit logicUnit)

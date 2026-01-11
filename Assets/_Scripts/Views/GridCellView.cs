@@ -2,10 +2,15 @@
 
 public class GridCellView : MonoBehaviour, IGridInteractable
 {
-    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private SpriteRenderer baseRenderer;
+    [SerializeField] private SpriteRenderer fogRenderer;
+
     [SerializeField] private Sprite defaultSprite; // Hình mặt nước
     [SerializeField] private Sprite hitSprite;  // Hình 'Nổ/Trúng' 
     [SerializeField] private Sprite missSprite; // Hình 'Nước bắn/Trượt' 
+
+    [SerializeField] private Sprite fogSprite;
+
     private Color _originalColor = Color.white;
 
     // Properties
@@ -18,14 +23,26 @@ public class GridCellView : MonoBehaviour, IGridInteractable
         _cellLogic = cellLogic;
         CellOwner = owner;
 
-        if (spriteRenderer != null)
+        // Setup lớp nền (Kết quả/Nước)
+        if (baseRenderer != null)
         {
-            spriteRenderer.sprite = defaultSprite;
-            _originalColor = spriteRenderer.color;
+            baseRenderer.sprite = defaultSprite;
+            _originalColor = baseRenderer.color;
         }
         else
         {
-            Debug.LogError($"[GridCellView] Missing SpriteRenderer on {gameObject.name}", this);
+            Debug.LogError($"[GridCellView] Missing Base Renderer on {gameObject.name}", this);
+        }
+
+        // Setup lớp Mây (Fog)
+        if (fogRenderer != null)
+        {
+            fogRenderer.sprite = fogSprite;
+            // Logic quan trọng:
+            // Đối với Enemy: Mặc định là CÓ mây (chưa khám phá).
+            // Đối với Player: KHÔNG có mây (để thấy tàu mình sắp xếp).
+            bool showFog = (owner == Owner.Enemy);
+            fogRenderer.gameObject.SetActive(showFog);
         }
 
 #if UNITY_EDITOR
@@ -35,18 +52,28 @@ public class GridCellView : MonoBehaviour, IGridInteractable
 
     public void UpdateVisual(ShotResult shotResult)
     {
-        if (spriteRenderer == null) return;
-
-        switch (shotResult)
+        // 1. Cập nhật Sprite kết quả ở lớp dưới
+        if (baseRenderer != null)
         {
-            case ShotResult.Hit:
-            case ShotResult.Sunk:
-                spriteRenderer.sprite = hitSprite;
-                break;
+            switch (shotResult)
+            {
+                case ShotResult.Hit:
+                case ShotResult.Sunk:
+                    baseRenderer.sprite = hitSprite;
+                    break;
 
-            case ShotResult.Miss:
-                spriteRenderer.sprite = missSprite;
-                break;
+                case ShotResult.Miss:
+                    baseRenderer.sprite = missSprite;
+                    break;
+                    // Mặc định vẫn là defaultSprite (nước)
+            }
+        }
+
+        // 2. Xử lý Mây: Khi đã bắn (có kết quả), ta tắt lớp mây đi để lộ kết quả bên dưới
+        if (fogRenderer != null && shotResult != ShotResult.None) // Giả định None là chưa bắn
+        {
+            // Có thể thêm hiệu ứng Fade out ở đây sau này (DOTween)
+            fogRenderer.gameObject.SetActive(false);
         }
     }
     /// <summary>
@@ -55,27 +82,29 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     /// <param name="targetSize">Kích thước mong muốn (cellSize)</param>
     public void SetVisualSize(float targetSize)
     {
-        if (spriteRenderer == null || spriteRenderer.sprite == null) return;
+        // Scale base renderer
+        ScaleRenderer(baseRenderer, targetSize);
+        // Scale fog renderer
+        ScaleRenderer(fogRenderer, targetSize);
+    }
+    private void ScaleRenderer(SpriteRenderer renderer, float targetSize)
+    {
+        if (renderer == null || renderer.sprite == null) return;
 
-        // 1. Reset scale về 1 để lấy kích thước gốc chính xác
         transform.localScale = Vector3.one;
+        Vector2 spriteSize = renderer.sprite.bounds.size;
 
-        // 2. Lấy kích thước gốc của Sprite (Local Bounds)
-        // bounds.size trả về kích thước tính bằng World Unit (dựa trên PPU settings)
-        Vector2 spriteSize = spriteRenderer.sprite.bounds.size;
+        if (spriteSize.x == 0 || spriteSize.y == 0) return;
 
-        if (spriteSize.x == 0 || spriteSize.y == 0)
-        {
-            Debug.LogWarning($"[GridCellView] Sprite {gameObject.name} có kích thước 0!");
-            return;
-        }
-
-        // 3. Tính toán tỷ lệ cần thiết
-        // Công thức: Scale = Target / Original
         float scaleFactorX = targetSize / spriteSize.x;
         float scaleFactorY = targetSize / spriteSize.y;
 
-        // 4. Áp dụng Scale mới
+        // Lưu ý: Việc set transform.localScale sẽ ảnh hưởng toàn bộ object con.
+        // Nếu Fog là con của object này, chỉ cần scale object cha là đủ.
+        // Nếu Fog là object riêng biệt không phụ thuộc, cần xử lý riêng.
+        // Trong trường hợp này, giả định FogRenderer nằm trên cùng GameObject hoặc là Child,
+        // ta chỉ cần scale transform của GameObject cha là đủ.
+
         transform.localScale = new Vector3(scaleFactorX, scaleFactorY, 1f);
     }
     /// <summary>
@@ -101,8 +130,8 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     /// <param name="color">Màu cần hiển thị</param>
     public void SetColor(Color color)
     {
-        if (spriteRenderer == null) return;
-        spriteRenderer.color = color;
+        if (baseRenderer == null) return;
+        baseRenderer.color = color;
     }
 
     /// <summary>
@@ -110,7 +139,7 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     /// </summary>
     public void ResetColor()
     {
-        if (spriteRenderer == null) return;
-        spriteRenderer.color = _originalColor;
+        if (baseRenderer == null) return;
+        baseRenderer.color = _originalColor;
     }
 }

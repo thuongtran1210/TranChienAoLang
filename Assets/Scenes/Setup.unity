@@ -3141,7 +3141,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63a88dabefef89545a40f183751aa080, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GhostDuck
-  _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
   lotusLeafPrefab: {fileID: 2455922166101050043, guid: de4b42eea3cb05843b7575cb8a04ee8e, type: 3}
   duckSegmentPrefab: {fileID: 678413286085988823, guid: 815daea864cc1ca40b31afe898b76b05, type: 3}
   cellSize: {x: 1, y: 1}
