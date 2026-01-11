@@ -106,9 +106,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridCellView
   baseRenderer: {fileID: 1799527633632210396}
   fogRenderer: {fileID: 6580638561555120157}
+  iconRenderer: {fileID: 0}
   defaultSprite: {fileID: 6750033715232265413, guid: 194b517a05555eb4884a471f555be2cf, type: 3}
   hitSprite: {fileID: -2459939690561232940, guid: 7f0d8a4a9e1b1bf44ade3d04decd77d0, type: 3}
   missSprite: {fileID: 2571525915002049152, guid: 542d4c188f552364ab725ac172740bc9, type: 3}
+  sunkSprite: {fileID: 0}
   fogSprite: {fileID: 720342357113524049, guid: 134153f9226705640ba6b8f29aa68c3f, type: 3}
 --- !u!1 &4520007484140581914
 GameObject:

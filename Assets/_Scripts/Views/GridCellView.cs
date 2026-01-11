@@ -5,9 +5,12 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     [SerializeField] private SpriteRenderer baseRenderer;
     [SerializeField] private SpriteRenderer fogRenderer;
 
+    [SerializeField] private SpriteRenderer iconRenderer;
+
     [SerializeField] private Sprite defaultSprite; // Hình mặt nước
     [SerializeField] private Sprite hitSprite;  // Hình 'Nổ/Trúng' 
     [SerializeField] private Sprite missSprite; // Hình 'Nước bắn/Trượt' 
+    [SerializeField] private Sprite sunkSprite;
     [SerializeField] private Sprite fogSprite;
 
     private Color _originalColor = Color.white;
@@ -63,28 +66,31 @@ public class GridCellView : MonoBehaviour, IGridInteractable
     }
     public void UpdateVisual(ShotResult shotResult)
     {
-        // 1. Cập nhật Sprite kết quả ở lớp dưới
-        if (baseRenderer != null)
-        {
-            switch (shotResult)
-            {
-                case ShotResult.Hit:
-                case ShotResult.Sunk:
-                    baseRenderer.sprite = hitSprite;
-                    break;
+        Debug.Log($"[View] Ô {name} nhận lệnh update: {shotResult}");
+        // 1. Nếu bắn trúng, có thể cần tắt Fog ngay lập tức (Logic Game)
+        // Tùy design game, thường bắn trúng/trượt đều lộ ô đó ra
+        if (fogRenderer != null) fogRenderer.gameObject.SetActive(false);
 
-                case ShotResult.Miss:
-                    baseRenderer.sprite = missSprite;
-                    break;
-                    // Mặc định vẫn là defaultSprite (nước)
-            }
-        }
+        // 2. Hiển thị Icon trạng thái
+        if (iconRenderer == null) return;
 
-        // 2. Xử lý Mây: Khi đã bắn (có kết quả), ta tắt lớp mây đi để lộ kết quả bên dưới
-        if (fogRenderer != null && shotResult != ShotResult.None) 
+        switch (shotResult)
         {
-            // Có thể thêm hiệu ứng Fade out ở đây sau này (DOTween)
-            fogRenderer.gameObject.SetActive(false);
+            case ShotResult.Hit:
+                iconRenderer.sprite = hitSprite;
+                iconRenderer.gameObject.SetActive(true);
+                break;
+
+            case ShotResult.Miss:
+                iconRenderer.sprite = missSprite;
+                iconRenderer.gameObject.SetActive(true);
+                break;
+
+            case ShotResult.Sunk:
+                // Nếu không có sprite riêng cho Sunk thì dùng Hit
+                iconRenderer.sprite = sunkSprite != null ? sunkSprite : hitSprite;
+                iconRenderer.gameObject.SetActive(true);
+                break;
         }
     }
     /// <summary>
