@@ -81,8 +81,7 @@ public class TilemapGridView : MonoBehaviour
         }
     }
 
-    // --- 3. COORDINATE CONVERSION (QUAN TRỌNG) ---
-    // API Tilemap chính xác hơn và handle việc xoay/scale grid tốt hơn tính tay
+    // --- 3. COORDINATE CONVERSION ---
 
     public Vector3 GetWorldCenterPosition(Vector2Int gridPos)
     {
