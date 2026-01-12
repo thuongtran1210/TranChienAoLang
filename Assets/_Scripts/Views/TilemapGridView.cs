@@ -30,6 +30,7 @@ public class TilemapGridView : MonoBehaviour
 
     private void RefreshBoard(int width, int height, Owner owner)
     {
+        Debug.Log($"[TilemapGridView] Refreshing Board for: {owner} | Width: {width} | Tile: {(_waterTile != null ? _waterTile.name : "NULL")}");
         _baseTilemap.ClearAllTiles();
         _fogTilemap.ClearAllTiles();
         _iconTilemap.ClearAllTiles();

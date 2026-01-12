@@ -16,6 +16,7 @@ public class GridController : MonoBehaviour, IGridContext
     [SerializeField] private TilemapGridView _tilemapGridView;
 
     [Header("Settings")]
+    [SerializeField] Owner _gridOwner;
     [SerializeField] private int _width = 10;
     [SerializeField] private int _height = 10;
 
@@ -26,7 +27,7 @@ public class GridController : MonoBehaviour, IGridContext
 
     // --- CORE DATA ---
     private IGridSystem _gridSystem;
-    public Owner GridOwner { get; private set; }
+    public Owner GridOwner => _gridOwner;
     public IGridSystem GridSystem => _gridSystem;
 
     // --- EVENTS  ---
@@ -45,7 +46,7 @@ public class GridController : MonoBehaviour, IGridContext
     public void Initialize(IGridSystem gridSystem, Owner owner)
     {
         _gridSystem = gridSystem;
-        GridOwner = owner;
+        _gridOwner = owner;
 
         // DI Setup
         _cameraController.SetupCamera(_width, _height);

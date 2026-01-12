@@ -24,6 +24,10 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private BattleEventChannelSO _battleEventChannel;
     [SerializeField] private GridInputChannelSO _gridInputChannel;
 
+    [Header("--- LAYOUT CONFIG ---")]
+    [Tooltip("Khoảng cách giữa 2 bàn cờ")]
+    [SerializeField] private float _distanceBetweenBoards = 15f;
+
     [Header("--- GAME BALANCE CONFIG ---")]
     [SerializeField] private GameBalanceConfigSO _gameBalanceConfig;
 
@@ -65,8 +69,12 @@ public class GameManager : MonoBehaviour, IGameContext
         _gridInputController.RegisterGrid(_enemyGrid);
 
         // 2. Khởi tạo dữ liệu Grid
-        _playerGridManager.Initialize(new GridSystem(10, 10), Owner.Player);
+
+        _enemyGridManager.transform.position = new Vector3(_distanceBetweenBoards, 0, 0);
         _enemyGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
+
+        _playerGridManager.transform.position = new Vector3(_distanceBetweenBoards, 0, 0);
+        _playerGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
 
         // 3. Setup AI
         EnemyAIController aiController = new EnemyAIController();
