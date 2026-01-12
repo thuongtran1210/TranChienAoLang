@@ -1,7 +1,7 @@
 ﻿// _Scripts/AI/EnemyAIController.cs
 using System.Collections.Generic;
 using UnityEngine;
-
+using System.Linq;
 public class EnemyAIController : IEnemyAI
 {
     private enum AIState { Searching, Targeting }
@@ -23,6 +23,7 @@ public class EnemyAIController : IEnemyAI
         {
             for (int y = 0; y < height; y++)
             {
+              
                 if ((x + y) % 2 == 0)
                 {
                     _availableParityMoves.Add(new Vector2Int(x, y));
@@ -31,8 +32,63 @@ public class EnemyAIController : IEnemyAI
         }
         ShuffleList(_availableParityMoves);
     }
-    // --- CORE LOGIC ---
 
+    public AIAction GetDecision(IGridSystem playerGrid, DuckEnergySystem myEnergy, List<DuckSkillSO> availableSkills)
+    {
+        // 1. Tính toán vị trí bắn tốt nhất (Logic cũ của bạn)
+        Vector2Int bestShootingPos = GetNextTargetPosition(playerGrid);
+
+        // 2. Logic kiểm tra Skill (Simple Heuristic)
+        // Nếu đang ở chế độ Targeting (đã bắn trúng tàu) VÀ có đủ năng lượng -> Thử dùng Skill công diện rộng
+        if (_currentState == AIState.Targeting && availableSkills != null && availableSkills.Count > 0)
+        {
+            // Lấy skill mạnh nhất có thể dùng (ví dụ skill tốn nhiều mana nhất)
+            var affordableSkill = availableSkills
+                .Where(s => myEnergy.CurrentEnergy >= s.energyCost)
+                .OrderByDescending(s => s.energyCost)
+                .FirstOrDefault();
+
+            if (affordableSkill != null)
+            {
+                // Quyết định dùng Skill tại vị trí bắn tốt nhất
+                Debug.Log($"[AI] Decided to use skill: {affordableSkill.skillName}");
+                return AIAction.Skill(bestShootingPos, affordableSkill);
+            }
+        }
+
+        // 3. Fallback: Nếu không dùng skill, bắn thường
+        return AIAction.Attack(bestShootingPos);
+    }
+
+    // --- CORE LOGIC ---
+    private Vector2Int GetNextTargetPosition(IGridSystem playerGrid)
+    {
+        // Ưu tiên bắn các ô trong Stack (Chế độ Targeting)
+        if (_currentState == AIState.Targeting && _potentialTargets.Count > 0)
+        {
+            return GetTargetFromStack(playerGrid);
+        }
+
+        // Nếu không có target trong stack, bắn theo Parity (Searching)
+        return GetParityHuntingShot(playerGrid);
+    }
+    private Vector2Int GetTargetFromStack(IGridSystem grid)
+    {
+        while (_potentialTargets.Count > 0)
+        {
+            Vector2Int candidate = _potentialTargets.Pop();
+
+            // Validate: Chỉ trả về nếu ô đó hợp lệ và chưa bắn
+            if (grid.IsValidPosition(candidate) && !grid.GetCell(candidate).IsHit)
+            {
+                return candidate;
+            }
+        }
+
+        // Nếu Stack rỗng -> Quay về Search
+        _currentState = AIState.Searching;
+        return GetParityHuntingShot(grid);
+    }
     public Vector2Int GetNextTarget(IGridSystem playerGrid)
     {
         // Ưu tiên bắn các ô trong Stack (Chế độ Targeting)
@@ -49,36 +105,38 @@ public class EnemyAIController : IEnemyAI
     // Parity Hunting 
     private Vector2Int GetParityHuntingShot(IGridSystem grid)
     {
-        // Lấy từ túi (List) ra thay vì Random.Range trong vòng lặp while(true)
-        while (_availableParityMoves != null && _availableParityMoves.Count > 0)
+        for (int i = _availableParityMoves.Count - 1; i >= 0; i--)
         {
-            // Lấy phần tử cuối (hiệu suất O(1) khi remove)
-            int lastIndex = _availableParityMoves.Count - 1;
-            Vector2Int candidate = _availableParityMoves[lastIndex];
-            _availableParityMoves.RemoveAt(lastIndex);
+            Vector2Int pos = _availableParityMoves[i];
+            _availableParityMoves.RemoveAt(i); // O(1) swap remove would be better but List remove is O(N)
 
-            // Kiểm tra: Chỉ bắn nếu ô này CHƯA bị bắn (có thể đã bị bắn trong lúc Targeting)
-            if (grid.IsValidPosition(candidate) && !grid.GetCell(candidate).IsHit)
+            if (grid.IsValidPosition(pos) && !grid.GetCell(pos).IsHit)
             {
-                return candidate;
+                return pos;
             }
         }
 
-        // Fallback an toàn: Nếu hết nước đi Parity (hiếm khi xảy ra), 
-        // quét tuyến tính tìm bất kỳ ô trống nào còn lại
-        for (int x = 0; x < grid.Width; x++)
+        // Fallback khẩn cấp: Quét tuyến tính nếu hết Parity moves (trường hợp hiếm)
+        return GetRandomValidCell(grid);
+    }
+    private Vector2Int GetRandomValidCell(IGridSystem grid)
+    {
+        // Simple random fallback
+        int w = 10; // Nên lấy từ GridSystem
+        int h = 10;
+        int attempts = 100;
+        while (attempts > 0)
         {
-            for (int y = 0; y < grid.Height; y++)
-            {
-                Vector2Int pos = new Vector2Int(x, y);
-                if (!grid.GetCell(pos).IsHit) return pos;
-            }
+            int x = Random.Range(0, w);
+            int y = Random.Range(0, h);
+            Vector2Int pos = new Vector2Int(x, y);
+            if (!grid.GetCell(pos).IsHit) return pos;
+            attempts--;
         }
-
-        return Vector2Int.zero; // Should not happen if game flow is correct
+        return Vector2Int.zero;
     }
 
-    // Chế độ 2: Nhắm bắn (Targeting)
+    // Chế độ 2: Nhắm bắn 
     private Vector2Int GetTargetingShot(IGridSystem grid)
     {
         while (_potentialTargets.Count > 0)
