@@ -50,39 +50,17 @@ public class DuckView : MonoBehaviour
         }
 
         Bind(unit.Data, unit.IsHorizontal);
+        unit.OnHealthChanged += HandleHealthChanged;
+        unit.OnSunk += HandleSunk;
     }
+    private void HandleHealthChanged(int current, int max) { /* TODO: Cập nhật visual */ }
+    private void HandleSunk() { /*TODO:  Play animation chìm */ }
 
     /// <summary>
     /// Hàm này được gọi ngay sau khi Instantiate DuckUnit_Base
     /// </summary>
     /// <param name="data">Dữ liệu con vịt</param>
     /// <param name="isHorizontal">Hướng đặt</param>
-    public void Initialize(DuckDataSO data, bool isHorizontal)
-    {
-        // 1. Xóa các visual cũ (nếu có - dành cho object pooling)
-        ClearOldVisuals();
-
-        // 2. Xử lý xoay
-        // Nếu nằm dọc thì xoay 90 độ (hoặc -90 tùy hệ toạ độ của bạn)
-        // Reset về identity trước để tính toán cho chuẩn
-        transform.localRotation = Quaternion.identity;
-        if (!isHorizontal)
-        {
-            transform.Rotate(0, 0, -90);
-        }
-
-        // 3. Spawn từng đốt (Segment)
-        for (int i = 0; i < data.size; i++)
-        {
-            CreateSegment(i, data);
-        }
-
-        // 4. Căn giữa (Centering) - Tùy chọn
-        // Nếu bạn muốn pivot của DuckUnit nằm ở ô đầu tiên (gốc tọa độ) -> KHÔNG cần căn giữa.
-        // Nếu bạn muốn pivot nằm ở chính giữa con vịt -> Cần code căn giữa giống GhostDuck.
-        // --> Với Logic Game Grid: Thường Pivot nằm ở ô đầu tiên (Head) là dễ tính toán nhất.
-    }
-
     private void CreateSegment(int index, DuckDataSO data)
     {
         // Tạo container rỗng
