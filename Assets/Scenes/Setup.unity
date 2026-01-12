@@ -2119,7 +2119,7 @@ MonoBehaviour:
   _baseTilemap: {fileID: 181813210}
   _fogTilemap: {fileID: 2079073293}
   _iconTilemap: {fileID: 1347193983}
-  _highlightTilemap: {fileID: 0}
+  _highlightTilemap: {fileID: 820004935}
   _waterTile: {fileID: 11400000, guid: 6bed794a596b36942be1c29409a90a25, type: 2}
   _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
   _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
