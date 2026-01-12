@@ -68,13 +68,14 @@ public class GameManager : MonoBehaviour, IGameContext
         _gridInputController.RegisterGrid(_playerGrid);
         _gridInputController.RegisterGrid(_enemyGrid);
 
+        float offset = _distanceBetweenBoards / 2f;
         // 2. Khởi tạo dữ liệu Grid
 
-        _enemyGridManager.transform.position = new Vector3(_distanceBetweenBoards, 0, 0);
+        _enemyGridManager.transform.position = new Vector3(offset, 0, 0);
         _enemyGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
 
-        _playerGridManager.transform.position = new Vector3(_distanceBetweenBoards, 0, 0);
-        _playerGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
+        _playerGridManager.transform.position = new Vector3(-offset, 0, 0);
+        _playerGridManager.Initialize(new GridSystem(10, 10), Owner.Player);
 
         // 3. Setup AI
         EnemyAIController aiController = new EnemyAIController();
