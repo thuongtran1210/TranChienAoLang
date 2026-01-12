@@ -1,71 +1,65 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-// Áp dụng Clean Code: Class này chỉ lo việc hiển thị Visual
+// [SOLID] Single Responsibility Principle: Class này chỉ chịu trách nhiệm
+// lắng nghe sự kiện (Event Listener) và ra lệnh cho View.
+// Nó KHÔNG chịu trách nhiệm về việc vẽ tile hay quản lý danh sách object.
 public class GridHighlightManager : MonoBehaviour
 {
+    [Header("Core Dependencies")]
+    [SerializeField] private TilemapGridView _tilemapGridView;
+
     [Header("Settings")]
-    [SerializeField] private Owner _gridOwner; 
-    [SerializeField] private BattleEventChannelSO _battleEvents; 
+    [SerializeField] private Owner _gridOwner;
+    [SerializeField] private BattleEventChannelSO _battleEvents;
 
-    private Dictionary<Vector2Int, GridCellView> _cellViews = new Dictionary<Vector2Int, GridCellView>();
-    private List<GridCellView> _activeHighlights = new List<GridCellView>();
-
-    // --- 1. ĐĂNG KÝ SỰ KIỆN ---
+    // --- 1. ĐĂNG KÝ SỰ KIỆN (OBSERVER PATTERN) ---
     private void OnEnable()
     {
         if (_battleEvents != null)
         {
-            _battleEvents.OnGridHighlightRequested += HandleEffectOnGrid;
-            _battleEvents.OnGridHighlightClearRequested += ClearHighlight;
+            _battleEvents.OnGridHighlightRequested += HandleHighlightRequested;
+            _battleEvents.OnGridHighlightClearRequested += HandleClearRequested;
+        }
+        else
+        {
+            Debug.LogError($"{name}: BattleEventChannelSO chưa được gán!", this);
         }
     }
+
     private void OnDisable()
     {
         if (_battleEvents != null)
         {
-            _battleEvents.OnGridHighlightRequested -= HandleEffectOnGrid;
-            _battleEvents.OnGridHighlightClearRequested -= ClearHighlight;
+            _battleEvents.OnGridHighlightRequested -= HandleHighlightRequested;
+            _battleEvents.OnGridHighlightClearRequested -= HandleClearRequested;
         }
     }
-    // --- 2. XỬ LÝ SỰ KIỆN CÓ LỌC  ---
-    private void HandleEffectOnGrid(Owner target, List<Vector2Int> positions, Color color)
+
+    // --- 2. XỬ LÝ LOGIC ---
+    public void Initialize(TilemapGridView tilemapView, Owner owner)
     {
+        _tilemapGridView = tilemapView;
+        _gridOwner = owner;
+    }
+
+    private void HandleHighlightRequested(Owner target, List<Vector2Int> positions, Color color)
+    {
+        // Guard Clause: Nếu không phải lưới của mình thì bỏ qua
         if (target != _gridOwner) return;
 
-        HighlightPositions(positions, color);
-    }
-
-    public void Initialize(Dictionary<Vector2Int, GridCellView> cellViews)
-    {
-        _cellViews = cellViews;
-    }
-
-    /// <summary>
-    /// Highlight danh sách các vị trí với màu sắc chỉ định
-    /// </summary>
-    public void HighlightPositions(List<Vector2Int> positions, Color color)
-    {
-        ClearHighlight();
-        foreach (var pos in positions)
+        if (_tilemapGridView != null)
         {
-            if (_cellViews.TryGetValue(pos, out GridCellView cellView))
-            {
-                cellView.SetColor(color);
-                _activeHighlights.Add(cellView);
-            }
+            _tilemapGridView.HighlightCells(positions, color);
         }
     }
 
-    /// <summary>
-    /// Xóa toàn bộ highlight hiện tại 
-    /// </summary>
-    public void ClearHighlight()
+    private void HandleClearRequested()
     {
-        foreach (var cell in _activeHighlights)
+        // Chỉ đơn giản là gọi hàm Clear của View
+        if (_tilemapGridView != null)
         {
-            cell.ResetColor();
+            _tilemapGridView.ClearHighlights();
         }
-        _activeHighlights.Clear();
     }
 }

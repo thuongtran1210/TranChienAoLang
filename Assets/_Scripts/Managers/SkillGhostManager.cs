@@ -7,7 +7,7 @@ public class SkillGhostManager : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private GameBalanceConfigSO _gameBalanceConfig;
-    [SerializeField] private SpriteRenderer _ghostRenderer; // Kéo SpriteRenderer của Ghost vào đây
+    [SerializeField] private SpriteRenderer _ghostRenderer; 
 
     private void Awake()
     {

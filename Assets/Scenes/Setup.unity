@@ -240,6 +240,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 790573392d94d5447b74a57b1a8081bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridHighlightManager
+  _tilemapGridView: {fileID: 165998141}
   _gridOwner: 0
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!1 &165998140
@@ -892,7 +893,7 @@ MonoBehaviour:
   _enemyEnergySystem: {fileID: 2108850430}
   _battleEventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
-  _distanceBetweenBoards: 15
+  _distanceBetweenBoards: 12
   _gameBalanceConfig: {fileID: 11400000, guid: 306dda77abf7ec948a3a11f57f35a21e, type: 2}
   vsAI: 1
 --- !u!1 &400194531
@@ -2236,7 +2237,7 @@ Tilemap:
   m_TileColorArray: []
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.45490196}
   m_Origin: {x: 0, y: 0, z: 0}
   m_Size: {x: 0, y: 0, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
@@ -3659,7 +3660,7 @@ GameObject:
   - component: {fileID: 1889328862}
   - component: {fileID: 1889328863}
   m_Layer: 0
-  m_Name: Skill Ghost VisualManager
+  m_Name: Skill Ghost Visual Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
