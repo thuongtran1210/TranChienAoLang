@@ -10,15 +10,15 @@ public class GridController : MonoBehaviour, IGridContext
     [Header("Dependencies")]
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private GridInputController _inputController;
-    [SerializeField] private GridView _gridView;
+
+    [SerializeField] private UnitVisualManager _unitVisualManager;
     [SerializeField] private GhostDuckView _ghostDuck;
-    private TilemapGridView _tilemapGridView;
+    [SerializeField] private TilemapGridView _tilemapGridView;
 
     [Header("Settings")]
     [SerializeField] private int _width = 10;
     [SerializeField] private int _height = 10;
-    [SerializeField] private float _cellSize = 1f;
-    [SerializeField] private LayerMask gridLayer;
+
 
     [Header("EVENTS CHANEL")]
     [SerializeField] private BattleEventChannelSO _battleChannel;
@@ -46,48 +46,46 @@ public class GridController : MonoBehaviour, IGridContext
     {
         _gridSystem = gridSystem;
         GridOwner = owner;
+
+        // DI Setup
         _cameraController.SetupCamera(_width, _height);
         _inputController.Initialize(_cameraController.GetCamera());
+
+        // Init View Systems
         _tilemapGridView.InitializeBoard(_width, _height, (GridSystem)_gridSystem, owner);
+        _unitVisualManager.Initialize(_tilemapGridView); 
 
     }
 
     private void OnEnable()
     {
-        // Tự đăng ký với Input Controller (Dependency Inversion principle)
         if (_inputController != null) _inputController.RegisterGrid(this);
-
         _gridInputChannel.OnGridCellClicked += HandleCellClicked;
 
-        // Đăng ký lắng nghe sự kiện highlight
         if (_battleChannel != null)
         {
             _battleChannel.OnGridHighlightRequested += HandleHighlightRequest;
-            _battleChannel.OnGridHighlightClearRequested += _gridView.ClearHighlights;
+            _battleChannel.OnGridHighlightClearRequested += _tilemapGridView.ClearHighlights; // Đổi sang Tilemap
         }
-        if (GridSystem != null) GridSystem.OnGridStateChanged += _gridView.UpdateCellState;
+        // GridSystem event đã được TilemapGridView tự đăng ký trong InitializeBoard
     }
 
     private void OnDisable()
     {
         if (_inputController != null) _inputController.UnregisterGrid(this);
-
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
 
         if (_battleChannel != null)
         {
             _battleChannel.OnGridHighlightRequested -= HandleHighlightRequest;
-            _battleChannel.OnGridHighlightClearRequested -= _gridView.ClearHighlights;
+            _battleChannel.OnGridHighlightClearRequested -= _tilemapGridView.ClearHighlights;
         }
-
-        if (GridSystem != null) GridSystem.OnGridStateChanged -= _gridView.UpdateCellState;
     }
+
     // --- INPUT HANDLING ---
     private void HandleCellClicked(Vector2Int gridPos, Owner clickedOwner)
     {
         if (clickedOwner != this.GridOwner) return;
-
-
         OnGridClicked?.Invoke(this, gridPos);
     }
 
@@ -99,18 +97,16 @@ public class GridController : MonoBehaviour, IGridContext
     /// </summary>
     public bool TryPlaceShip(Vector3 worldPos, DuckDataSO data, bool isHorizontal)
     {
-  
         if (!IsPlacementValid(worldPos, data, isHorizontal)) return false;
 
-        Vector2Int gridPos = _gridView.WorldToGridPosition(worldPos);
-
+        // Sử dụng Tilemap để tính toán tọa độ Grid
+        Vector2Int gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
 
         DuckUnit newDuck = new DuckUnit(data, gridPos, isHorizontal);
-
-
         _gridSystem.PlaceUnit(newDuck, gridPos, isHorizontal);
 
-        _gridView.SpawnDuck(gridPos, isHorizontal, data, newDuck);
+        // Gọi UnitVisualManager để spawn GameObject con vịt
+        _unitVisualManager.SpawnDuck(gridPos, isHorizontal, data);
 
         return true;
     }
@@ -120,72 +116,34 @@ public class GridController : MonoBehaviour, IGridContext
     public bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal)
     {
         if (_gridSystem == null || data == null) return false;
-        Vector2Int gridPos = _gridView.WorldToGridPosition(worldPos);
+        Vector2Int gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
         return _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
     }
     private void HandleHighlightRequest(Owner target, List<Vector2Int> positions, Color color)
     {
-        // 1. FILTER
         if (target != this.GridOwner) return;
 
-        // 2. Thực hiện highlight
-        _gridView.HighlightCells(positions, color);
+        // Gọi TilemapGridView để highlight
+        _tilemapGridView.HighlightCells(positions, color);
 
-        // Optional: Auto clear sau 2 giây
-        StopAllCoroutines(); 
+        StopAllCoroutines();
         StartCoroutine(AutoClearHighlightDelay(2f));
     }
     private System.Collections.IEnumerator AutoClearHighlightDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
-        _gridView.ClearHighlights();
+        _tilemapGridView.ClearHighlights();
     }
-    private void BindGridEvents()
-    {
-        if (_gridSystem != null)
-        {
-            _gridSystem.OnGridStateChanged -= _gridView.UpdateCellState;
-            _gridSystem.OnGridStateChanged += _gridView.UpdateCellState;
-        }
-    }
-
-
-
-
 
     // --- HELPER METHODS ---
     public Vector3 GetWorldPosition(Vector2Int gridPos)
     {
-        // Tính toán vị trí World dựa trên Grid Index
-        float offset = _cellSize * 0.5f;
-
-        Vector3 localPos = new Vector3(
-            (gridPos.x * _cellSize) + offset,
-            (gridPos.y * _cellSize) + offset,
-            0
-        );
-
-        return transform.TransformPoint(localPos);
+        return _tilemapGridView.GetWorldCenterPosition(gridPos);
     }
     public bool IsWorldPositionInside(Vector3 worldPos, out Vector2Int gridPos)
     {
-        gridPos = Vector2Int.zero;
-
-        // 1. Chuyển World -> Local
-        Vector3 localPos = transform.InverseTransformPoint(worldPos);
-
-        // 2.Tính toán dựa trên cellSize 
-        int x = Mathf.FloorToInt(localPos.x / _cellSize);
-        int y = Mathf.FloorToInt(localPos.y / _cellSize);
-
-        // 3. Kiểm tra biên
-        if (x >= 0 && x < _width && y >= 0 && y < _height)
-        {
-            gridPos = new Vector2Int(x, y);
-            return true;
-        }
-
-        return false;
+        gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
+        return _gridSystem.IsValidPosition(gridPos);
     }
 
 
@@ -194,13 +152,7 @@ public class GridController : MonoBehaviour, IGridContext
 
     public Vector2Int GetGridPosition(Vector3 worldPos)
     {
-    
-        Vector3 localPos = transform.InverseTransformPoint(worldPos);
-
-        int x = Mathf.FloorToInt(localPos.x / _cellSize);
-        int y = Mathf.FloorToInt(localPos.y / _cellSize);
-
-        return new Vector2Int(x, y);
+        return _tilemapGridView.WorldToGridPosition(worldPos);
     }
 
 
@@ -239,17 +191,13 @@ public class GridController : MonoBehaviour, IGridContext
 
     public void OnDuckPlacedSuccess(DuckUnit unit, Vector2Int pos)
     {
-        // Gọi GridView để spawn con vịt thật
-        _gridView.SpawnDuck(pos, unit.IsHorizontal, unit.Data, unit);
-
-        // Ẩn ghost đi để chuẩn bị cho con tiếp theo (nếu cần)
+        _unitVisualManager.SpawnDuck(pos, unit.IsHorizontal, unit.Data);
         HideGhost();
     }
 
     public void OnSetupPhaseCompleted()
     {
         HideGhost();
-        Debug.Log($"[{GridOwner}] Setup Phase Completed.");
     }
 
     #endregion

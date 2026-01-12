@@ -8,28 +8,34 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private Tilemap _baseTilemap;
     [SerializeField] private Tilemap _fogTilemap;
     [SerializeField] private Tilemap _iconTilemap;
+    [SerializeField] private Tilemap _highlightTilemap; // Tách layer highlight riêng để dễ quản lý
 
-    [Header("Tile Assets (ScriptableObjects)")]
-    // Bạn tạo các Tile Asset trong Project (Create -> 2D -> Tiles -> Rectangular Tile)
+    [Header("Tile Assets")]
     [SerializeField] private TileBase _waterTile;
     [SerializeField] private TileBase _fogTile;
     [SerializeField] private TileBase _hitTile;
     [SerializeField] private TileBase _missTile;
+    [SerializeField] private TileBase _highlightTile; // Tile màu trắng bán trong suốt cho highlight
 
     private GridSystem _gridSystem;
 
-    // --- 1. KHỞI TẠO BẢN ĐỒ (BATCHING TỐI ĐA) ---
+    // --- 1. SETUP ---
     public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
     {
         _gridSystem = gridSystem;
+        _gridSystem.OnGridStateChanged += HandleGridStateChanged;
 
-        // Clear map cũ
+        RefreshBoard(width, height, owner);
+    }
+
+    private void RefreshBoard(int width, int height, Owner owner)
+    {
         _baseTilemap.ClearAllTiles();
         _fogTilemap.ClearAllTiles();
         _iconTilemap.ClearAllTiles();
+        _highlightTilemap.ClearAllTiles();
 
-        // Tối ưu: Sử dụng SetTiles (Số nhiều) thay vì SetTile trong vòng lặp để giảm overhead
-        // Tạo mảng vị trí và mảng Tile
+        // Batching setup
         Vector3Int[] positions = new Vector3Int[width * height];
         TileBase[] baseTiles = new TileBase[width * height];
         TileBase[] fogTiles = new TileBase[width * height];
@@ -40,41 +46,33 @@ public class TilemapGridView : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 positions[index] = new Vector3Int(x, y, 0);
-
-                // Setup Base Tile (Nước)
                 baseTiles[index] = _waterTile;
 
-                // Setup Fog: Nếu không phải map của Player thì che mù
+                // Logic Fog of War
                 if (owner != Owner.Player)
                 {
                     fogTiles[index] = _fogTile;
                 }
-
                 index++;
             }
         }
 
-        // Apply 1 lần duy nhất cho toàn bộ map -> SIÊU NHANH
         _baseTilemap.SetTiles(positions, baseTiles);
         _fogTilemap.SetTiles(positions, fogTiles);
-
-        // Đăng ký sự kiện lắng nghe thay đổi
-        _gridSystem.OnGridStateChanged += HandleGridStateChanged;
     }
 
-    // --- 2. CẬP NHẬT TRẠNG THÁI (RUNTIME) ---
+    // --- 2. STATE HANDLING ---
     private void HandleGridStateChanged(Vector2Int gridPos, ShotResult result)
     {
         Vector3Int tilePos = new Vector3Int(gridPos.x, gridPos.y, 0);
 
-        // Xóa sương mù ở vị trí đó (bất kể trúng hay trượt đều lộ diện)
+        // Luôn xóa sương mù khi có tương tác
         _fogTilemap.SetTile(tilePos, null);
 
-        // Đặt Icon tương ứng
         switch (result)
         {
             case ShotResult.Hit:
-            case ShotResult.Sunk: // Sunk cũng dùng hình Hit hoặc hình riêng tùy bạn
+            case ShotResult.Sunk:
                 _iconTilemap.SetTile(tilePos, _hitTile);
                 break;
             case ShotResult.Miss:
@@ -83,28 +81,49 @@ public class TilemapGridView : MonoBehaviour
         }
     }
 
-    // --- 3. CLEANUP ---
+    // --- 3. COORDINATE CONVERSION (QUAN TRỌNG) ---
+    // API Tilemap chính xác hơn và handle việc xoay/scale grid tốt hơn tính tay
+
+    public Vector3 GetWorldCenterPosition(Vector2Int gridPos)
+    {
+        Vector3Int cellPos = new Vector3Int(gridPos.x, gridPos.y, 0);
+        return _baseTilemap.GetCellCenterWorld(cellPos);
+    }
+
+    public Vector2Int WorldToGridPosition(Vector3 worldPos)
+    {
+        Vector3Int cellPos = _baseTilemap.WorldToCell(worldPos);
+        return new Vector2Int(cellPos.x, cellPos.y);
+    }
+
+    // --- 4. HIGHLIGHT SYSTEM ---
+    public void HighlightCells(List<Vector2Int> positions, Color color)
+    {
+        _highlightTilemap.ClearAllTiles();
+        _highlightTilemap.color = color; // Tint màu cho toàn bộ tilemap highlight
+
+        Vector3Int[] tilePositions = new Vector3Int[positions.Count];
+        TileBase[] tiles = new TileBase[positions.Count];
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            tilePositions[i] = new Vector3Int(positions[i].x, positions[i].y, 0);
+            tiles[i] = _highlightTile;
+        }
+
+        _highlightTilemap.SetTiles(tilePositions, tiles);
+    }
+
+    public void ClearHighlights()
+    {
+        _highlightTilemap.ClearAllTiles();
+    }
+
     private void OnDestroy()
     {
         if (_gridSystem != null)
         {
             _gridSystem.OnGridStateChanged -= HandleGridStateChanged;
         }
-    }
-
-    // --- 4. HIGHLIGHT SYSTEM (Dùng Tilemap Color hoặc Tile Overlay) ---
-    public void HighlightCell(Vector2Int pos, Color color)
-    {
-        Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
-
-        // Cách 1: Set Color trực tiếp cho Tile (Cần Tilemap 'Lock Color' tắt)
-        _baseTilemap.SetTileFlags(tilePos, TileFlags.None);
-        _baseTilemap.SetColor(tilePos, color);
-    }
-
-    public void ClearHighlight(Vector2Int pos)
-    {
-        Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
-        _baseTilemap.SetColor(tilePos, Color.white);
     }
 }
