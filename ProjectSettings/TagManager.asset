@@ -41,11 +41,17 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Board
+  - name: Layer_Base
     uniqueID: 1266679205
     locked: 0
-  - name: Water
+  - name: Layer_Fog
     uniqueID: 3070980239
+    locked: 0
+  - name: Layer_Icons
+    uniqueID: 4215639475
+    locked: 0
+  - name: Layer_Highlight
+    uniqueID: 3080318117
     locked: 0
   m_RenderingLayers:
   - Default
