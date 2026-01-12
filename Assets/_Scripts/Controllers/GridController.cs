@@ -12,6 +12,7 @@ public class GridController : MonoBehaviour, IGridContext
     [SerializeField] private GridInputController _inputController;
     [SerializeField] private GridView _gridView;
     [SerializeField] private GhostDuckView _ghostDuck;
+    private TilemapGridView _tilemapGridView;
 
     [Header("Settings")]
     [SerializeField] private int _width = 10;
@@ -47,7 +48,7 @@ public class GridController : MonoBehaviour, IGridContext
         GridOwner = owner;
         _cameraController.SetupCamera(_width, _height);
         _inputController.Initialize(_cameraController.GetCamera());
-        _gridView.InitializeBoard(_width, _height, (GridSystem)_gridSystem, owner);
+        _tilemapGridView.InitializeBoard(_width, _height, (GridSystem)_gridSystem, owner);
 
     }
 
