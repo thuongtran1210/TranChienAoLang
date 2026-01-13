@@ -63,6 +63,7 @@ public abstract class DuckSkillSO : ScriptableObject
 
         // 4. Feedback
         ApplyVisualFeedback(affectedArea, eventChannel, targetOwner);
+
         eventChannel.RaiseSkillDeselected();
         return true;
     }

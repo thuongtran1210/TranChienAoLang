@@ -282,7 +282,9 @@ MonoBehaviour:
   _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
   _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
   _missTile: {fileID: 11400000, guid: 58ce8caac65cef14a8cfbe07cbc21bb5, type: 2}
-  _highlightTile: {fileID: 0}
+  _highlightTile: {fileID: 11400000, guid: cef40d72d05d4c548b783ec9040a55b2, type: 2}
+  _fadeDuration: 0.2
+  _iconPopDuration: 0.4
 --- !u!156049354 &165998142
 Grid:
   m_ObjectHideFlags: 0
@@ -2450,6 +2452,8 @@ MonoBehaviour:
   _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
   _missTile: {fileID: 11400000, guid: 58ce8caac65cef14a8cfbe07cbc21bb5, type: 2}
   _highlightTile: {fileID: 0}
+  _fadeDuration: 0.2
+  _iconPopDuration: 0.4
 --- !u!114 &1068560336
 MonoBehaviour:
   m_ObjectHideFlags: 0
