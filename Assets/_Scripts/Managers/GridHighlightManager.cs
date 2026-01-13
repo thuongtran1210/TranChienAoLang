@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 // [SOLID] Single Responsibility Principle: Class này chỉ chịu trách nhiệm
@@ -13,6 +14,8 @@ public class GridHighlightManager : MonoBehaviour
     [SerializeField] private Owner _gridOwner;
     [SerializeField] private BattleEventChannelSO _battleEvents;
 
+    private Coroutine _activeImpactCoroutine;
+
     // --- 1. ĐĂNG KÝ SỰ KIỆN (OBSERVER PATTERN) ---
     private void OnEnable()
     {
@@ -20,6 +23,7 @@ public class GridHighlightManager : MonoBehaviour
         {
             _battleEvents.OnGridHighlightRequested += HandleHighlightRequested;
             _battleEvents.OnGridHighlightClearRequested += HandleClearRequested;
+            _battleEvents.OnSkillImpactVisualRequested += HandleImpactVisualRequested;
         }
         else
         {
@@ -33,6 +37,7 @@ public class GridHighlightManager : MonoBehaviour
         {
             _battleEvents.OnGridHighlightRequested -= HandleHighlightRequested;
             _battleEvents.OnGridHighlightClearRequested -= HandleClearRequested;
+            _battleEvents.OnSkillImpactVisualRequested -= HandleImpactVisualRequested;
         }
     }
 
@@ -45,7 +50,6 @@ public class GridHighlightManager : MonoBehaviour
 
     private void HandleHighlightRequested(Owner target, List<Vector2Int> positions, Color color)
     {
-        // Guard Clause: Nếu không phải lưới của mình thì bỏ qua
         if (target != _gridOwner) return;
 
         if (_tilemapGridView != null)
@@ -60,6 +64,36 @@ public class GridHighlightManager : MonoBehaviour
         if (_tilemapGridView != null)
         {
             _tilemapGridView.ClearHighlights();
+        }
+    }
+    private void HandleImpactVisualRequested(Owner target, List<Vector2Int> positions, Color color, float duration)
+    {
+        if (target != _gridOwner) return;
+
+        // Bắt đầu Coroutine hiệu ứng
+        StopImpactEffect();
+        _activeImpactCoroutine = StartCoroutine(ImpactEffectRoutine(positions, color, duration));
+    }
+
+    private IEnumerator ImpactEffectRoutine(List<Vector2Int> positions, Color color, float duration)
+    {
+        // 1. Hiển thị Highlight với màu của Skill (thường đậm hơn hoặc sáng hơn)
+        _tilemapGridView.HighlightCells(positions, color);
+
+        // 2. Chờ thời gian hiệu ứng (Code xịn có thể dùng Tweening ở đây để Fade out)
+        yield return new WaitForSeconds(duration);
+
+        // 3. Tự động tắt sau khi xong
+        _tilemapGridView.ClearHighlights();
+        _activeImpactCoroutine = null;
+    }
+
+    private void StopImpactEffect()
+    {
+        if (_activeImpactCoroutine != null)
+        {
+            StopCoroutine(_activeImpactCoroutine);
+            _activeImpactCoroutine = null;
         }
     }
 }

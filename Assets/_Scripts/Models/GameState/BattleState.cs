@@ -197,7 +197,6 @@ public class BattleState : GameStateBase
         // Kiểm tra lại Game Over vì trạng thái có thể thay đổi trong lúc chờ
         if (!_isGameOver)
         {
-            // BƯỚC QUAN TRỌNG: Lấy quyết định từ AI (Action Intent)
             // Truyền context: Grid người chơi, Năng lượng hiện tại của AI, List Skill AI có
             AIAction action = _enemyAI.GetDecision(_playerGrid.GridSystem, _enemyEnergy, _enemyAvailableSkills);
 
@@ -212,7 +211,7 @@ public class BattleState : GameStateBase
             {
                 case AIActionType.CastSkill:
                     // Nếu AI muốn dùng Skill -> Gọi Coroutine xử lý Skill
-                    StartCoroutine(ExecuteAISkillRoutine(action.SkillToCast, action.TargetPosition));
+                    _gameContext.StartCoroutine(ExecuteAISkillRoutine(action.SkillToCast, action.TargetPosition));
                     break;
 
                 case AIActionType.NormalAttack:

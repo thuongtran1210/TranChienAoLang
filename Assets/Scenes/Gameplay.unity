@@ -207,7 +207,7 @@ GameObject:
   - component: {fileID: 163678688}
   - component: {fileID: 163678689}
   m_Layer: 0
-  m_Name: Grid Hightlight Manager
+  m_Name: Player Grid Hightlight Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -221,12 +221,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 163678687}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 935333836}
+  m_Father: {fileID: 165998143}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &163678689
 MonoBehaviour:
@@ -314,6 +314,7 @@ Transform:
   - {fileID: 1307352820}
   - {fileID: 1757607321}
   - {fileID: 1274258409069990156}
+  - {fileID: 163678688}
   m_Father: {fileID: 63412344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &165998144
@@ -338,6 +339,53 @@ MonoBehaviour:
   _height: 10
   _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
+--- !u!1 &181673641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 181673642}
+  - component: {fileID: 181673643}
+  m_Layer: 0
+  m_Name: 'Enemy Grid Hightlight Manager '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &181673642
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181673641}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -20, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1068560334}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &181673643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181673641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 790573392d94d5447b74a57b1a8081bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridHighlightManager
+  _tilemapGridView: {fileID: 165998141}
+  _gridOwner: 1
+  _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!1 &181813207
 GameObject:
   m_ObjectHideFlags: 0
@@ -1976,7 +2024,6 @@ Transform:
   - {fileID: 398420240}
   - {fileID: 967563623}
   - {fileID: 565100308}
-  - {fileID: 163678688}
   - {fileID: 475255855}
   - {fileID: 684107921}
   - {fileID: 1889328862}
@@ -2379,6 +2426,7 @@ Transform:
   - {fileID: 820004933}
   - {fileID: 1347193981}
   - {fileID: 94351572}
+  - {fileID: 181673642}
   m_Father: {fileID: 63412344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1068560335

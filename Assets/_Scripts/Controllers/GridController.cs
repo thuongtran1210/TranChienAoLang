@@ -20,7 +20,6 @@ public class GridController : MonoBehaviour, IGridContext
     [SerializeField] private int _width = 10;
     [SerializeField] private int _height = 10;
 
-
     [Header("EVENTS CHANEL")]
     [SerializeField] private BattleEventChannelSO _battleChannel;
     [SerializeField] private GridInputChannelSO _gridInputChannel;

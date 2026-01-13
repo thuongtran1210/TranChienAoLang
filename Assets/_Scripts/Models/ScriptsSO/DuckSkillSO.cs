@@ -19,7 +19,10 @@ public abstract class DuckSkillSO : ScriptableObject
 
     [Header("Visual Config")]
     public Color validColor = Color.green;  
-    public Color invalidColor = Color.red; 
+    public Color invalidColor = Color.red;
+
+    public Color executionColor = new Color(1f, 0.5f, 0f, 0.8f); // Màu cam/đậm hơn mặc định
+    public float impactDuration = 0.3f; // Thời gian nháy
 
     [TextArea] public string description;
 
@@ -60,11 +63,13 @@ public abstract class DuckSkillSO : ScriptableObject
 
         // 4. Feedback
         ApplyVisualFeedback(affectedArea, eventChannel, targetOwner);
+        eventChannel.RaiseSkillDeselected();
         return true;
     }
 
     protected virtual void ApplyVisualFeedback(List<Vector2Int> area, BattleEventChannelSO channel, Owner target)
     {
-        channel.RaiseGridHighlight(target, area, skillColor);
+        channel.RaiseSkillImpactVisual(target, area, executionColor, impactDuration);
+
     }
 }

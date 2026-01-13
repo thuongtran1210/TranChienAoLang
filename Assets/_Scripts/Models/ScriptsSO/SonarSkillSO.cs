@@ -6,7 +6,7 @@ public class SonarSkillSO : DuckSkillSO
 {
     [SerializeField] private int _radius = 1;
 
-    // Tách biệt logic tính toán
+
     public override List<Vector2Int> GetAffectedPositions(Vector2Int pivotPos, IGridSystem targetGrid)
     {
         List<Vector2Int> area = new List<Vector2Int>();
@@ -36,7 +36,6 @@ public class SonarSkillSO : DuckSkillSO
 
             List<Vector2Int> area = GetAffectedPositions(pivotPos, targetGrid);
 
-            // Logic Game: Đếm số tàu
             int foundParts = 0;
             foreach (var pos in area)
             {
@@ -50,7 +49,7 @@ public class SonarSkillSO : DuckSkillSO
             // Visual
             base.ApplyVisualFeedback(area, eventChannel, targetOwner);
 
-            // Text Feedback riêng của Sonar
+         
             string msg = foundParts > 0 ? $"Sonar detected {foundParts} signals!" : "No signals.";
             eventChannel.RaiseSkillFeedback(msg, pivotPos);
 

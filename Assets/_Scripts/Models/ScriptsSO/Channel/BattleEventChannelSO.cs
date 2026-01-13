@@ -6,7 +6,7 @@ using UnityEngine.Events;
 public class BattleEventChannelSO : ScriptableObject
 {
     [Header("--- DEBUG CONTROL ---")]
-    [SerializeField] private bool _enableDebugLogs = false; // Bật tắt log tại đây
+    [SerializeField] private bool _enableDebugLogs = false; 
     [SerializeField][TextArea] private string _channelDescription = "Quản lý sự kiện trong Battle Phase";
 
     [Header("Combat Events")]
@@ -25,6 +25,8 @@ public class BattleEventChannelSO : ScriptableObject
 
     public UnityAction<Sprite, Vector2Int, Vector3, bool> OnSkillGhostUpdate;
     public UnityAction OnSkillGhostClear;
+
+    public UnityAction<Owner, List<Vector2Int>, Color, float> OnSkillImpactVisualRequested;
 
     // --- RAISERS ---
 
@@ -76,6 +78,12 @@ public class BattleEventChannelSO : ScriptableObject
     }
 
     public void RaiseSkillGhostClear() => OnSkillGhostClear?.Invoke();
+
+    public void RaiseSkillImpactVisual(Owner target, List<Vector2Int> cells, Color color, float duration = 0.5f)
+    {
+        LogEvent($"Impact Visual Requested: {target}, Count={cells.Count}, Duration={duration}s");
+        OnSkillImpactVisualRequested?.Invoke(target, cells, color, duration);
+    }
 
     // --- HELPER LOGIC ---
     private void LogEvent(string message)

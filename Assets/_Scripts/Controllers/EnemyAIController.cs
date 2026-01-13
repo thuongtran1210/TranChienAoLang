@@ -36,28 +36,71 @@ public class EnemyAIController : IEnemyAI
     public AIAction GetDecision(IGridSystem playerGrid, DuckEnergySystem myEnergy, List<DuckSkillSO> availableSkills)
     {
         // 1. Tính toán vị trí bắn tốt nhất (Logic cũ của bạn)
-        Vector2Int bestShootingPos = GetNextTargetPosition(playerGrid);
-
-        // 2. Logic kiểm tra Skill (Simple Heuristic)
-        // Nếu đang ở chế độ Targeting (đã bắn trúng tàu) VÀ có đủ năng lượng -> Thử dùng Skill công diện rộng
-        if (_currentState == AIState.Targeting && availableSkills != null && availableSkills.Count > 0)
+        Vector2Int bestNormalShotPos = GetNextTargetPosition(playerGrid);
+        // 2. Logic dùng Skill nâng cao
+        if (availableSkills != null && availableSkills.Count > 0)
         {
-            // Lấy skill mạnh nhất có thể dùng (ví dụ skill tốn nhiều mana nhất)
-            var affordableSkill = availableSkills
-                .Where(s => myEnergy.CurrentEnergy >= s.energyCost)
-                .OrderByDescending(s => s.energyCost)
-                .FirstOrDefault();
-
-            if (affordableSkill != null)
+            // Cố gắng tìm một hành động dùng Skill hợp lý
+            if (TryGetBestSkillAction(playerGrid, myEnergy, availableSkills, bestNormalShotPos, out AIAction skillAction))
             {
-                // Quyết định dùng Skill tại vị trí bắn tốt nhất
-                Debug.Log($"[AI] Decided to use skill: {affordableSkill.skillName}");
-                return AIAction.Skill(bestShootingPos, affordableSkill);
+                return skillAction;
             }
         }
 
         // 3. Fallback: Nếu không dùng skill, bắn thường
-        return AIAction.Attack(bestShootingPos);
+        return AIAction.Attack(bestNormalShotPos);
+    }
+    private bool TryGetBestSkillAction(IGridSystem grid, DuckEnergySystem energy, List<DuckSkillSO> skills, Vector2Int targetPos, out AIAction action)
+    {
+        action = default;
+
+        // Lọc ra các skill đủ năng lượng để dùng
+        var affordableSkills = skills.Where(s => energy.CurrentEnergy >= s.energyCost).ToList();
+
+        if (affordableSkills.Count == 0) return false;
+
+        // --- TRƯỜNG HỢP 1: ĐANG SĂN TÌM (SEARCHING) ---
+        if (_currentState == AIState.Searching)
+        {
+            // Ưu tiên dùng Skill có vùng ảnh hưởng lớn (Sonar/Radar) để tìm địch
+            // Giả sử: Skill có AreaSize > 1x1 là skill diện rộng
+            var scoutSkill = affordableSkills
+                .OrderByDescending(s => s.areaSize.x * s.areaSize.y) // Ưu tiên vùng lớn nhất
+                .FirstOrDefault();
+
+            // Chỉ dùng nếu skill đó thực sự lớn (ví dụ 3x3) và AI đang bí nước đi hoặc chỉ muốn check map
+            if (scoutSkill != null && (scoutSkill.areaSize.x > 1 || scoutSkill.areaSize.y > 1))
+            {
+                // Chọn một vị trí ngẫu nhiên trên bản đồ chưa bị bắn để dùng skill soi
+                Vector2Int randomScanPos = GetRandomValidCell(grid);
+                action = AIAction.Skill(randomScanPos, scoutSkill);
+                Debug.Log($"[AI - Searching] Casting scout skill: {scoutSkill.skillName}");
+                return true;
+            }
+        }
+
+        // --- TRƯỜNG HỢP 2: ĐANG NHẮM BẮN (TARGETING) ---
+        if (_currentState == AIState.Targeting)
+        {
+            // Ưu tiên skill gây sát thương (TargetType == Enemy hoặc Any)
+            var attackSkills = affordableSkills
+                .Where(s => s.targetType == SkillTargetType.Enemy || s.targetType == SkillTargetType.Any)
+                .OrderByDescending(s => s.energyCost) // Dùng skill mạnh nhất (thường là tốn mana nhất)
+                .ToList();
+
+            foreach (var skill in attackSkills)
+            {
+                // Logic thông minh: Kiểm tra xem dùng skill tại vị trí targetPos có hiệu quả không?
+                // (Ví dụ: Skill 3x3 bắn vào targetPos liệu có trùm lên các ô chưa bắn không?)
+
+                // Ở đây ta đơn giản hóa: Nếu là skill damage, cứ nã vào vị trí đang nhắm
+                action = AIAction.Skill(targetPos, skill);
+                Debug.Log($"[AI - Targeting] Casting attack skill: {skill.skillName}");
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // --- CORE LOGIC ---
