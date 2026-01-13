@@ -61,43 +61,53 @@ public class TilemapGridView : MonoBehaviour
 
     private void HandleTileIndicatorRequested(Owner target, List<Vector2Int> positions, TileBase tileAsset, float duration)
     {
+        Debug.Log($"[TilemapGridView] Indicator Requested. Count: {positions.Count}, Tile: {tileAsset?.name}");
+        if (tileAsset == null) Debug.LogError("TileAsset is NULL!");
+
         StartCoroutine(ShowTemporaryTiles(positions, tileAsset, duration));
     }
+
     private void HandleSkillImpactVisualRequested(Owner owner, List<Vector2Int> positions, Color color, float duration)
     {
+        Debug.Log($"[TilemapGridView] Skill VFX Requested. Count: {positions.Count}, Color: {color}");
         StartCoroutine(ShowVfxRoutine(positions, color, duration));
     }
     private IEnumerator ShowVfxRoutine(List<Vector2Int> positions, Color color, float duration)
     {
-        // 1. Fail fast
         if (_vfxTilemap == null)
         {
-            Debug.LogWarning("TilemapGridView: Missing _vfxTilemap reference!");
+            Debug.LogError("TilemapGridView: _vfxTilemap is NULL!");
             yield break;
         }
 
-        // 2. Clear cũ (nếu có hiệu ứng nào đang chạy dở) & Setup màu
-        _vfxTilemap.ClearAllTiles();
-        _vfxTilemap.color = color; // Gán màu tint cho toàn bộ Tilemap
+        // Debug xem Highlight tile có null không
+        if (_highlightTile == null) Debug.LogError("TilemapGridView: _highlightTile is NULL inside Inspector!");
 
-        // 3. Set Tiles
+        _vfxTilemap.ClearAllTiles();
+        _vfxTilemap.color = color;
+
         Vector3Int[] tilePositions = new Vector3Int[positions.Count];
         TileBase[] tiles = new TileBase[positions.Count];
 
         for (int i = 0; i < positions.Count; i++)
         {
             tilePositions[i] = new Vector3Int(positions[i].x, positions[i].y, 0);
-            tiles[i] = _highlightTile; 
+            tiles[i] = _highlightTile;
         }
 
         _vfxTilemap.SetTiles(tilePositions, tiles);
 
-        // 4. Chờ (Display Duration)
+        // Kiểm tra xem Tile có thực sự được set không
+        if (positions.Count > 0)
+        {
+            var checkPos = new Vector3Int(positions[0].x, positions[0].y, 0);
+            Debug.Log($"Checking tile at {checkPos}: {_vfxTilemap.GetTile(checkPos)}");
+        }
+
         yield return new WaitForSeconds(duration);
 
-        // 5. Cleanup
         _vfxTilemap.ClearAllTiles();
-        _vfxTilemap.color = Color.white; // Reset màu về trắng
+        _vfxTilemap.color = Color.white;
     }
     private IEnumerator ShowTemporaryHighlightRoutine(List<Vector2Int> positions, Color color, float duration)
     {
