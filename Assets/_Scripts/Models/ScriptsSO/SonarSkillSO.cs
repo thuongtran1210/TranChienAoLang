@@ -68,10 +68,9 @@ public class SonarSkillSO : DuckSkillSO
         if (foundParts > 0)
         {
             // CASE A: Tìm thấy địch
-            eventChannel.RaiseTileIndicator(detectedPositions, _detectedIndicatorTile, impactDuration);
+            eventChannel.RaiseTileIndicator(actualTargetOwner, detectedPositions, _detectedIndicatorTile, impactDuration);
 
             eventChannel.RaiseSkillImpactVisual(actualTargetOwner, scanArea, _scanAreaColor, impactDuration);
-
             string msg = $"Sonar detected {foundParts} signals!";
             eventChannel.RaiseSkillFeedback(msg, pivotPos);
         }

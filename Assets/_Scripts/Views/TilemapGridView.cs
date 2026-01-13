@@ -9,14 +9,16 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private Tilemap _baseTilemap;
     [SerializeField] private Tilemap _fogTilemap;
     [SerializeField] private Tilemap _iconTilemap;
-    [SerializeField] private Tilemap _highlightTilemap; 
+    [SerializeField] private Tilemap _highlightTilemap;
+    [SerializeField] private Tilemap _vfxTilemap;
 
     [Header("Tile Assets")]
     [SerializeField] private TileBase _waterTile;
     [SerializeField] private TileBase _fogTile;
     [SerializeField] private TileBase _hitTile;
     [SerializeField] private TileBase _missTile;
-    [SerializeField] private TileBase _highlightTile; 
+    [SerializeField] private TileBase _highlightTile;
+
 
     [Header("Visual Settings")]
     [SerializeField] private float _fadeDuration = 2f;
@@ -24,6 +26,7 @@ public class TilemapGridView : MonoBehaviour
 
     private Coroutine _highlightFadeRoutine;
     private GridSystem _gridSystem;
+    private Owner _myOwner;
 
     [Header("Event Listeners")]
     [SerializeField] private BattleEventChannelSO _battleEvents;
@@ -33,6 +36,7 @@ public class TilemapGridView : MonoBehaviour
         if (_battleEvents != null)
         {
             _battleEvents.OnTileIndicatorRequested += HandleTileIndicatorRequested;
+            _battleEvents.OnSkillImpactVisualRequested += HandleSkillImpactVisualRequested;
         }
     }
 
@@ -41,31 +45,100 @@ public class TilemapGridView : MonoBehaviour
         if (_battleEvents != null)
         {
             _battleEvents.OnTileIndicatorRequested -= HandleTileIndicatorRequested;
+            _battleEvents.OnSkillImpactVisualRequested -= HandleSkillImpactVisualRequested;
         }
+    }
+    // --- 1. SETUP ---
+    public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
+    {
+        _gridSystem = gridSystem;
+        _myOwner = owner; // [IMPORTANT] Cache lại Owner khi khởi tạo
+
+        _gridSystem.OnGridStateChanged += HandleGridStateChanged;
+        RefreshBoard(width, height, owner);
     }
     // ---  INDICATOR SYSTEM ---
 
-    private void HandleTileIndicatorRequested(List<Vector2Int> positions, TileBase tileAsset, float duration)
+    private void HandleTileIndicatorRequested(Owner target, List<Vector2Int> positions, TileBase tileAsset, float duration)
     {
         StartCoroutine(ShowTemporaryTiles(positions, tileAsset, duration));
+    }
+    private void HandleSkillImpactVisualRequested(Owner owner, List<Vector2Int> positions, Color color, float duration)
+    {
+        StartCoroutine(ShowVfxRoutine(positions, color, duration));
+    }
+    private IEnumerator ShowVfxRoutine(List<Vector2Int> positions, Color color, float duration)
+    {
+        // 1. Fail fast
+        if (_vfxTilemap == null)
+        {
+            Debug.LogWarning("TilemapGridView: Missing _vfxTilemap reference!");
+            yield break;
+        }
+
+        // 2. Clear cũ (nếu có hiệu ứng nào đang chạy dở) & Setup màu
+        _vfxTilemap.ClearAllTiles();
+        _vfxTilemap.color = color; // Gán màu tint cho toàn bộ Tilemap
+
+        // 3. Set Tiles
+        Vector3Int[] tilePositions = new Vector3Int[positions.Count];
+        TileBase[] tiles = new TileBase[positions.Count];
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            tilePositions[i] = new Vector3Int(positions[i].x, positions[i].y, 0);
+            tiles[i] = _highlightTile; 
+        }
+
+        _vfxTilemap.SetTiles(tilePositions, tiles);
+
+        // 4. Chờ (Display Duration)
+        yield return new WaitForSeconds(duration);
+
+        // 5. Cleanup
+        _vfxTilemap.ClearAllTiles();
+        _vfxTilemap.color = Color.white; // Reset màu về trắng
+    }
+    private IEnumerator ShowTemporaryHighlightRoutine(List<Vector2Int> positions, Color color, float duration)
+    {
+        // 1. Lưu lại trạng thái cũ của Highlight Tilemap (nếu cần) hoặc chỉ đơn giản là vẽ đè
+        // Ở đây ta dùng _highlightTilemap để hiển thị vùng Scan
+
+        _highlightTilemap.ClearAllTiles();
+
+        Vector3Int[] tilePositions = new Vector3Int[positions.Count];
+        TileBase[] tiles = new TileBase[positions.Count];
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            tilePositions[i] = new Vector3Int(positions[i].x, positions[i].y, 0);
+            tiles[i] = _highlightTile; // Sử dụng tile trắng cơ bản để tint màu
+        }
+
+        _highlightTilemap.SetTiles(tilePositions, tiles);
+        _highlightTilemap.color = color; // Áp dụng màu từ SkillSO (VD: màu xám trong suốt)
+
+        // 2. Chờ hết thời gian hiệu ứng
+        yield return new WaitForSeconds(duration);
+
+        // 3. Clean up (Fade out nhẹ nhàng sẽ đẹp hơn, nhưng ở đây làm đơn giản trước)
+        _highlightTilemap.ClearAllTiles();
+        _highlightTilemap.color = Color.white; // Reset về mặc định
     }
 
     private IEnumerator ShowTemporaryTiles(List<Vector2Int> positions, TileBase tileAsset, float duration)
     {
-        // 1. Vẽ Tile lên _iconTilemap (hoặc _highlightTilemap tùy ý đồ design)
-        // Lưu ý: Nếu dùng _iconTilemap, cần cẩn thận để không ghi đè lên các icon Hit/Miss đã có.
-        // Tốt nhất là chỉ vẽ lên các ô TRỐNG trên _iconTilemap, hoặc dùng một Tilemap riêng cho VFX (Layer trên cùng).
-        // Ở đây tôi giả định vẽ lên _highlightTilemap (hoặc bạn tạo thêm _vfxTilemap) để an toàn.
+        // 1. Vẽ Tile lên 
 
         foreach (var pos in positions)
         {
             Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
 
             // Vẽ đè lên (hoặc kiểm tra nếu cần)
-            _iconTilemap.SetTile(tilePos, tileAsset);
+            _vfxTilemap.SetTile(tilePos, tileAsset);
 
             // Juice: Pop effect
-            StartCoroutine(AnimateTilePop(tilePos, _iconTilemap));
+            StartCoroutine(AnimateTilePop(tilePos, _vfxTilemap));
         }
 
         // 2. Chờ
@@ -76,22 +149,14 @@ public class TilemapGridView : MonoBehaviour
         {
             Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
 
-            // Chỉ xóa nếu đó vẫn là tile chỉ dấu (tránh xóa nhầm Hit/Miss nếu user bắn vào đó ngay lập tức)
-            if (_iconTilemap.GetTile(tilePos) == tileAsset)
+            if (_vfxTilemap.GetTile(tilePos) == tileAsset)
             {
-                _iconTilemap.SetTile(tilePos, null);
+                _vfxTilemap.SetTile(tilePos, null);
             }
         }
     }
 
-    // --- 1. SETUP ---
-    public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
-    {
-        _gridSystem = gridSystem;
-        _gridSystem.OnGridStateChanged += HandleGridStateChanged;
 
-        RefreshBoard(width, height, owner);
-    }
 
     private void RefreshBoard(int width, int height, Owner owner)
     {
