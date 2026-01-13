@@ -89,19 +89,21 @@ public class GridSystem : IGridSystem
 
     public ShotResult ShootAt(Vector2Int position)
     {
-        // 1. Kiểm tra biên
+        // 1. Validation (Fail Fast)
         if (!IsValidPosition(position)) return ShotResult.Invalid;
 
         GridCell cell = Cells[position.x, position.y];
 
-        // 2. Kiểm tra đã bắn chưa
-        if (cell.IsHit) return ShotResult.Invalid; 
+        // 2. Check State
+        if (cell.IsHit) return ShotResult.Invalid;
 
-        // 3. Đánh dấu bắn
+        // 3. Update State
         cell.IsHit = true;
-        ShotResult result = ShotResult.Miss;
 
-        // 4. Xử lý trúng/trượt
+        // Mặc định là Miss
+        ShotResult finalResult = ShotResult.Miss;
+
+        // 4. Calculate Logic
         if (cell.IsOccupied && cell.OccupiedUnit != null)
         {
             cell.OccupiedUnit.TakeDamage();
@@ -109,15 +111,19 @@ public class GridSystem : IGridSystem
             if (cell.OccupiedUnit.IsSunk)
             {
                 AliveUnitsCount--;
-                return ShotResult.Sunk;
+                finalResult = ShotResult.Sunk;
             }
-            return ShotResult.Hit;
+            else
+            {
+                finalResult = ShotResult.Hit;
+            }
         }
 
-        // 5. Bắn Event ra ngoài
-        OnGridStateChanged?.Invoke(position, result);
+        // 5. Notify Observers View 
+        OnGridStateChanged?.Invoke(position, finalResult);
 
-        return result;
+        // 6. Return Result
+        return finalResult;
     }
 
     public bool IsValidPosition(Vector2Int pos)
