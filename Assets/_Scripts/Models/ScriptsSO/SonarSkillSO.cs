@@ -37,18 +37,26 @@ public class SonarSkillSO : DuckSkillSO
 
     public override bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
     {
-        // 1. Validate & 2. Get Area (Giữ nguyên)
+        // 1. Validate & 2. Get Area 
         if (!targetGrid.IsValidPosition(pivotPos)) return false;
+        Owner actualTargetOwner = targetOwner;
+
+        // Kiểm tra xem GridSystem có cung cấp thông tin Owner không (Dựa trên context SkillInteractionController có dùng GridOwner)
+        if (targetGrid is IGridLogic gridLogic)
+        {
+            actualTargetOwner = gridLogic.GridOwner;
+        }
+
+        // 2. Get Area
         List<Vector2Int> scanArea = GetAffectedPositions(pivotPos, targetGrid);
 
-        // 3. Logic tìm kiếm (Giữ nguyên)
+        // 3. Logic tìm kiếm
         List<Vector2Int> detectedPositions = new List<Vector2Int>();
         int foundParts = 0;
 
         foreach (var pos in scanArea)
         {
             var cell = targetGrid.GetCell(pos);
-            // Logic: Có Unit và chưa bị bắn trúng
             if (cell != null && cell.OccupiedUnit != null && !cell.IsHit)
             {
                 foundParts++;
@@ -56,26 +64,24 @@ public class SonarSkillSO : DuckSkillSO
             }
         }
 
-        // 4. Xử lý Visual Feedback 
+        // 4. Xử lý Visual Feedback
         if (foundParts > 0)
         {
-            // CASE A: Tìm thấy địch -> Hiển thị Tile chỉ dấu (Indicator)
+            // CASE A: Tìm thấy địch
             eventChannel.RaiseTileIndicator(detectedPositions, _detectedIndicatorTile, impactDuration);
 
-            // Vẫn có thể highlight vùng quét mờ nhạt nếu muốn
-            eventChannel.RaiseSkillImpactVisual(targetOwner, scanArea, _scanAreaColor, impactDuration);
+            eventChannel.RaiseSkillImpactVisual(actualTargetOwner, scanArea, _scanAreaColor, impactDuration);
 
             string msg = $"Sonar detected {foundParts} signals!";
             eventChannel.RaiseSkillFeedback(msg, pivotPos);
         }
         else
         {
-            // CASE B: Không thấy gì -> Chỉ highlight màu vùng quét
-            eventChannel.RaiseSkillImpactVisual(targetOwner, scanArea, _scanAreaColor, impactDuration);
+            // CASE B: Không thấy gì
+            eventChannel.RaiseSkillImpactVisual(actualTargetOwner, scanArea, _scanAreaColor, impactDuration);
             eventChannel.RaiseSkillFeedback("No signals.", pivotPos);
         }
 
-        // 5. Cleanup
         return true;
     }
 }

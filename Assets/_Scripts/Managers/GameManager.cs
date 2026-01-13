@@ -192,7 +192,7 @@ public class GameManager : MonoBehaviour, IGameContext
     }
     private IEnumerator TransitionToBattle()
     {
-        yield return new WaitForSeconds(1.0f); // Delay nhẹ cho mượt
+        yield return new WaitForSeconds(1.0f); 
         ChangeState(_battleState);
     }
 
@@ -201,15 +201,11 @@ public class GameManager : MonoBehaviour, IGameContext
     {
         Debug.Log(playerWon ? "Game Over: VICTORY!" : "Game Over: DEFEAT!");
 
-        // Logic hiển thị UI EndGame ở đây
-        // if (playerWon) winPanel.SetActive(true); else losePanel.SetActive(true);
-
-        // Ngắt input bằng cách set state về null hoặc một EndGameState
         _currentState = null;
     }
 
-    // 3. Coroutine: MonoBehaviour đã có sẵn, nhưng Interface yêu cầu nên ta để tường minh
-    // (Thực tế không cần viết lại vì MonoBehaviour đã implement rồi, nhưng để rõ ràng):
+    // 3. Coroutine
+
     public new Coroutine StartCoroutine(IEnumerator routine)
     {
         return base.StartCoroutine(routine);
