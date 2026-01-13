@@ -56,11 +56,10 @@ public class SonarSkillSO : DuckSkillSO
             }
         }
 
-        // 4. Xử lý Visual Feedback (CẬP NHẬT MỚI)
+        // 4. Xử lý Visual Feedback 
         if (foundParts > 0)
         {
             // CASE A: Tìm thấy địch -> Hiển thị Tile chỉ dấu (Indicator)
-            // Gửi qua channel mới tạo
             eventChannel.RaiseTileIndicator(detectedPositions, _detectedIndicatorTile, impactDuration);
 
             // Vẫn có thể highlight vùng quét mờ nhạt nếu muốn
@@ -77,7 +76,6 @@ public class SonarSkillSO : DuckSkillSO
         }
 
         // 5. Cleanup
-        eventChannel.RaiseSkillDeselected();
         return true;
     }
 }
