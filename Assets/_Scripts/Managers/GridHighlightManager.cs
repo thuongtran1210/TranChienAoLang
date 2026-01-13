@@ -4,7 +4,6 @@ using UnityEngine;
 
 // [SOLID] Single Responsibility Principle: Class này chỉ chịu trách nhiệm
 // lắng nghe sự kiện (Event Listener) và ra lệnh cho View.
-// Nó KHÔNG chịu trách nhiệm về việc vẽ tile hay quản lý danh sách object.
 public class GridHighlightManager : MonoBehaviour
 {
     [Header("Core Dependencies")]

@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [CreateAssetMenu(menuName = "Duck Battle/Skills/Sonar Skill")]
 public class SonarSkillSO : DuckSkillSO
 {
     [SerializeField] private int _radius = 1;
-    [Tooltip("Màu hiển thị khi PHÁT HIỆN mục tiêu (Ping trúng địch)")]
-    [SerializeField] private Color _detectedColor = Color.red;
+    [Header("Visual Feedback")]
+    [Tooltip("Tile hiển thị khi PHÁT HIỆN mục tiêu")]
+    [SerializeField] private TileBase _detectedIndicatorTile; // [MOD] Thay Color bằng TileBase
 
-    [Tooltip("Màu hiển thị khi KHÔNG tìm thấy gì (Ping vào vùng nước trống)")]
-    [SerializeField] private Color _nothingFoundColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+    [Tooltip("Màu hiển thị vùng quét (khi không thấy gì hoặc nền)")]
+    [SerializeField] private Color _scanAreaColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
 
 
     public override List<Vector2Int> GetAffectedPositions(Vector2Int pivotPos, IGridSystem targetGrid)
@@ -35,19 +37,18 @@ public class SonarSkillSO : DuckSkillSO
 
     public override bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
     {
-        // 1. Validate Input
+        // 1. Validate & 2. Get Area (Giữ nguyên)
         if (!targetGrid.IsValidPosition(pivotPos)) return false;
-
-        // 2. Lấy vùng ảnh hưởng
         List<Vector2Int> scanArea = GetAffectedPositions(pivotPos, targetGrid);
 
-        // 3. Xử lý Logic tìm kiếm (Core Logic)
+        // 3. Logic tìm kiếm (Giữ nguyên)
         List<Vector2Int> detectedPositions = new List<Vector2Int>();
         int foundParts = 0;
 
         foreach (var pos in scanArea)
         {
             var cell = targetGrid.GetCell(pos);
+            // Logic: Có Unit và chưa bị bắn trúng
             if (cell != null && cell.OccupiedUnit != null && !cell.IsHit)
             {
                 foundParts++;
@@ -55,28 +56,28 @@ public class SonarSkillSO : DuckSkillSO
             }
         }
 
-        // 4. Xử lý Visual Feedback (Context-Aware)
+        // 4. Xử lý Visual Feedback (CẬP NHẬT MỚI)
         if (foundParts > 0)
         {
-            // CASE A: Tìm thấy địch -> Chỉ hiển thị vị trí của địch (Ping!)
-            // Bạn có thể đổi thành hiển thị cả vùng scanArea với màu cảnh báo nếu muốn giấu vị trí chính xác.
-            // Ở đây tôi chọn hiển thị vị trí chính xác để đúng chất "Sonar".
-            eventChannel.RaiseSkillImpactVisual(targetOwner, detectedPositions, _detectedColor, impactDuration);
+            // CASE A: Tìm thấy địch -> Hiển thị Tile chỉ dấu (Indicator)
+            // Gửi qua channel mới tạo
+            eventChannel.RaiseTileIndicator(detectedPositions, _detectedIndicatorTile, impactDuration);
+
+            // Vẫn có thể highlight vùng quét mờ nhạt nếu muốn
+            eventChannel.RaiseSkillImpactVisual(targetOwner, scanArea, _scanAreaColor, impactDuration);
 
             string msg = $"Sonar detected {foundParts} signals!";
             eventChannel.RaiseSkillFeedback(msg, pivotPos);
         }
         else
         {
-            // CASE B: Không thấy gì -> Hiển thị vùng đã quét để người chơi biết skill đã hoạt động
-            eventChannel.RaiseSkillImpactVisual(targetOwner, scanArea, _nothingFoundColor, impactDuration);
-
+            // CASE B: Không thấy gì -> Chỉ highlight màu vùng quét
+            eventChannel.RaiseSkillImpactVisual(targetOwner, scanArea, _scanAreaColor, impactDuration);
             eventChannel.RaiseSkillFeedback("No signals.", pivotPos);
         }
 
         // 5. Cleanup
         eventChannel.RaiseSkillDeselected();
-
         return true;
     }
 }

@@ -27,5 +27,5 @@ MonoBehaviour:
   ghostSprite: {fileID: -9018408806940583333, guid: 1868a66aa027d254398fda3a64cf2e9d, type: 3}
   areaSize: {x: 3, y: 3}
   _radius: 1
-  _detectedColor: {r: 1, g: 0, b: 0, a: 1}
-  _nothingFoundColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+  _detectedIndicatorTile: {fileID: 11400000, guid: 542fe1eb2e1717546bade1cae80da5c3, type: 2}
+  _scanAreaColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}

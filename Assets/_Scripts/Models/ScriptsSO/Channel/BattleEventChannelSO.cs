@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Tilemaps;
 
 [CreateAssetMenu(menuName = "Duck Battle/Battle Event Channel", order = 1)]
 public class BattleEventChannelSO : ScriptableObject
@@ -22,7 +23,7 @@ public class BattleEventChannelSO : ScriptableObject
     [Header("Visual Events")]
     public UnityAction<Owner, List<Vector2Int>, Color> OnGridHighlightRequested;
     public UnityAction OnGridHighlightClearRequested;
-
+    public UnityAction<List<Vector2Int>, TileBase, float> OnTileIndicatorRequested;
     public UnityAction<Sprite, Vector2Int, Vector3, bool> OnSkillGhostUpdate;
     public UnityAction OnSkillGhostClear;
 
@@ -83,6 +84,11 @@ public class BattleEventChannelSO : ScriptableObject
     {
         LogEvent($"Impact Visual Requested: {target}, Count={cells.Count}, Duration={duration}s");
         OnSkillImpactVisualRequested?.Invoke(target, cells, color, duration);
+    }
+    public void RaiseTileIndicator(List<Vector2Int> cells, TileBase tile, float duration = 1.0f)
+    {
+        LogEvent($"Tile Indicator Requested: Count={cells.Count}, Duration={duration}");
+        OnTileIndicatorRequested?.Invoke(cells, tile, duration);
     }
 
     // --- HELPER LOGIC ---

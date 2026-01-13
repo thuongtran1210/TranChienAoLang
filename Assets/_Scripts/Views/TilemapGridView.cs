@@ -19,11 +19,70 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private TileBase _highlightTile; 
 
     [Header("Visual Settings")]
-    [SerializeField] private float _fadeDuration = 0.2f;
-    [SerializeField] private float _iconPopDuration = 0.4f;
+    [SerializeField] private float _fadeDuration = 2f;
+    [SerializeField] private float _iconPopDuration = 2f;
 
     private Coroutine _highlightFadeRoutine;
     private GridSystem _gridSystem;
+
+    [Header("Event Listeners")]
+    [SerializeField] private BattleEventChannelSO _battleEvents;
+
+    private void OnEnable()
+    {
+        if (_battleEvents != null)
+        {
+            _battleEvents.OnTileIndicatorRequested += HandleTileIndicatorRequested;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (_battleEvents != null)
+        {
+            _battleEvents.OnTileIndicatorRequested -= HandleTileIndicatorRequested;
+        }
+    }
+    // ---  INDICATOR SYSTEM ---
+
+    private void HandleTileIndicatorRequested(List<Vector2Int> positions, TileBase tileAsset, float duration)
+    {
+        StartCoroutine(ShowTemporaryTiles(positions, tileAsset, duration));
+    }
+
+    private IEnumerator ShowTemporaryTiles(List<Vector2Int> positions, TileBase tileAsset, float duration)
+    {
+        // 1. Vẽ Tile lên _iconTilemap (hoặc _highlightTilemap tùy ý đồ design)
+        // Lưu ý: Nếu dùng _iconTilemap, cần cẩn thận để không ghi đè lên các icon Hit/Miss đã có.
+        // Tốt nhất là chỉ vẽ lên các ô TRỐNG trên _iconTilemap, hoặc dùng một Tilemap riêng cho VFX (Layer trên cùng).
+        // Ở đây tôi giả định vẽ lên _highlightTilemap (hoặc bạn tạo thêm _vfxTilemap) để an toàn.
+
+        foreach (var pos in positions)
+        {
+            Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+
+            // Vẽ đè lên (hoặc kiểm tra nếu cần)
+            _iconTilemap.SetTile(tilePos, tileAsset);
+
+            // Juice: Pop effect
+            StartCoroutine(AnimateTilePop(tilePos, _iconTilemap));
+        }
+
+        // 2. Chờ
+        yield return new WaitForSeconds(duration);
+
+        // 3. Xóa Tile (Cleanup)
+        foreach (var pos in positions)
+        {
+            Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+
+            // Chỉ xóa nếu đó vẫn là tile chỉ dấu (tránh xóa nhầm Hit/Miss nếu user bắn vào đó ngay lập tức)
+            if (_iconTilemap.GetTile(tilePos) == tileAsset)
+            {
+                _iconTilemap.SetTile(tilePos, null);
+            }
+        }
+    }
 
     // --- 1. SETUP ---
     public void InitializeBoard(int width, int height, GridSystem gridSystem, Owner owner)
