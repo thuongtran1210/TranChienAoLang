@@ -39,12 +39,10 @@ public class GridRandomizer : MonoBehaviour
                 // Random hướng (Horizontal / Vertical)
                 bool isHorizontal = Random.value > 0.5f;
 
-                // Chuyển đổi sang World Position để gọi hàm của GridManager
-                // Lưu ý: GridManager cần hàm lấy WorldPos từ GridPos, hoặc ta sửa TryPlaceShip nhận GridPos.
-                // Ở đây tôi dùng cách gọi hiện tại của bạn: WorldPos.
+
                 Vector3 tryPos = targetGrid.GetWorldPosition(new Vector2Int(randX, randY));
 
-                // 4. Gọi TryPlaceShip của GridManager (Tận dụng logic validate có sẵn)
+                // 4.
                 if (targetGrid.TryPlaceShip(tryPos, duckData, isHorizontal))
                 {
                     placed = true;
@@ -56,7 +54,7 @@ public class GridRandomizer : MonoBehaviour
             if (!placed)
             {
                 Debug.LogError($"[GridRandomizer] Could not place duck {duckData.duckName} after {maxAttempts} attempts!");
-                // Có thể cân nhắc Clear() và thử lại từ đầu (Backtracking) nếu cần thuật toán chặt chẽ hơn.
+               
             }
         }
     }

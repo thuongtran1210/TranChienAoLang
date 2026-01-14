@@ -241,8 +241,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridHighlightManager
   _tilemapGridView: {fileID: 165998141}
-  _gridOwner: 0
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _gridOwner: 0
 --- !u!1 &165998140
 GameObject:
   m_ObjectHideFlags: 0
@@ -280,13 +280,9 @@ MonoBehaviour:
   _highlightTilemap: {fileID: 1307352818}
   _vfxTilemap: {fileID: 790491293}
   _waterTile: {fileID: 11400000, guid: 6bed794a596b36942be1c29409a90a25, type: 2}
-  _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
-  _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
-  _missTile: {fileID: 11400000, guid: 58ce8caac65cef14a8cfbe07cbc21bb5, type: 2}
   _highlightTile: {fileID: 11400000, guid: cef40d72d05d4c548b783ec9040a55b2, type: 2}
-  _fadeDuration: 1
+  _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
   _iconPopDuration: 1
-  _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!156049354 &165998142
 Grid:
   m_ObjectHideFlags: 0
@@ -389,8 +385,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridHighlightManager
   _tilemapGridView: {fileID: 1068560335}
-  _gridOwner: 1
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _gridOwner: 1
 --- !u!1 &181813207
 GameObject:
   m_ObjectHideFlags: 0
@@ -2705,13 +2701,9 @@ MonoBehaviour:
   _highlightTilemap: {fileID: 820004935}
   _vfxTilemap: {fileID: 520059529}
   _waterTile: {fileID: 11400000, guid: 6bed794a596b36942be1c29409a90a25, type: 2}
-  _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
-  _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
-  _missTile: {fileID: 11400000, guid: 58ce8caac65cef14a8cfbe07cbc21bb5, type: 2}
   _highlightTile: {fileID: 11400000, guid: cef40d72d05d4c548b783ec9040a55b2, type: 2}
-  _fadeDuration: 0.2
+  _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
   _iconPopDuration: 0.4
-  _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!114 &1068560336
 MonoBehaviour:
   m_ObjectHideFlags: 0

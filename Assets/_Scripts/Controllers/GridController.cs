@@ -42,21 +42,38 @@ public class GridController : MonoBehaviour, IGridContext
 
 
     // --- INITIALIZATION ---
-    public void Initialize(int width, int height, IGridSystem gridSystem, Owner owner)
+    public void Initialize(IGridSystem gridSystem, Owner owner)
     {
-        _width = width;
-        _height = height;
+        // Validate Input (Fail Fast)
+        if (gridSystem == null)
+        {
+            Debug.LogError("GridController: Initialize received null GridSystem!");
+            return;
+        }
+
         _gridSystem = gridSystem;
         _gridOwner = owner;
 
+        // Single Source of Truth: Lấy kích thước trực tiếp từ System
+        _width = gridSystem.Width;
+        _height = gridSystem.Height;
+
         // DI Setup
-        _cameraController.SetupCamera(_width, _height);
-        _inputController.Initialize(_cameraController.GetCamera());
+        if (_cameraController != null)
+        {
+            _cameraController.SetupCamera(_width, _height);
+            if (_inputController != null)
+            {
+                _inputController.Initialize(_cameraController.GetCamera());
+            }
+        }
 
         // Init View Systems
         bool shouldHasFog = (owner == Owner.Enemy);
-        _tilemapGridView.InitializeGridVisuals(_width, _height, shouldHasFog);
-
+        if (_tilemapGridView != null)
+        {
+            _tilemapGridView.InitializeGridVisuals(_width, _height, shouldHasFog);
+        }
     }
 
     private void OnEnable()
