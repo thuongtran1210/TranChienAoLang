@@ -42,8 +42,10 @@ public class GridController : MonoBehaviour, IGridContext
 
 
     // --- INITIALIZATION ---
-    public void Initialize(IGridSystem gridSystem, Owner owner)
+    public void Initialize(int width, int height, IGridSystem gridSystem, Owner owner)
     {
+        _width = width;
+        _height = height;
         _gridSystem = gridSystem;
         _gridOwner = owner;
 
@@ -52,8 +54,8 @@ public class GridController : MonoBehaviour, IGridContext
         _inputController.Initialize(_cameraController.GetCamera());
 
         // Init View Systems
-        _tilemapGridView.InitializeBoard(_width, _height, (GridSystem)_gridSystem, owner);
-        _unitVisualManager.Initialize(_tilemapGridView); 
+        bool shouldHasFog = (owner == Owner.Enemy);
+        _tilemapGridView.InitializeGridVisuals(_width, _height, shouldHasFog);
 
     }
 
@@ -62,12 +64,6 @@ public class GridController : MonoBehaviour, IGridContext
         if (_inputController != null) _inputController.RegisterGrid(this);
         _gridInputChannel.OnGridCellClicked += HandleCellClicked;
 
-        if (_battleChannel != null)
-        {
-            _battleChannel.OnGridHighlightRequested += HandleHighlightRequest;
-            _battleChannel.OnGridHighlightClearRequested += _tilemapGridView.ClearHighlights; // Đổi sang Tilemap
-        }
-        // GridSystem event đã được TilemapGridView tự đăng ký trong InitializeBoard
     }
 
     private void OnDisable()
@@ -75,11 +71,6 @@ public class GridController : MonoBehaviour, IGridContext
         if (_inputController != null) _inputController.UnregisterGrid(this);
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
 
-        if (_battleChannel != null)
-        {
-            _battleChannel.OnGridHighlightRequested -= HandleHighlightRequest;
-            _battleChannel.OnGridHighlightClearRequested -= _tilemapGridView.ClearHighlights;
-        }
     }
 
     // --- INPUT HANDLING ---
@@ -119,21 +110,8 @@ public class GridController : MonoBehaviour, IGridContext
         Vector2Int gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
         return _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
     }
-    private void HandleHighlightRequest(Owner target, List<Vector2Int> positions, Color color)
-    {
-        if (target != this.GridOwner) return;
 
-        // Gọi TilemapGridView để highlight
-        _tilemapGridView.HighlightCells(positions, color);
 
-        StopAllCoroutines();
-        StartCoroutine(AutoClearHighlightDelay(2f));
-    }
-    private System.Collections.IEnumerator AutoClearHighlightDelay(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        _tilemapGridView.ClearHighlights();
-    }
 
     // --- HELPER METHODS ---
     public Vector3 GetWorldPosition(Vector2Int gridPos)
@@ -199,6 +177,7 @@ public class GridController : MonoBehaviour, IGridContext
     {
         HideGhost();
     }
+
 
     #endregion
 

@@ -8,7 +8,7 @@ public class SonarSkillSO : DuckSkillSO
     [SerializeField] private int _radius = 1;
     [Header("Visual Feedback")]
     [Tooltip("Tile hiển thị khi PHÁT HIỆN mục tiêu")]
-    [SerializeField] private TileBase _detectedIndicatorTile; // [MOD] Thay Color bằng TileBase
+    [SerializeField] private TileBase _detectedIndicatorTile; 
 
     [Tooltip("Màu hiển thị vùng quét (khi không thấy gì hoặc nền)")]
     [SerializeField] private Color _scanAreaColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
@@ -24,7 +24,6 @@ public class SonarSkillSO : DuckSkillSO
             {
                 Vector2Int checkPos = pivotPos + new Vector2Int(x, y);
 
-                // Chỉ thêm vào list nếu nằm trong Grid
                 if (targetGrid.IsValidPosition(checkPos))
                 {
                     area.Add(checkPos);

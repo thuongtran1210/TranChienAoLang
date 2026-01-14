@@ -1,98 +1,88 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps; // Cần thêm để dùng TileBase
 
-// [SOLID] Single Responsibility Principle: Class này chỉ chịu trách nhiệm
-// lắng nghe sự kiện (Event Listener) và ra lệnh cho View.
 public class GridHighlightManager : MonoBehaviour
 {
-    [Header("Core Dependencies")]
+    [Header("Dependencies")]
     [SerializeField] private TilemapGridView _tilemapGridView;
-
-    [Header("Settings")]
-    [SerializeField] private Owner _gridOwner;
     [SerializeField] private BattleEventChannelSO _battleEvents;
 
-    private Coroutine _activeImpactCoroutine;
+    [Header("Identity")]
+    [SerializeField] private Owner _gridOwner; // QUAN TRỌNG: Phải set đúng trong Inspector!
 
-    // --- 1. ĐĂNG KÝ SỰ KIỆN (OBSERVER PATTERN) ---
     private void OnEnable()
     {
-        if (_battleEvents != null)
-        {
-            _battleEvents.OnGridHighlightRequested += HandleHighlightRequested;
-            _battleEvents.OnGridHighlightClearRequested += HandleClearRequested;
-            _battleEvents.OnSkillImpactVisualRequested += HandleImpactVisualRequested;
-        }
-        else
-        {
-            Debug.LogError($"{name}: BattleEventChannelSO chưa được gán!", this);
-        }
+        if (_battleEvents == null) return;
+
+        // Đăng ký Highlight (Preview)
+        _battleEvents.OnGridHighlightRequested += HandleHighlightRequested;
+        _battleEvents.OnGridHighlightClearRequested += HandleClearRequested;
+
+        // Đăng ký Skill Impact (Execution)
+        _battleEvents.OnSkillImpactVisualRequested += HandleImpactVisualRequested;
+
+        // [NEW] Đăng ký Tile Indicator (Icon phát hiện địch)
+        _battleEvents.OnTileIndicatorRequested += HandleTileIndicatorRequested;
     }
 
     private void OnDisable()
     {
-        if (_battleEvents != null)
-        {
-            _battleEvents.OnGridHighlightRequested -= HandleHighlightRequested;
-            _battleEvents.OnGridHighlightClearRequested -= HandleClearRequested;
-            _battleEvents.OnSkillImpactVisualRequested -= HandleImpactVisualRequested;
-        }
+        if (_battleEvents == null) return;
+        _battleEvents.OnGridHighlightRequested -= HandleHighlightRequested;
+        _battleEvents.OnGridHighlightClearRequested -= HandleClearRequested;
+        _battleEvents.OnSkillImpactVisualRequested -= HandleImpactVisualRequested;
+        _battleEvents.OnTileIndicatorRequested -= HandleTileIndicatorRequested;
     }
 
-    // --- 2. XỬ LÝ LOGIC ---
-    public void Initialize(TilemapGridView tilemapView, Owner owner)
-    {
-        _tilemapGridView = tilemapView;
-        _gridOwner = owner;
-    }
+    // --- HANDLERS ---
 
     private void HandleHighlightRequested(Owner target, List<Vector2Int> positions, Color color)
     {
-        if (target != _gridOwner) return;
-
-        if (_tilemapGridView != null)
-        {
-            _tilemapGridView.HighlightCells(positions, color);
-        }
+        if (target != _gridOwner) return; // Filter Owner
+        _tilemapGridView.HighlightCells(positions, color);
     }
 
     private void HandleClearRequested()
     {
-        // Chỉ đơn giản là gọi hàm Clear của View
-        if (_tilemapGridView != null)
-        {
-            _tilemapGridView.ClearHighlights();
-        }
+        // Clear global thì ai cũng clear, hoặc có thể thêm param Owner vào event Clear nếu muốn clear cụ thể
+        _tilemapGridView.ClearHighlights();
+        _tilemapGridView.ClearIcons(); // Giả sử View có hàm xóa Icon
     }
+
     private void HandleImpactVisualRequested(Owner target, List<Vector2Int> positions, Color color, float duration)
     {
         if (target != _gridOwner) return;
-
-        // Bắt đầu Coroutine hiệu ứng
-        StopImpactEffect();
-        _activeImpactCoroutine = StartCoroutine(ImpactEffectRoutine(positions, color, duration));
+        StartCoroutine(ImpactRoutine(positions, color, duration));
     }
 
-    private IEnumerator ImpactEffectRoutine(List<Vector2Int> positions, Color color, float duration)
+    private void HandleTileIndicatorRequested(Owner target, List<Vector2Int> positions, TileBase tile, float duration)
     {
-        // 1. Hiển thị Highlight với màu của Skill (thường đậm hơn hoặc sáng hơn)
-        _tilemapGridView.HighlightCells(positions, color);
-
-        // 2. Chờ thời gian hiệu ứng (Code xịn có thể dùng Tweening ở đây để Fade out)
-        yield return new WaitForSeconds(duration);
-
-        // 3. Tự động tắt sau khi xong
-        _tilemapGridView.ClearHighlights();
-        _activeImpactCoroutine = null;
-    }
-
-    private void StopImpactEffect()
-    {
-        if (_activeImpactCoroutine != null)
+        if (target != _gridOwner) return;
+        // Logic hiển thị icon (Vịt/Địch) đè lên tile
+        // Bạn cần implement SetCellIcon trong TilemapGridView
+        foreach (var pos in positions)
         {
-            StopCoroutine(_activeImpactCoroutine);
-            _activeImpactCoroutine = null;
+            _tilemapGridView.SetCellIcon(pos, tile);
         }
+
+        // Tự động tắt icon sau duration (nếu muốn)
+        StartCoroutine(ClearIconsDelay(duration));
+    }
+
+    // --- COROUTINES ---
+
+    private IEnumerator ImpactRoutine(List<Vector2Int> positions, Color color, float duration)
+    {
+        _tilemapGridView.HighlightCells(positions, color);
+        yield return new WaitForSeconds(duration);
+        _tilemapGridView.ClearHighlights();
+    }
+
+    private IEnumerator ClearIconsDelay(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        _tilemapGridView.ClearIcons(); // Cần implement trong View
     }
 }
