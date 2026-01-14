@@ -8,7 +8,7 @@ public class TilemapGridView : MonoBehaviour
     [Header("Tilemap References")]
     [SerializeField] private Tilemap _baseTilemap;      // Layer nền (Nước)
     [SerializeField] private Tilemap _fogTilemap;
-    [SerializeField] private Tilemap _iconTilemap;      // Layer Icon (Vịt/Địch)
+    [SerializeField] private Tilemap _iconTilemap;      
     [SerializeField] private Tilemap _highlightTilemap; // Layer Highlight
     [SerializeField] private Tilemap _vfxTilemap;
 
@@ -16,6 +16,10 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private TileBase _waterTile;       // Tile nền nước
     [SerializeField] private TileBase _highlightTile;   // Tile dùng để highlight
     [SerializeField] private TileBase _fogTile;         // Tile dùng để hiển thị Fog
+    [SerializeField] private TileBase _missTile;        // Tile dùng để hiển thị hiệu ứng Miss
+    [SerializeField] private TileBase _hitTile;         // Tile dùng để hiển thị hiệu ứng Hit
+    [SerializeField] private TileBase _indicator;       // Tile dùng để hiển thị Icon (ví dụ dấu chấm than)
+
 
 
     [Header("Visual Settings")]
@@ -31,7 +35,7 @@ public class TilemapGridView : MonoBehaviour
         _baseTilemap.ClearAllTiles();
         _highlightTilemap.ClearAllTiles();
         _iconTilemap.ClearAllTiles();
-        _fogTilemap.ClearAllTiles(); // Clear fog cũ trước
+        _fogTilemap.ClearAllTiles(); 
 
         // Loop qua từng ô
         for (int x = 0; x < width; x++)
@@ -61,7 +65,6 @@ public class TilemapGridView : MonoBehaviour
     /// </summary>
     public void HighlightCells(List<Vector2Int> cells, Color color)
     {
-        // [PERFORMANCE] Dùng SetTilesBlock thay vì SetTile từng ô nếu list lớn (Optional)
         foreach (var pos in cells)
         {
             Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
@@ -88,7 +91,7 @@ public class TilemapGridView : MonoBehaviour
         Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
         _iconTilemap.SetTile(tilePos, iconTile);
 
-        // Gọi hiệu ứng Pop-up cho sinh động
+        // Gọi hiệu ứng Pop-up 
         StartCoroutine(AnimateTilePop(tilePos, _iconTilemap));
     }
 

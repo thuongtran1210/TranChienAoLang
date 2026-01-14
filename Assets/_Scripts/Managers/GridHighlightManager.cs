@@ -10,7 +10,7 @@ public class GridHighlightManager : MonoBehaviour
     [SerializeField] private BattleEventChannelSO _battleEvents;
 
     [Header("Identity")]
-    [SerializeField] private Owner _gridOwner; // QUAN TRỌNG: Phải set đúng trong Inspector!
+    [SerializeField] private Owner _gridOwner; 
 
     private void OnEnable()
     {
@@ -60,14 +60,13 @@ public class GridHighlightManager : MonoBehaviour
     private void HandleTileIndicatorRequested(Owner target, List<Vector2Int> positions, TileBase tile, float duration)
     {
         if (target != _gridOwner) return;
-        // Logic hiển thị icon (Vịt/Địch) đè lên tile
-        // Bạn cần implement SetCellIcon trong TilemapGridView
+
         foreach (var pos in positions)
         {
             _tilemapGridView.SetCellIcon(pos, tile);
         }
 
-        // Tự động tắt icon sau duration (nếu muốn)
+        // Tự động tắt icon sau duration 
         StartCoroutine(ClearIconsDelay(duration));
     }
 
