@@ -71,9 +71,22 @@ public class TilemapGridView : MonoBehaviour
         {
             Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
 
-            _highlightTilemap.SetTile(tilePos, GetHighlightTileBase());
+         
+            _highlightTilemap.SetTile(tilePos, _highlightTile);
+
             _highlightTilemap.SetTileFlags(tilePos, TileFlags.None);
             _highlightTilemap.SetColor(tilePos, color);
+        }
+    }
+    public void ShowShotResult(Vector2Int pos, bool isHit)
+    {
+        Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+        TileBase tileToUse = isHit ? _hitTile : _missTile;
+
+        if (_vfxTilemap != null && tileToUse != null)
+        {
+            _vfxTilemap.SetTile(tilePos, tileToUse);
+            // Có thể thêm animation rung lắc hoặc particle effect ở đây
         }
     }
 

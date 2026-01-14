@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps; // Cần thêm để dùng TileBase
+using UnityEngine.Tilemaps; 
 
 public class GridHighlightManager : MonoBehaviour
 {
