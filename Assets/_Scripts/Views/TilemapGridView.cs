@@ -78,17 +78,6 @@ public class TilemapGridView : MonoBehaviour
             _highlightTilemap.SetColor(tilePos, color);
         }
     }
-    public void ShowShotResult(Vector2Int pos, bool isHit)
-    {
-        Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
-        TileBase tileToUse = isHit ? _hitTile : _missTile;
-
-        if (_vfxTilemap != null && tileToUse != null)
-        {
-            _vfxTilemap.SetTile(tilePos, tileToUse);
-            // Có thể thêm animation rung lắc hoặc particle effect ở đây
-        }
-    }
 
     /// <summary>
     /// Xóa toàn bộ Highlight
@@ -144,6 +133,34 @@ public class TilemapGridView : MonoBehaviour
         targetTilemap.SetTransformMatrix(tilePos, Matrix4x4.identity);
     }
 
+    public void ShowShotResult(Vector2Int pos, ShotResult result)
+    {
+        Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+     
+        TileBase tileToUse = null;
+
+        switch (result)
+        {
+            case ShotResult.Hit:
+            case ShotResult.Sunk: // Sunk cũng tính là Hit về mặt hiển thị cơ bản
+                tileToUse = _hitTile;
+                break;
+            case ShotResult.Miss:
+                tileToUse = _missTile;
+                break;
+            default:
+                // ShotResult.Invalid hoặc ShotResult.None không làm gì cả
+                return;
+        }
+
+        if (_vfxTilemap != null && tileToUse != null)
+        {
+            _vfxTilemap.SetTile(tilePos, tileToUse);
+
+            // Optional: Thêm VFX particle hoặc rung lắc camera tại đây
+            // TriggerVFX(pos, result); 
+        }
+    }
     // --- 3. HELPERS ---
 
     // Helper để lấy TileBase cho highlight (tránh null reference)
