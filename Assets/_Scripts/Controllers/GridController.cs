@@ -74,6 +74,18 @@ public class GridController : MonoBehaviour, IGridContext
         {
             _tilemapGridView.InitializeGridVisuals(_width, _height, shouldHasFog);
         }
+        else
+        {
+            Debug.LogError($"[GridController] Critical: TilemapGridView reference is missing on {gameObject.name}!");
+        }
+        if (_unitVisualManager != null && _tilemapGridView != null)
+        {
+            _unitVisualManager.Initialize(_tilemapGridView);
+        }
+        else
+        {
+            Debug.LogWarning($"[GridController] UnitVisualManager or TilemapGridView is missing on {gameObject.name}. Spawning visuals might fail.");
+        }
     }
 
     private void OnEnable()
