@@ -18,6 +18,8 @@ public interface IGridLogic
     bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
     bool TryPlaceDuck(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
 
+
+    ShotResult ProcessShot(Vector2Int gridPos, Owner shooter);
     // Event
     event Action<IGridLogic, Vector2Int> OnGridClicked;
 }

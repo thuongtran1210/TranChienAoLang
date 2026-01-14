@@ -147,27 +147,34 @@ public class BattleState : GameStateBase
     // Bắn thường 
     private void ProcessShot(IGridContext targetGrid, Vector2Int pos, Owner shooter)
     {
-        ShotResult result = targetGrid.GridSystem.ShootAt(pos);
-        _battleEvents.RaiseShotFired(shooter, result, pos);
+        ShotResult result = targetGrid.ProcessShot(pos, shooter);
 
+        // Nếu bắn vào ô không hợp lệ (đã bắn rồi), thì return luôn
+        if (result == ShotResult.Invalid || result == ShotResult.None) return;
+
+        // --- GAME FLOW LOGIC (State chỉ lo việc này) ---
+
+        // 1. Check Win
         if (CheckWinCondition(targetGrid))
         {
             EndBattle(targetGrid == _enemyGrid);
             return;
         }
 
+        // 2. Turn Logic
         if (result == ShotResult.Miss)
         {
             SwitchTurn();
         }
         else
         {
-            // HIT logic: Bắn tiếp
-            Debug.Log($"{shooter} Hit! Shoot again.");
+            // Hit/Sunk -> Bonus Turn
+            Debug.Log($"{shooter} Hit! Bonus Turn.");
+
+            // Riêng AI cần thông báo để nó cập nhật Heatmap
             if (shooter == Owner.Enemy)
             {
                 _enemyAI.NotifyHit(pos, targetGrid.GridSystem);
-                // Enemy bắn trúng thì bắn tiếp sau 1 khoảng delay nhỏ
                 _gameContext.StartCoroutine(EnemyRoutine());
             }
         }

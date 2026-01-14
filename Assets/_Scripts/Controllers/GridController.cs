@@ -147,44 +147,43 @@ public class GridController : MonoBehaviour, IGridContext
     /// </summary>
     /// <param name="gridPos">Toạ độ trên lưới bị bắn</param>
     /// <param name="shooter">Phe thực hiện phát bắn</param>
-    public void ProcessShot(Vector2Int gridPos, Owner shooter)
+    public ShotResult ProcessShot(Vector2Int gridPos, Owner shooter)
     {
-        Debug.Log($"<color=red>[3. EXECUTE]</color> ProcessShot CALLED on {this.GridOwner} Grid at {gridPos}. Shooter: {shooter}");
-        // 1. Validate
+        // 1. Validate (Fail Fast)
         if (shooter == _gridOwner)
         {
-            Debug.LogWarning($"[GridController] {shooter} đang cố tự bắn vào lưới nhà!");
-            return;
+            Debug.LogWarning($"[GridController] {shooter} firing at self!");
+            return ShotResult.Invalid;
         }
 
-        // 2. Gọi Model xử lý logic nghiệp vụ
+        // 2. Logic Model (Core)
         ShotResult result = _gridSystem.ShootAt(gridPos);
 
-        // 3. Kiểm tra kết quả trả về từ Model
+        // 3. Early Exit nếu bắn trùng hoặc lỗi
         if (result == ShotResult.Invalid || result == ShotResult.None)
         {
-            return;
+            return result;
         }
 
-        // 4. Update View cục bộ 
+        // 4. Update Visual Cục Bộ (QUAN TRỌNG: BattleState cũ đã bỏ qua bước này)
         if (_tilemapGridView != null)
         {
             _tilemapGridView.ShowShotResult(gridPos, result);
         }
 
-        // 5. Broadcast Event ra toàn bộ hệ thống (Observer Pattern)
+        // 5. Broadcast Event (Chỉ nên bắn ở đây để tránh Duplicate)
         if (_battleChannel != null)
         {
             _battleChannel.RaiseShotFired(shooter, result, gridPos);
 
-            // Logic feedback text
-            if (result == ShotResult.Hit)
-                _battleChannel.RaiseSkillFeedback("HIT!", gridPos);
-            else if (result == ShotResult.Sunk)
-                _battleChannel.RaiseSkillFeedback("SUNK!", gridPos);
-            else
-                _battleChannel.RaiseSkillFeedback("MISS", gridPos);
+            // Feedback text
+            string feedback = result == ShotResult.Hit ? "HIT!" :
+                              (result == ShotResult.Sunk ? "SUNK!" : "MISS");
+            _battleChannel.RaiseSkillFeedback(feedback, gridPos);
         }
+
+        // 6. Trả kết quả về cho State xử lý luồng game
+        return result;
     }
 
 
