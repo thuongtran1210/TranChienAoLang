@@ -105,13 +105,13 @@ public class SetupState : GameStateBase
             Vector3 worldPos = gridController.GetWorldPosition(gridPos);
             bool isHorizontal = _playerGrid.IsGhostHorizontal;
             // 3. GỌI HÀM VÀ HỨNG KẾT QUẢ (QUAN TRỌNG NHẤT)
-            bool isSuccess = gridController.TryPlaceShip(worldPos, _selectedDuckData, isHorizontal);
+            bool isSuccess = gridController.TryPlaceDuck(worldPos, _selectedDuckData, isHorizontal);
 
             // 4. Kiểm tra kết quả
             if (isSuccess)
             {
                 // Chỉ trừ tàu khi Controller xác nhận đặt thành công
-                _fleetManager.OnShipPlacedSuccess();
+                _fleetManager.OnDuckPlacedSuccess();
 
                 Debug.Log($"[SetupState] Đặt thành công {_selectedDuckData.duckName}");
 
@@ -157,11 +157,6 @@ public class SetupState : GameStateBase
         _gameContext.EndSetupPhase();
     }
 
-    private void HandleClick()
-    {
-        if (_selectedDuckData == null) return;
-
-    }
     private void HandlePointerPositionChanged(Vector3 worldPos)
     {
         if (_selectedDuckData == null) return;

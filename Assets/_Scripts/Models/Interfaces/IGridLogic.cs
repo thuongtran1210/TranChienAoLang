@@ -16,7 +16,7 @@ public interface IGridLogic
 
     // Core Gameplay Logic
     bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
-    bool TryPlaceShip(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
+    bool TryPlaceDuck(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
 
     // Event
     event Action<IGridLogic, Vector2Int> OnGridClicked;

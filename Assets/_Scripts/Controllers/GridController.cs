@@ -115,7 +115,7 @@ public class GridController : MonoBehaviour, IGridContext
     /// Thực hiện hành động đặt tàu.
     /// Trả về true nếu thành công.
     /// </summary>
-    public bool TryPlaceShip(Vector3 worldPos, DuckDataSO data, bool isHorizontal)
+    public bool TryPlaceDuck(Vector3 worldPos, DuckDataSO data, bool isHorizontal)
     {
         if (!IsPlacementValid(worldPos, data, isHorizontal)) return false;
 
@@ -149,6 +149,7 @@ public class GridController : MonoBehaviour, IGridContext
     /// <param name="shooter">Phe thực hiện phát bắn</param>
     public void ProcessShot(Vector2Int gridPos, Owner shooter)
     {
+        Debug.Log($"<color=red>[3. EXECUTE]</color> ProcessShot CALLED on {this.GridOwner} Grid at {gridPos}. Shooter: {shooter}");
         // 1. Validate
         if (shooter == _gridOwner)
         {

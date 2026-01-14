@@ -43,7 +43,7 @@ public class GridRandomizer : MonoBehaviour
                 Vector3 tryPos = targetGrid.GetWorldPosition(new Vector2Int(randX, randY));
 
                 // 4.
-                if (targetGrid.TryPlaceShip(tryPos, duckData, isHorizontal))
+                if (targetGrid.TryPlaceDuck(tryPos, duckData, isHorizontal))
                 {
                     placed = true;
                 }

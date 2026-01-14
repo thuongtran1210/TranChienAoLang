@@ -62,7 +62,7 @@ public class FleetManager : MonoBehaviour
     }
 
 
-    public void OnShipPlacedSuccess()
+    public void OnDuckPlacedSuccess()
     {
         if (_currentSelectedDuck != null)
         {
