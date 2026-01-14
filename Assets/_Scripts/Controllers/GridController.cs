@@ -139,7 +139,52 @@ public class GridController : MonoBehaviour, IGridContext
         Vector2Int gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
         return _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
     }
+    // --- BATTLE LOGIC ---
 
+    /// <summary>
+    /// Xử lý một phát bắn vào lưới này.
+    /// Hàm này được gọi bởi BattleState hoặc Input Manager khi đến lượt.
+    /// </summary>
+    /// <param name="gridPos">Toạ độ trên lưới bị bắn</param>
+    /// <param name="shooter">Phe thực hiện phát bắn (để log sự kiện)</param>
+    public void ProcessShot(Vector2Int gridPos, Owner shooter)
+    {
+        // 1. Validate
+        if (shooter == _gridOwner)
+        {
+            Debug.LogWarning($"[GridController] {shooter} đang cố tự bắn vào lưới nhà!");
+            return;
+        }
+
+        // 2. Gọi Model xử lý logic nghiệp vụ .
+        ShotResult result = _gridSystem.ShootAt(gridPos);
+
+        // 3. Kiểm tra kết quả trả về từ Model
+        if (result == ShotResult.Invalid || result == ShotResult.None)
+        {
+            // Có thể raise event feedback "Invalid Target" nếu cần
+            return;
+        }
+
+        // 4. Update View cục bộ (Optional - Nếu TilemapGridView không lắng nghe Event Channel)
+        // Tốt nhất là để View tự lắng nghe Event, nhưng ta có thể gọi cập nhật visual ngay lập tức
+        // _tilemapGridView.UpdateCellVisual(gridPos, result); 
+
+        // 5. Broadcast Event ra toàn bộ hệ thống (Observer Pattern)
+        // UI, Audio, Manager sẽ lắng nghe sự kiện này
+        if (_battleChannel != null)
+        {
+            _battleChannel.RaiseShotFired(shooter, result, gridPos);
+
+            // Nếu muốn hiển thị debug text hoặc feedback cụ thể
+            if (result == ShotResult.Hit)
+                _battleChannel.RaiseSkillFeedback("HIT!", gridPos);
+            else if (result == ShotResult.Sunk)
+                _battleChannel.RaiseSkillFeedback("SUNK!", gridPos);
+            else
+                _battleChannel.RaiseSkillFeedback("MISS", gridPos);
+        }
+    }
 
 
     // --- HELPER METHODS ---
