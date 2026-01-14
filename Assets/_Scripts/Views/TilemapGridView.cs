@@ -61,7 +61,7 @@ public class TilemapGridView : MonoBehaviour
 
     private void HandleTileIndicatorRequested(Owner target, List<Vector2Int> positions, TileBase tileAsset, float duration)
     {
-        Debug.Log($"[TilemapGridView] Indicator Requested. Count: {positions.Count}, Tile: {tileAsset?.name}");
+        Debug.Log($"[TilemapGridView] Indicator Requested. Count: {positions.Count}, Tile: {tileAsset?.name}"); 
         if (tileAsset == null) Debug.LogError("TileAsset is NULL!");
 
         StartCoroutine(ShowTemporaryTiles(positions, tileAsset, duration));
