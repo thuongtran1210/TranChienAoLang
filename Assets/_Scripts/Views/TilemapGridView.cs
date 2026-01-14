@@ -7,10 +7,10 @@ public class TilemapGridView : MonoBehaviour
 {
     [Header("Tilemap References")]
     [SerializeField] private Tilemap _baseTilemap;      // Layer nền (Nước)
-    [SerializeField] private Tilemap _fogTilemap;
-    [SerializeField] private Tilemap _iconTilemap;      
+    [SerializeField] private Tilemap _fogTilemap;       // Layer Fog
+    [SerializeField] private Tilemap _iconTilemap;      // Layer Icon (Dấu chấm than, vị trí địch)
     [SerializeField] private Tilemap _highlightTilemap; // Layer Highlight
-    [SerializeField] private Tilemap _vfxTilemap;
+    [SerializeField] private Tilemap _vfxTilemap;       // Layer VFX (Hit, Miss)
 
     [Header("Tile Assets")]
     [SerializeField] private TileBase _waterTile;       // Tile nền nước
@@ -18,12 +18,14 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private TileBase _fogTile;         // Tile dùng để hiển thị Fog
     [SerializeField] private TileBase _missTile;        // Tile dùng để hiển thị hiệu ứng Miss
     [SerializeField] private TileBase _hitTile;         // Tile dùng để hiển thị hiệu ứng Hit
-    [SerializeField] private TileBase _indicator;       // Tile dùng để hiển thị Icon (ví dụ dấu chấm than)
+    [SerializeField] private TileBase _indicatorTile;      // Tile dùng để hiển thị Icon (ví dụ dấu chấm than)
 
 
 
     [Header("Visual Settings")]
     [SerializeField] private float _iconPopDuration = 0.5f;
+
+    private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
 
     // --- 1. INITIALIZATION (Khởi tạo hình ảnh bàn cờ) ---
 
