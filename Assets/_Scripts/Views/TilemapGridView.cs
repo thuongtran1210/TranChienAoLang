@@ -5,8 +5,6 @@ using UnityEngine.Tilemaps;
 
 public class TilemapGridView : MonoBehaviour
 {
-
-
     [Header("Tilemap References")]
     [SerializeField] private Tilemap _baseTilemap;      // Layer nền (Nước)
     [SerializeField] private Tilemap _fogTilemap;       // Layer Fog
@@ -29,6 +27,31 @@ public class TilemapGridView : MonoBehaviour
 
     private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
 
+    [Header("Broadcasting Channels")]
+    [SerializeField] private BattleEventChannelSO _battleChannel;
+    private Owner _myOwner; 
+
+    // --- 0. SETUP (Được gọi bởi GridController) ---
+    public void SetupIdentity(Owner owner)
+    {
+        _myOwner = owner;
+       
+        _battleChannel.OnShotFired += HandleShotFired;
+    }
+    private void OnDestroy()
+    {
+        if (_battleChannel != null)
+            _battleChannel.OnShotFired -= HandleShotFired;
+    }
+
+    // --- 2. EVENT LISTENER ---
+    private void HandleShotFired(Owner shooter, ShotResult result, Vector2Int pos)
+    {
+        if (shooter != _myOwner)
+        {
+            UpdateVisualCell(pos, result);
+        }
+    }
     // --- 1. INITIALIZATION (Khởi tạo hình ảnh bàn cờ) ---
 
     /// <summary>
@@ -39,7 +62,7 @@ public class TilemapGridView : MonoBehaviour
         _baseTilemap.ClearAllTiles();
         _highlightTilemap.ClearAllTiles();
         _iconTilemap.ClearAllTiles();
-        _fogTilemap.ClearAllTiles(); 
+        _fogTilemap.ClearAllTiles();
 
         // Loop qua từng ô
         for (int x = 0; x < width; x++)

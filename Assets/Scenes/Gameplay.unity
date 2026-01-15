@@ -286,6 +286,7 @@ MonoBehaviour:
   _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
   _indicatorTile: {fileID: 11400000, guid: 542fe1eb2e1717546bade1cae80da5c3, type: 2}
   _iconPopDuration: 1
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!156049354 &165998142
 Grid:
   m_ObjectHideFlags: 0
@@ -1995,7 +1996,7 @@ TilemapRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -1263231599
   m_SortingLayer: 5
-  m_SortingOrder: 1
+  m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
@@ -2709,6 +2710,7 @@ MonoBehaviour:
   _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
   _indicatorTile: {fileID: 11400000, guid: 0739765934b7a0447821c572502be908, type: 2}
   _iconPopDuration: 0.4
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!114 &1068560336
 MonoBehaviour:
   m_ObjectHideFlags: 0

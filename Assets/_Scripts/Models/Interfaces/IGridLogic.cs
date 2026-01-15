@@ -7,7 +7,7 @@ public interface IGridLogic
     // Data
     IGridSystem GridSystem { get; }
     Owner GridOwner { get; }
-    void Initialize(IGridSystem gridSystem, Owner owner);
+    void InitializeGrid(IGridSystem gridSystem, Owner owner);
 
     // Helper tính toán tọa độ (Spatial Logic)
     Vector2Int GetGridPosition(Vector3 worldPos);

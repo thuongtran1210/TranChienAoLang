@@ -72,10 +72,10 @@ public class GameManager : MonoBehaviour, IGameContext
         // 2. Khởi tạo dữ liệu Grid
 
         _enemyGridManager.transform.position = new Vector3(offset, 0, 0);
-        _enemyGridManager.Initialize(new GridSystem(10, 10), Owner.Enemy);
+        _enemyGridManager.InitializeGrid(new GridSystem(10, 10), Owner.Enemy);
 
         _playerGridManager.transform.position = new Vector3(-offset, 0, 0);
-        _playerGridManager.Initialize(new GridSystem(10, 10), Owner.Player);
+        _playerGridManager.InitializeGrid(new GridSystem(10, 10), Owner.Player);
 
         // 3. Setup AI
         EnemyAIController aiController = new EnemyAIController();

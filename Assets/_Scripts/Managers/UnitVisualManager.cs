@@ -4,7 +4,7 @@ public class UnitVisualManager : MonoBehaviour
 {
     private TilemapGridView _tilemapGridView;
 
-    public void Initialize(TilemapGridView tilemapGridView)
+    public void InitializeLogic(TilemapGridView tilemapGridView)
     {
         _tilemapGridView = tilemapGridView;
     }

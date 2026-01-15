@@ -39,7 +39,7 @@ public class GridController : MonoBehaviour, IGridContext
     public bool IsGhostHorizontal => _ghostDuck != null && _ghostDuck.IsHorizontal;
 
     // --- INITIALIZATION ---
-    public void Initialize(IGridSystem gridSystem, Owner owner)
+    public void InitializeGrid(IGridSystem gridSystem, Owner owner)
     {
         // Validate Input (Fail Fast)
         if (gridSystem == null)
@@ -64,6 +64,7 @@ public class GridController : MonoBehaviour, IGridContext
                 _inputController.Initialize(_cameraController.GetCamera());
             }
         }
+        _tilemapGridView.SetupIdentity(_gridOwner);
 
         // Init View Systems
         bool shouldHasFog = (owner == Owner.Enemy);
@@ -77,7 +78,7 @@ public class GridController : MonoBehaviour, IGridContext
         }
         if (_unitVisualManager != null && _tilemapGridView != null)
         {
-            _unitVisualManager.Initialize(_tilemapGridView);
+            _unitVisualManager.InitializeLogic(_tilemapGridView);
         }
         else
         {
