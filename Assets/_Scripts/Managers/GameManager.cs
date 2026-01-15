@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private FleetManager _fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
     [SerializeField] private BattleUIManager _battleUIManager;
-    [SerializeField] private TilemapGridView _tilemapGridView;
+ 
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController _gridInputController;

@@ -274,6 +274,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29b5d5e06287d5d419701164a7bc61c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TilemapGridView
+  _gridOwner: 0
+  _eventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _baseTilemap: {fileID: 291322514}
   _fogTilemap: {fileID: 1063691856}
   _iconTilemap: {fileID: 1198174889}
@@ -316,9 +318,9 @@ Transform:
   - {fileID: 1198174891}
   - {fileID: 1307352820}
   - {fileID: 1757607321}
-  - {fileID: 790491295}
   - {fileID: 1274258409069990156}
   - {fileID: 163678688}
+  - {fileID: 790491295}
   m_Father: {fileID: 63412344}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &165998144
@@ -938,7 +940,6 @@ MonoBehaviour:
   _fleetManager: {fileID: 967563622}
   gridRandomizer: {fileID: 1068560337}
   _battleUIManager: {fileID: 565100309}
-  _tilemapGridView: {fileID: 165998141}
   cameraController: {fileID: 519420033}
   _gridInputController: {fileID: 684107922}
   _playerEnergySystem: {fileID: 1317504785}
@@ -1394,7 +1395,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -1263231599
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -1995,7 +1996,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -1263231599
-  m_SortingLayer: 4
+  m_SortingLayer: 5
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -2698,6 +2699,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29b5d5e06287d5d419701164a7bc61c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TilemapGridView
+  _gridOwner: 1
+  _eventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _baseTilemap: {fileID: 181813210}
   _fogTilemap: {fileID: 2079073293}
   _iconTilemap: {fileID: 1347193983}
@@ -2846,7 +2849,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -79327821
-  m_SortingLayer: 5
+  m_SortingLayer: 4
   m_SortingOrder: 3
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
@@ -3191,7 +3194,7 @@ TilemapRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -79327821
-  m_SortingLayer: 5
+  m_SortingLayer: 4
   m_SortingOrder: 3
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}

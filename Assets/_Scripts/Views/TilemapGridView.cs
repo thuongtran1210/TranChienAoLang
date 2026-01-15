@@ -26,6 +26,7 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private float _iconPopDuration = 0.5f;
 
     private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
+    // --- UNITY EVENTS ---
 
     // --- 1. INITIALIZATION (Khởi tạo hình ảnh bàn cờ) ---
 
@@ -132,34 +133,39 @@ public class TilemapGridView : MonoBehaviour
 
         targetTilemap.SetTransformMatrix(tilePos, Matrix4x4.identity);
     }
-
     public void ShowShotResult(Vector2Int pos, ShotResult result)
     {
         Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
-     
         TileBase tileToUse = null;
 
         switch (result)
         {
             case ShotResult.Hit:
-            case ShotResult.Sunk: // Sunk cũng tính là Hit về mặt hiển thị cơ bản
+            case ShotResult.Sunk:
                 tileToUse = _hitTile;
                 break;
             case ShotResult.Miss:
                 tileToUse = _missTile;
                 break;
             default:
-                // ShotResult.Invalid hoặc ShotResult.None không làm gì cả
                 return;
         }
 
         if (_vfxTilemap != null && tileToUse != null)
         {
+            // SetTile visual
             _vfxTilemap.SetTile(tilePos, tileToUse);
 
-            // Optional: Thêm VFX particle hoặc rung lắc camera tại đây
-            // TriggerVFX(pos, result); 
+            // Xóa sương mù tại vị trí bị bắn 
+            if (_fogTilemap != null)
+            {
+                _fogTilemap.SetTile(tilePos, null);
+            }
         }
+    }
+    private void HandleShotFired(Owner targetOwner, ShotResult result, Vector2Int pos)
+    {
+
     }
     // --- 3. HELPERS ---
 
