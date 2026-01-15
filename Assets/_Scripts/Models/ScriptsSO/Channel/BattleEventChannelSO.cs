@@ -82,12 +82,11 @@ public class BattleEventChannelSO : ScriptableObject
 
     public void RaiseSkillImpactVisual(Owner target, List<Vector2Int> cells, Color color, float duration = 0.5f)
     {
-        LogEvent($"Impact Visual Requested: {target}, Count={cells.Count}, Duration={duration}s");
         OnSkillImpactVisualRequested?.Invoke(target, cells, color, duration);
     }
     public void RaiseTileIndicator(Owner target, List<Vector2Int> cells, TileBase tile, float duration = 1.0f)
     {
-        // LogEvent($"Tile Indicator Requested: Target={target}, Count={cells.Count}");
+
         OnTileIndicatorRequested?.Invoke(target, cells, tile, duration);
     }
 

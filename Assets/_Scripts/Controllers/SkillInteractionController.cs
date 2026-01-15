@@ -3,110 +3,117 @@ using UnityEngine;
 
 public class SkillInteractionController : MonoBehaviour
 {
-    [Header("Dependencies")]
-    [SerializeField] private GridInputController _inputController;
-
-    [Header("EVENTS CHANNEL")]
+    [Header("Event Channels")]
     [SerializeField] private BattleEventChannelSO _battleEvents;
     [SerializeField] private GridInputChannelSO _gridInputChannel;
 
+    // [Optimization] Cache visual hiện tại để tránh spam event nếu không đổi
+    private Vector2Int _lastHoveredPivot = new Vector2Int(-9999, -9999);
     private DuckSkillSO _currentSelectedSkill;
 
     private void OnEnable()
     {
         if (_gridInputChannel != null)
-        {
             _gridInputChannel.OnGridCellHovered += HandleGridHover;
-        }
 
         if (_battleEvents != null)
         {
-            // Đăng ký sự kiện chọn Skill từ UI
             _battleEvents.OnSkillSelected += SelectSkill;
             _battleEvents.OnSkillDeselected += DeselectSkill;
-
         }
     }
 
     private void OnDisable()
     {
+        if (_gridInputChannel != null)
+            _gridInputChannel.OnGridCellHovered -= HandleGridHover;
 
         if (_battleEvents != null)
         {
             _battleEvents.OnSkillSelected -= SelectSkill;
             _battleEvents.OnSkillDeselected -= DeselectSkill;
-
-        }
-        if (_gridInputChannel != null)
-        {
-            _gridInputChannel.OnGridCellHovered -= HandleGridHover;
         }
     }
 
-    // --- MAIN LOGIC ---
+    // --- CORE LOGIC ---
 
     private void HandleGridHover(Vector2Int gridPos, IGridLogic gridLogic)
     {
-        // 1. Fail Fast
-        if (_currentSelectedSkill == null)
-        {
-            ClearAllHighlights();
-            return;
-        }
+        // 1. [SRP] Controller chỉ điều phối khi có Skill được chọn
+        if (_currentSelectedSkill == null) return;
 
-        // Handle trường hợp chuột ra khỏi bàn cờ
+        // 2. [Fail Fast] Nếu chuột ra khỏi grid
         if (gridLogic == null)
         {
-            ClearAllHighlights();
+            ClearVisuals();
+            _lastHoveredPivot = new Vector2Int(-9999, -9999);
             return;
         }
-        // 1. Tính toán vị trí World
-        // Giả sử Grid của bạn có cellSize = 1. Nếu khác, bạn cần lấy từ GridSystem.
+
+        // 3. [Optimization] Chỉ tính toán lại khi vị trí thay đổi (Micro-optimization)
+        // Lưu ý: GridInputController đã lọc sự kiện, nhưng thêm check ở đây để an toàn cho logic Highlighting nặng
+        if (gridPos == _lastHoveredPivot) return;
+        _lastHoveredPivot = gridPos;
+
+        UpdateVisuals(gridPos, gridLogic);
+    }
+
+    private void UpdateVisuals(Vector2Int gridPos, IGridLogic gridLogic)
+    {
+        // Calculate World Position for Ghost
         Vector3 cellWorldPos = gridLogic.GetWorldPosition(gridPos);
 
-        // 2. Lấy Data Visual từ Skill
+        // Data Retrieval
         Sprite ghostSprite = _currentSelectedSkill.ghostSprite;
         Vector2Int ghostSize = _currentSelectedSkill.areaSize;
-        bool isValid = IsValidTargetGrid(gridLogic.GridOwner, _currentSelectedSkill.targetType);
 
-        // 3. RAISE EVENT với đầy đủ thông tin
-        _battleEvents.RaiseSkillGhostUpdate(ghostSprite, ghostSize, cellWorldPos, isValid);
+        // Validation Logic
+        bool isValidTarget = IsValidTargetGrid(gridLogic.GridOwner, _currentSelectedSkill.targetType);
 
-        // 5. Logic Highlight các ô 
+        // Raise Ghost Update
+        _battleEvents.RaiseSkillGhostUpdate(ghostSprite, ghostSize, cellWorldPos, isValidTarget);
+
+        // Raise Grid Highlight (Preview Layer)
         if (gridLogic is IGridSystem gridSystem)
         {
+            // Tính toán vùng ảnh hưởng dựa trên Logic của Skill (Strategy Pattern trong SO)
             List<Vector2Int> affectedCells = _currentSelectedSkill.GetAffectedPositions(gridPos, gridSystem);
-            _battleEvents.RaiseGridHighlight(gridLogic.GridOwner, affectedCells, _currentSelectedSkill.validColor);
+
+            Color highlightColor = isValidTarget ? _currentSelectedSkill.validColor : _currentSelectedSkill.invalidColor;
+
+            _battleEvents.RaiseGridHighlight(gridLogic.GridOwner, affectedCells, highlightColor);
         }
     }
 
     private bool IsValidTargetGrid(Owner gridOwner, SkillTargetType skillTargetType)
     {
-        switch (skillTargetType)
+        return skillTargetType switch
         {
-            case SkillTargetType.Self: return gridOwner == Owner.Player;
-            case SkillTargetType.Enemy: return gridOwner == Owner.Enemy;
-            case SkillTargetType.Any: return true;
-            default: return false;
-        }
+            SkillTargetType.Self => gridOwner == Owner.Player,
+            SkillTargetType.Enemy => gridOwner == Owner.Enemy,
+            SkillTargetType.Any => true,
+            _ => false
+        };
     }
 
-    private void ClearAllHighlights()
+    private void ClearVisuals()
     {
         _battleEvents.RaiseClearHighlight();
-        _battleEvents.RaiseSkillGhostClear(); 
+        _battleEvents.RaiseSkillGhostClear();
     }
 
-    // --- PUBLIC METHODS (Event Handlers) ---
+    // --- STATE HANDLERS ---
 
     private void SelectSkill(DuckSkillSO skill)
     {
         _currentSelectedSkill = skill;
+        // Reset last hovered để đảm bảo visual cập nhật ngay lập tức nếu chuột đang đứng yên
+        _lastHoveredPivot = new Vector2Int(-9999, -9999);
     }
 
     private void DeselectSkill()
     {
         _currentSelectedSkill = null;
-        ClearAllHighlights();
+        ClearVisuals();
     }
 }
