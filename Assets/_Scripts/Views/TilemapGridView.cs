@@ -18,7 +18,7 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private TileBase _fogTile;         // Tile dùng để hiển thị Fog
     [SerializeField] private TileBase _missTile;        // Tile dùng để hiển thị hiệu ứng Miss
     [SerializeField] private TileBase _hitTile;         // Tile dùng để hiển thị hiệu ứng Hit
-    [SerializeField] private TileBase _indicatorTile;      // Tile dùng để hiển thị Icon (ví dụ dấu chấm than)
+    [SerializeField] private TileBase _indicatorTile;   // Tile dùng để hiển thị Icon (ví dụ dấu chấm than)
 
 
 
@@ -172,14 +172,12 @@ public class TilemapGridView : MonoBehaviour
         switch (result)
         {
             case ShotResult.Hit:
-                Debug.Log("HIT");
+                tileToUse = _hitTile;
                 break;
             case ShotResult.Sunk:
                 tileToUse = _hitTile;
-                Debug.Log("Sunk");
                 break;
             case ShotResult.Miss:
-                Debug.Log("Miss");
                 tileToUse = _missTile;
                 break;
                
@@ -189,7 +187,14 @@ public class TilemapGridView : MonoBehaviour
         if (_fogTilemap != null) _fogTilemap.SetTile(tilePos, null);
 
         // Đặt Tile hiệu ứng 
-        if (_vfxTilemap != null) _vfxTilemap.SetTile(tilePos, tileToUse);
+        if (_vfxTilemap != null)
+        {
+            _vfxTilemap.SetTile(tilePos, tileToUse);
+        }
+        else
+        {
+            Debug.LogWarning("[TilemapGridView] Warning: VFX Tilemap reference is missing!");
+        }
     }
     // --- 3. HELPERS ---
 
