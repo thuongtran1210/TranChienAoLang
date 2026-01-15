@@ -47,10 +47,11 @@ public class TilemapGridView : MonoBehaviour
     // --- 2. EVENT LISTENER ---
     private void HandleShotFired(Owner shooter, Owner target, ShotResult result, Vector2Int pos)
     {
-        if (target == _myOwner)
-        {
-            UpdateVisualCell(pos, result);
-        }
+        if (target != _myOwner) return;
+
+        Debug.Log($"[Grid {_myOwner}] ShotFired: shooter={shooter}, target={target}, result={result}, pos={pos}");
+
+        UpdateVisualCell(pos, result);
     }
     // --- 1. INITIALIZATION (Khởi tạo hình ảnh bàn cờ) ---
 
@@ -166,36 +167,35 @@ public class TilemapGridView : MonoBehaviour
     public void UpdateVisualCell(Vector2Int pos, ShotResult result)
     {
         Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+
+        // 1. Khi có phát bắn → ô đó LUÔN bị reveal
+        if (_fogTilemap != null)
+        {
+            _fogTilemap.SetTile(tilePos, null);
+        }
+
+        // 2. Chọn tile theo kết quả
         TileBase tileToUse = null;
 
-        // Chọn Tile dựa trên kết quả (Hit/Miss/Sunk)
         switch (result)
         {
-            case ShotResult.Hit:
-                tileToUse = _hitTile;
-                break;
-            case ShotResult.Sunk:
-                tileToUse = _hitTile;
-                break;
             case ShotResult.Miss:
                 tileToUse = _missTile;
                 break;
-               
+
+            case ShotResult.Hit:
+            case ShotResult.Sunk:
+                tileToUse = _hitTile;
+                break;
         }
 
-        // Xóa sương mù (Fog) tại vị trí bắn (Cơ chế Fog of War)
-        if (_fogTilemap != null) _fogTilemap.SetTile(tilePos, null);
-
-        // Đặt Tile hiệu ứng 
-        if (_vfxTilemap != null)
+        // 3. Set VFX cho cả Player & Enemy
+        if (_vfxTilemap != null && tileToUse != null)
         {
             _vfxTilemap.SetTile(tilePos, tileToUse);
         }
-        else
-        {
-            Debug.LogWarning("[TilemapGridView] Warning: VFX Tilemap reference is missing!");
-        }
     }
+
     // --- 3. HELPERS ---
 
     // Helper để lấy TileBase cho highlight (tránh null reference)

@@ -50,11 +50,11 @@ TagManager:
   - name: Layer_Highlight
     uniqueID: 3080318117
     locked: 0
-  - name: Layer_Icons
-    uniqueID: 4215639475
-    locked: 0
   - name: VFX_Tilemap
     uniqueID: 3031735697
+    locked: 0
+  - name: Layer_Icons
+    uniqueID: 4215639475
     locked: 0
   m_RenderingLayers:
   - Default
