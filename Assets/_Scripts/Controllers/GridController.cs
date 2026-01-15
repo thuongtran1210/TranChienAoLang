@@ -50,7 +50,6 @@ public class GridController : MonoBehaviour, IGridContext
 
         _gridSystem = gridSystem;
         _gridOwner = owner;
-        _gridSystem.OnGridStateChanged += OnGridSystemStateChanged;
 
         // Single Source of Truth: Lấy kích thước trực tiếp từ System
         _width = gridSystem.Width;
@@ -97,17 +96,10 @@ public class GridController : MonoBehaviour, IGridContext
     {
         if (_inputController != null) _inputController.UnregisterGrid(this);
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
-        if (_gridSystem != null)
-        {
-            _gridSystem.OnGridStateChanged -= OnGridSystemStateChanged;
-        }
+
 
     }
-    // Callback xử lý khi Model thay đổi
-    private void OnGridSystemStateChanged(Vector2Int pos, ShotResult result)
-    {
-        _tilemapGridView.UpdateVisualCell(pos, result);
-    }
+
 
     // --- INPUT HANDLING ---
     private void HandleCellClicked(Vector2Int gridPos, Owner clickedOwner)
