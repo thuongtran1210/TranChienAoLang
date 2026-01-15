@@ -106,7 +106,6 @@ public class GridController : MonoBehaviour, IGridContext
     // Callback xử lý khi Model thay đổi
     private void OnGridSystemStateChanged(Vector2Int pos, ShotResult result)
     {
-        // Controller ra lệnh cho View cập nhật hình ảnh tương ứng
         _tilemapGridView.UpdateVisualCell(pos, result);
     }
 
@@ -159,7 +158,7 @@ public class GridController : MonoBehaviour, IGridContext
     {
         if (_gridSystem == null)
         {
-            Debug.LogError($"[GridController-{GridOwner}] Critical Error: GridSystem is null via ProcessShot!");
+            Debug.LogError($"[GridController-{shooter}] Critical Error: GridSystem is null via ProcessShot!");
             return ShotResult.Invalid;
         }
 
@@ -172,7 +171,7 @@ public class GridController : MonoBehaviour, IGridContext
             // Bắn Event Global: Thông báo cho Game Loop, UI, Audio biết sự kiện này đã xảy ra.
             _battleChannel.RaiseShotFired(shooter, result, gridPos);
 
-            Debug.Log($"[GridController-{GridOwner}] Shot processed at {gridPos}: {result}");
+            Debug.Log($"[GridController-{shooter}] Shot processed at {gridPos}: {result}");
         }
         else
         {

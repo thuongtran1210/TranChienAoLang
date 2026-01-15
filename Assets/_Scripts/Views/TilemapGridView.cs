@@ -167,6 +167,13 @@ public class TilemapGridView : MonoBehaviour
         }
 
         // 3. Cập nhật Layer VFX (Hiển thị X hoặc Nổ)
+        
+        if (_fogTilemap != null)
+        {
+            // SetTile là null đồng nghĩa với việc xóa Tile tại vị trí đó
+            _fogTilemap.SetTile(tilePos, null);
+        }
+
         if (_vfxTilemap != null)
         {
             _vfxTilemap.SetTile(tilePos, tileToUse);
@@ -176,13 +183,7 @@ public class TilemapGridView : MonoBehaviour
             Debug.LogWarning("TilemapGridView: VFX Tilemap reference is missing!");
         }
 
-        // 4. Xử lý Fog of War (Sương mù)
-        // Nguyên tắc: Bắn vào đâu thì sương mù ở đó phải biến mất để lộ kết quả.
-        if (_fogTilemap != null)
-        {
-            // SetTile là null đồng nghĩa với việc xóa Tile tại vị trí đó
-            _fogTilemap.SetTile(tilePos, null);
-        }
+
     }
     // --- 3. HELPERS ---
 

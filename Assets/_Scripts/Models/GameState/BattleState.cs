@@ -92,7 +92,6 @@ public class BattleState : GameStateBase
     private void HandleCellClicked(Vector2Int gridPos, Owner owner)
     {
         if (_isGameOver || !_isPlayerTurn) return;
-        if (owner != Owner.Enemy) return;
 
         if (_pendingSkill != null)
         {
@@ -147,6 +146,7 @@ public class BattleState : GameStateBase
     // Bắn thường 
     private void ProcessShot(IGridContext targetGrid, Vector2Int pos, Owner shooter)
     {
+
         ShotResult result = targetGrid.ProcessShot(pos, shooter);
 
         // Nếu bắn vào ô không hợp lệ (đã bắn rồi), thì return luôn

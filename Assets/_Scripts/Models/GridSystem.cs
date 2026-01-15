@@ -118,11 +118,7 @@ public class GridSystem : IGridSystem
                 finalResult = ShotResult.Hit;
             }
         }
-
-        // 5. Notify Observers View 
-        OnGridStateChanged?.Invoke(position, finalResult);
-
-        // 6. Return Result
+        // Return Result
         return finalResult;
     }
 
