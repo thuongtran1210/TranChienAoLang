@@ -39,38 +39,63 @@ public abstract class DuckSkillSO : ScriptableObject
 
     public abstract List<Vector2Int> GetAffectedPositions(Vector2Int pivotPos, IGridSystem targetGrid);
 
+    // --- TEMPLATE METHOD ENTRY POINT ---
     public virtual bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
     {
-        // 1. Validate
+        if (targetGrid == null || eventChannel == null)
+        {
+            return false;
+        }
+
+        if (!CanExecuteCore(targetGrid, pivotPos, eventChannel, targetOwner))
+        {
+            return false;
+        }
+
+        ExecuteCore(targetGrid, pivotPos, eventChannel, targetOwner);
+        OnExecuted(eventChannel);
+        return true;
+    }
+
+    // --- TEMPLATE HOOKS ---
+    protected virtual bool CanExecuteCore(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
+    {
         if (!targetGrid.IsValidPosition(pivotPos))
         {
             eventChannel.RaiseSkillFeedback("Invalid Target!", pivotPos);
             return false;
         }
 
-        // 2. Get Positions
+        return true;
+    }
+
+    protected virtual void ExecuteCore(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
+    {
+        // 1. Get Positions
         List<Vector2Int> affectedArea = GetAffectedPositions(pivotPos, targetGrid);
 
-        // 3. Apply Logic (Override ở lớp con nếu cần xử lý phức tạp hơn)
+        // 2. Apply default logic (ví dụ: đếm unit, gây damage chung...)
         int hitCount = 0;
         foreach (var pos in affectedArea)
         {
-            // Logic xử lý chung (ví dụ: đếm unit, gây damge...)
-            // Có thể delegate xuống lớp con thông qua Template Method pattern nếu cần
             var cell = targetGrid.GetCell(pos);
-            if (cell != null && cell.OccupiedUnit != null && !cell.IsHit) hitCount++;
+            if (cell != null && cell.OccupiedUnit != null && !cell.IsHit)
+            {
+                hitCount++;
+            }
         }
 
-        // 4. Feedback
+        // 3. Visual Feedback mặc định
         ApplyVisualFeedback(affectedArea, eventChannel, targetOwner);
+    }
 
+    protected virtual void OnExecuted(BattleEventChannelSO eventChannel)
+    {
         eventChannel.RaiseSkillDeselected();
-        return true;
     }
 
     protected virtual void ApplyVisualFeedback(List<Vector2Int> area, BattleEventChannelSO channel, Owner target)
     {
         channel.RaiseSkillImpactVisual(target, area, executionColor, impactDuration);
-
     }
 }

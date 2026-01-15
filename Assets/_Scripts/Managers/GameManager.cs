@@ -170,25 +170,17 @@ public class GameManager : MonoBehaviour, IGameContext
     {
         Debug.Log("Setup Complete! Initializing Battle Phase...");
 
-        // 1. LẤY DỮ LIỆU TỪ FLEET MANAGER
-        DuckDataSO activeDuckData = _fleetManager.GetPlayerActiveDuckData();
+        List<DuckSkillSO> playerSkills = _fleetManager.GetPlayerSkillsForBattle();
 
-        // 2. CHECK NULL (Fail Fast Principle)
-        if (activeDuckData == null)
+        if (playerSkills == null || playerSkills.Count == 0)
         {
-            Debug.LogError("GameManager: Cannot start Battle UI because Duck Data is missing!");
-            // Có thể return hoặc xử lý lỗi tùy game design
+            Debug.LogError("GameManager: Cannot start Battle UI because no skills were found for player fleet!");
         }
 
-        // 3. KHỞI TẠO BATTLE UI VỚI DỮ LIỆU VỪA LẤY
         if (_battleUIManager != null)
         {
-            // Truyền Data vào hàm Initialize mà chúng ta đã viết ở bước trước
-            _battleUIManager.InitializeBattleUI(activeDuckData);
+            _battleUIManager.InitializeBattleUI(playerSkills);
         }
-
-
-   
     }
     private IEnumerator TransitionToBattle()
     {

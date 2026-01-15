@@ -19,4 +19,4 @@ MonoBehaviour:
   - {x: 1, y: 0}
   icon: {fileID: 2458098434777339976, guid: f111bfbbb9a52a8498693c45896b3b8b, type: 3}
   unitPrefab: {fileID: 6513479564865191508, guid: 1aecf76ebaea01047b95b13519cd51c2, type: 3}
-  activeSkill: {fileID: 11400000, guid: 1ebe2e12995648549b340e4fd31d6845, type: 2}
+  activeSkill: {fileID: 11400000, guid: d4f2e7a9232b2c94daea02009e9f84c9, type: 2}

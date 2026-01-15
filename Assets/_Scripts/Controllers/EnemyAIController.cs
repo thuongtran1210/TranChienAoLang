@@ -1,4 +1,4 @@
-﻿// _Scripts/AI/EnemyAIController.cs
+// _Scripts/AI/EnemyAIController.cs
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -35,72 +35,160 @@ public class EnemyAIController : IEnemyAI
 
     public AIAction GetDecision(IGridSystem playerGrid, DuckEnergySystem myEnergy, List<DuckSkillSO> availableSkills)
     {
-        // 1. Tính toán vị trí bắn tốt nhất (Logic cũ của bạn)
         Vector2Int bestNormalShotPos = GetNextTargetPosition(playerGrid);
-        // 2. Logic dùng Skill nâng cao
-        if (availableSkills != null && availableSkills.Count > 0)
+        AIAction bestAction = AIAction.Attack(bestNormalShotPos);
+        float bestScore = ScoreNormalAttack(playerGrid, bestNormalShotPos);
+
+        if (availableSkills != null && availableSkills.Count > 0 && myEnergy != null)
         {
-            // Cố gắng tìm một hành động dùng Skill hợp lý
-            if (TryGetBestSkillAction(playerGrid, myEnergy, availableSkills, bestNormalShotPos, out AIAction skillAction))
+            var affordableSkills = availableSkills.Where(s => s != null && myEnergy.CurrentEnergy >= s.energyCost);
+
+            foreach (var skill in affordableSkills)
             {
-                return skillAction;
+                if (TryEvaluateSkill(playerGrid, myEnergy, skill, bestNormalShotPos, out AIAction skillAction, out float skillScore))
+                {
+                    if (skillScore > bestScore)
+                    {
+                        bestScore = skillScore;
+                        bestAction = skillAction;
+                    }
+                }
             }
         }
 
-        // 3. Fallback: Nếu không dùng skill, bắn thường
-        return AIAction.Attack(bestNormalShotPos);
+        return bestAction;
     }
-    private bool TryGetBestSkillAction(IGridSystem grid, DuckEnergySystem energy, List<DuckSkillSO> skills, Vector2Int targetPos, out AIAction action)
+
+    private float ScoreNormalAttack(IGridSystem grid, Vector2Int targetPos)
+    {
+        float baseScore = 10f;
+
+        if (_currentState == AIState.Targeting && _potentialTargets.Count > 0)
+        {
+            baseScore += 2f;
+        }
+
+        return baseScore;
+    }
+
+    private bool TryEvaluateSkill(IGridSystem grid, DuckEnergySystem energy, DuckSkillSO skill, Vector2Int defaultTargetPos, out AIAction action, out float score)
     {
         action = default;
+        score = 0f;
 
-        // Lọc ra các skill đủ năng lượng để dùng
-        var affordableSkills = skills.Where(s => energy.CurrentEnergy >= s.energyCost).ToList();
+        if (grid == null || energy == null || skill == null)
+        {
+            return false;
+        }
 
-        if (affordableSkills.Count == 0) return false;
+        if (energy.CurrentEnergy < skill.energyCost)
+        {
+            return false;
+        }
 
-        // --- TRƯỜNG HỢP 1: ĐANG SĂN TÌM (SEARCHING) ---
         if (_currentState == AIState.Searching)
         {
-            // Ưu tiên dùng Skill có vùng ảnh hưởng lớn (Sonar/Radar) để tìm địch
-            // Giả sử: Skill có AreaSize > 1x1 là skill diện rộng
-            var scoutSkill = affordableSkills
-                .OrderByDescending(s => s.areaSize.x * s.areaSize.y) // Ưu tiên vùng lớn nhất
-                .FirstOrDefault();
-
-            // Chỉ dùng nếu skill đó thực sự lớn (ví dụ 3x3) và AI đang bí nước đi hoặc chỉ muốn check map
-            if (scoutSkill != null && (scoutSkill.areaSize.x > 1 || scoutSkill.areaSize.y > 1))
-            {
-                // Chọn một vị trí ngẫu nhiên trên bản đồ chưa bị bắn để dùng skill soi
-                Vector2Int randomScanPos = GetRandomValidCell(grid);
-                action = AIAction.Skill(randomScanPos, scoutSkill);
-                Debug.Log($"[AI - Searching] Casting scout skill: {scoutSkill.skillName}");
-                return true;
-            }
+            return TryEvaluateSkillInSearching(grid, skill, out action, out score);
         }
 
-        // --- TRƯỜNG HỢP 2: ĐANG NHẮM BẮN (TARGETING) ---
-        if (_currentState == AIState.Targeting)
+        return TryEvaluateSkillInTargeting(grid, skill, defaultTargetPos, energy, out action, out score);
+    }
+
+    private bool TryEvaluateSkillInSearching(IGridSystem grid, DuckSkillSO skill, out AIAction action, out float score)
+    {
+        action = default;
+        score = 0f;
+
+        int skillArea = skill.areaSize.x * skill.areaSize.y;
+        if (skillArea <= 1)
         {
-            // Ưu tiên skill gây sát thương (TargetType == Enemy hoặc Any)
-            var attackSkills = affordableSkills
-                .Where(s => s.targetType == SkillTargetType.Enemy || s.targetType == SkillTargetType.Any)
-                .OrderByDescending(s => s.energyCost) // Dùng skill mạnh nhất (thường là tốn mana nhất)
-                .ToList();
+            return false;
+        }
 
-            foreach (var skill in attackSkills)
+        int bestCoverage = -1;
+        Vector2Int bestPos = Vector2Int.zero;
+
+        for (int x = 0; x < grid.Width; x++)
+        {
+            for (int y = 0; y < grid.Height; y++)
             {
-                // Logic thông minh: Kiểm tra xem dùng skill tại vị trí targetPos có hiệu quả không?
-                // (Ví dụ: Skill 3x3 bắn vào targetPos liệu có trùm lên các ô chưa bắn không?)
+                Vector2Int pivot = new Vector2Int(x, y);
+                if (!grid.IsValidPosition(pivot))
+                {
+                    continue;
+                }
 
-                // Ở đây ta đơn giản hóa: Nếu là skill damage, cứ nã vào vị trí đang nhắm
-                action = AIAction.Skill(targetPos, skill);
-                Debug.Log($"[AI - Targeting] Casting attack skill: {skill.skillName}");
-                return true;
+                List<Vector2Int> affected = skill.GetAffectedPositions(pivot, grid);
+                int coverage = 0;
+
+                for (int i = 0; i < affected.Count; i++)
+                {
+                    GridCell cell = grid.GetCell(affected[i]);
+                    if (cell != null && !cell.IsHit)
+                    {
+                        coverage++;
+                    }
+                }
+
+                if (coverage > bestCoverage)
+                {
+                    bestCoverage = coverage;
+                    bestPos = pivot;
+                }
             }
         }
 
-        return false;
+        if (bestCoverage <= 0)
+        {
+            return false;
+        }
+
+        action = AIAction.Skill(bestPos, skill);
+        score = 10f + bestCoverage;
+        Debug.Log($"[AI - Searching] Evaluated skill {skill.skillName} at {bestPos} with coverage {bestCoverage} and score {score}");
+        return true;
+    }
+
+    private bool TryEvaluateSkillInTargeting(IGridSystem grid, DuckSkillSO skill, Vector2Int targetPos, DuckEnergySystem energy, out AIAction action, out float score)
+    {
+        action = default;
+        score = 0f;
+
+        if (skill.targetType == SkillTargetType.Self)
+        {
+            return false;
+        }
+
+        if (!grid.IsValidPosition(targetPos))
+        {
+            return false;
+        }
+
+        List<Vector2Int> affected = skill.GetAffectedPositions(targetPos, grid);
+        int potentialHits = 0;
+
+        for (int i = 0; i < affected.Count; i++)
+        {
+            GridCell cell = grid.GetCell(affected[i]);
+            if (cell != null && !cell.IsHit)
+            {
+                potentialHits++;
+            }
+        }
+
+        if (potentialHits <= 0)
+        {
+            return false;
+        }
+
+        float baseScore = 12f;
+        float hitWeight = 2f;
+        float energyBias = Mathf.Clamp((float)energy.CurrentEnergy / Mathf.Max(1, skill.energyCost), 0.5f, 2f);
+
+        score = baseScore + potentialHits * hitWeight * energyBias;
+        action = AIAction.Skill(targetPos, skill);
+        Debug.Log($"[AI - Targeting] Evaluated skill {skill.skillName} at {targetPos} with potentialHits {potentialHits} and score {score}");
+        return true;
     }
 
     // --- CORE LOGIC ---

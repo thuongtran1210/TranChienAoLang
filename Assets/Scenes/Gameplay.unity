@@ -1161,7 +1161,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18003136e2a60c741bf29314b6ab5d87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkillInteractionController
-  _inputController: {fileID: 684107922}
   _battleEvents: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
 --- !u!1 &519420028

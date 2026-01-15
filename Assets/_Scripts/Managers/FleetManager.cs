@@ -82,13 +82,29 @@ public class FleetManager : MonoBehaviour
     }
     public DuckDataSO GetPlayerActiveDuckData()
     {
-
         if (levelFleetConfig != null && levelFleetConfig.Count > 0)
         {
-            return levelFleetConfig[0]; 
+            return levelFleetConfig[0];
         }
 
         return null;
+    }
+
+    public List<DuckSkillSO> GetPlayerSkillsForBattle()
+    {
+        List<DuckSkillSO> result = new List<DuckSkillSO>();
+
+        if (levelFleetConfig == null) return result;
+
+        foreach (var duck in levelFleetConfig)
+        {
+            if (duck != null && duck.activeSkill != null && !result.Contains(duck.activeSkill))
+            {
+                result.Add(duck.activeSkill);
+            }
+        }
+
+        return result;
     }
 
     public DuckDataSO GetSelectedDuck() => _currentSelectedDuck;

@@ -36,14 +36,13 @@ public class BattleUIManager : MonoBehaviour
     }
 
     // Được gọi khi bắt đầu Battle (Bạn có thể gọi từ GameManager.EndSetupPhase hoặc Start)
-    public void InitializeBattleUI(DuckDataSO playerData)
+    public void InitializeBattleUI(List<DuckSkillSO> playerSkills)
     {
         Debug.Log("BattleUIManager: Initializing...");
         Show();
         UpdateEnergyUI(Owner.Player, 0, 100);
 
-        // 2. Spawn Skill Buttons dựa trên Data của Player
-        SpawnSkillButtons(playerData);
+        SpawnSkillButtons(playerSkills);
     }
     public void Show()
     {
@@ -60,9 +59,8 @@ public class BattleUIManager : MonoBehaviour
             gameObject.SetActive(false);
     }
 
-    private void SpawnSkillButtons(DuckDataSO playerData)
+    private void SpawnSkillButtons(List<DuckSkillSO> playerSkills)
     {
-        // Dọn dẹp nút cũ (nếu có) để tránh duplicate khi Restart game
         foreach (var btn in _spawnedButtons)
         {
             if (btn != null) Destroy(btn.gameObject);
@@ -80,26 +78,19 @@ public class BattleUIManager : MonoBehaviour
             return;
         }
 
-        // Validate dữ liệu
-        if (playerData == null)
+        if (playerSkills == null || playerSkills.Count == 0)
         {
-            Debug.LogError("BattleUIManager: Player Data is NULL!");
+            Debug.LogWarning("BattleUIManager: Player has no skills to spawn buttons for.");
             return;
         }
 
-        // --- SPAWN LOGIC ---
-        if (playerData.activeSkill != null)
+        foreach (var skill in playerSkills)
         {
-            CreateButton(playerData.activeSkill);
-            
+            if (skill != null)
+            {
+                CreateButton(skill);
+            }
         }
-        else
-        {
-            Debug.LogWarning("BattleUIManager: Player has no active skill to spawn button for.");
-        }
-
-        // Nếu sau này bạn có List skills:
-        // foreach(var skill in playerData.skills) { CreateButton(skill); }
     }
     private void CreateButton(DuckSkillSO skill)
     {

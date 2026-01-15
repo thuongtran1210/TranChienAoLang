@@ -5,13 +5,31 @@ using UnityEngine.Tilemaps;
 [CreateAssetMenu(menuName = "Duck Battle/Skills/Sonar Skill")]
 public class SonarSkillSO : DuckSkillSO
 {
+    [Min(1)]
     [SerializeField] private int _radius = 1;
+
     [Header("Visual Feedback")]
     [Tooltip("Tile hiển thị khi PHÁT HIỆN mục tiêu")]
-    [SerializeField] private TileBase _detectedIndicatorTile; 
+    [SerializeField] private TileBase _detectedIndicatorTile;
 
     [Tooltip("Màu hiển thị vùng quét (khi không thấy gì hoặc nền)")]
     [SerializeField] private Color _scanAreaColor = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+
+    [SerializeField] private string _foundMessageFormat = "Sonar detected {0} signals!";
+    [SerializeField] private string _noSignalMessage = "No signals.";
+
+    private struct SonarScanResult
+    {
+        public List<Vector2Int> ScanArea { get; }
+        public List<Vector2Int> DetectedPositions { get; }
+        public int FoundParts => DetectedPositions.Count;
+
+        public SonarScanResult(List<Vector2Int> scanArea, List<Vector2Int> detectedPositions)
+        {
+            ScanArea = scanArea;
+            DetectedPositions = detectedPositions;
+        }
+    }
 
 
     public override List<Vector2Int> GetAffectedPositions(Vector2Int pivotPos, IGridSystem targetGrid)
@@ -34,52 +52,58 @@ public class SonarSkillSO : DuckSkillSO
     }
 
 
-    public override bool Execute(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
+    private Owner ResolveTargetOwner(IGridSystem targetGrid, Owner defaultOwner)
     {
-        // 1. Validate & 2. Get Area 
-        if (!targetGrid.IsValidPosition(pivotPos)) return false;
-        Owner actualTargetOwner = targetOwner;
-
-        // Kiểm tra xem GridSystem có cung cấp thông tin Owner không (Dựa trên context SkillInteractionController có dùng GridOwner)
         if (targetGrid is IGridLogic gridLogic)
         {
-            actualTargetOwner = gridLogic.GridOwner;
+            return gridLogic.GridOwner;
         }
 
-        // 2. Get Area
-        List<Vector2Int> scanArea = GetAffectedPositions(pivotPos, targetGrid);
+        return defaultOwner;
+    }
 
-        // 3. Logic tìm kiếm
+    private SonarScanResult PerformScan(IGridSystem targetGrid, Vector2Int pivotPos)
+    {
+        List<Vector2Int> scanArea = GetAffectedPositions(pivotPos, targetGrid);
         List<Vector2Int> detectedPositions = new List<Vector2Int>();
-        int foundParts = 0;
 
         foreach (var pos in scanArea)
         {
             var cell = targetGrid.GetCell(pos);
             if (cell != null && cell.OccupiedUnit != null && !cell.IsHit)
             {
-                foundParts++;
                 detectedPositions.Add(pos);
             }
         }
 
-        // 4. Xử lý Visual Feedback
-        if (foundParts > 0)
-        {
-            // CASE A: Tìm thấy địch
-            eventChannel.RaiseTileIndicator(actualTargetOwner, detectedPositions, _detectedIndicatorTile, impactDuration);
+        return new SonarScanResult(scanArea, detectedPositions);
+    }
 
-            eventChannel.RaiseSkillImpactVisual(actualTargetOwner, scanArea, _scanAreaColor, impactDuration);
-            string msg = $"Sonar detected {foundParts} signals!";
+    private void RaiseSonarVisuals(SonarScanResult result, BattleEventChannelSO eventChannel, Owner targetOwner, Vector2Int pivotPos)
+    {
+        if (result.FoundParts > 0)
+        {
+            if (_detectedIndicatorTile != null && result.DetectedPositions.Count > 0)
+            {
+                eventChannel.RaiseTileIndicator(targetOwner, result.DetectedPositions, _detectedIndicatorTile, impactDuration);
+            }
+
+            eventChannel.RaiseSkillImpactVisual(targetOwner, result.ScanArea, _scanAreaColor, impactDuration);
+
+            string msg = string.Format(_foundMessageFormat, result.FoundParts);
             eventChannel.RaiseSkillFeedback(msg, pivotPos);
         }
         else
         {
-            // CASE B: Không thấy gì
-            eventChannel.RaiseSkillImpactVisual(actualTargetOwner, scanArea, _scanAreaColor, impactDuration);
-            eventChannel.RaiseSkillFeedback("No signals.", pivotPos);
+            eventChannel.RaiseSkillImpactVisual(targetOwner, result.ScanArea, _scanAreaColor, impactDuration);
+            eventChannel.RaiseSkillFeedback(_noSignalMessage, pivotPos);
         }
+    }
 
-        return true;
+    protected override void ExecuteCore(IGridSystem targetGrid, Vector2Int pivotPos, BattleEventChannelSO eventChannel, Owner targetOwner)
+    {
+        Owner actualTargetOwner = ResolveTargetOwner(targetGrid, targetOwner);
+        SonarScanResult result = PerformScan(targetGrid, pivotPos);
+        RaiseSonarVisuals(result, eventChannel, actualTargetOwner, pivotPos);
     }
 }
