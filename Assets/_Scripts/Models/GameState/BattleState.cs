@@ -152,7 +152,7 @@ public class BattleState : GameStateBase
         // Nếu bắn vào ô không hợp lệ (đã bắn rồi), thì return luôn
         if (result == ShotResult.Invalid || result == ShotResult.None) return;
 
-        // --- GAME FLOW LOGIC (State chỉ lo việc này) ---
+        // --- GAME FLOW LOGIC  ---
 
         // 1. Check Win
         if (CheckWinCondition(targetGrid))

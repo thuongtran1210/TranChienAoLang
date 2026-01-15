@@ -164,12 +164,10 @@ public class GridController : MonoBehaviour, IGridContext
             // Bắn Event Global: Thông báo cho Game Loop, UI, Audio biết sự kiện này đã xảy ra.
             _battleChannel.RaiseShotFired(shooter, result, gridPos);
 
-            Debug.Log($"[GridController-{shooter}] Shot processed at {gridPos}: {result}");
         }
         else
         {
             // Optional: Feedback âm thanh hoặc log khi bắn vào ô không hợp lệ (đã bắn rồi hoặc ngoài map)
-            Debug.LogWarning($"[GridController-{GridOwner}] Invalid shot attempt at {gridPos}");
         }
 
         // 4. Trả kết quả về cho bên gọi (thường là State Machine để quyết định chuyển lượt)

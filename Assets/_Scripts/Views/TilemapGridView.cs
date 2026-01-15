@@ -165,48 +165,27 @@ public class TilemapGridView : MonoBehaviour
     /// <param name="result">Kết quả (Hit/Miss/Sunk)</param>
     public void UpdateVisualCell(Vector2Int pos, ShotResult result)
     {
-        // 1. Convert tọa độ
         Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
-
         TileBase tileToUse = null;
 
-        // 2. Xác định Tile Asset dựa trên kết quả
+        // Chọn Tile dựa trên kết quả (Hit/Miss/Sunk)
         switch (result)
         {
             case ShotResult.Hit:
             case ShotResult.Sunk:
                 tileToUse = _hitTile;
                 break;
-
             case ShotResult.Miss:
                 tileToUse = _missTile;
                 break;
-
-            case ShotResult.Invalid:
-            case ShotResult.None:
-            default:
-                // Không làm gì nếu trạng thái không hợp lệ
-                return;
+                // ...
         }
 
-        // 3. Cập nhật Layer VFX (Hiển thị X hoặc Nổ)
-        
-        if (_fogTilemap != null)
-        {
-            // SetTile là null đồng nghĩa với việc xóa Tile tại vị trí đó
-            _fogTilemap.SetTile(tilePos, null);
-        }
+        // Xóa sương mù (Fog) tại vị trí bắn (Cơ chế Fog of War)
+        if (_fogTilemap != null) _fogTilemap.SetTile(tilePos, null);
 
-        if (_vfxTilemap != null)
-        {
-            _vfxTilemap.SetTile(tilePos, tileToUse);
-        }
-        else
-        {
-            Debug.LogWarning("TilemapGridView: VFX Tilemap reference is missing!");
-        }
-
-
+        // Đặt Tile hiệu ứng 
+        if (_vfxTilemap != null) _vfxTilemap.SetTile(tilePos, tileToUse);
     }
     // --- 3. HELPERS ---
 
