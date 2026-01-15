@@ -134,37 +134,54 @@ public class TilemapGridView : MonoBehaviour
 
         targetTilemap.SetTransformMatrix(tilePos, Matrix4x4.identity);
     }
-    public void ShowShotResult(Vector2Int pos, ShotResult result)
+    /// <summary>
+    /// Cập nhật hình ảnh của ô lưới dựa trên kết quả bắn.
+    /// Hàm này được gọi bởi Controller thông qua Event.
+    /// </summary>
+    /// <param name="pos">Tọa độ Grid (x, y)</param>
+    /// <param name="result">Kết quả (Hit/Miss/Sunk)</param>
+    public void UpdateVisualCell(Vector2Int pos, ShotResult result)
     {
+        // 1. Convert tọa độ
         Vector3Int tilePos = new Vector3Int(pos.x, pos.y, 0);
+
         TileBase tileToUse = null;
 
+        // 2. Xác định Tile Asset dựa trên kết quả
         switch (result)
         {
             case ShotResult.Hit:
             case ShotResult.Sunk:
                 tileToUse = _hitTile;
                 break;
+
             case ShotResult.Miss:
                 tileToUse = _missTile;
                 break;
+
+            case ShotResult.Invalid:
+            case ShotResult.None:
             default:
+                // Không làm gì nếu trạng thái không hợp lệ
                 return;
         }
 
-        if (_vfxTilemap != null && tileToUse != null)
+        // 3. Cập nhật Layer VFX (Hiển thị X hoặc Nổ)
+        if (_vfxTilemap != null)
         {
-            // Set Tile Visual
             _vfxTilemap.SetTile(tilePos, tileToUse);
+        }
+        else
+        {
+            Debug.LogWarning("TilemapGridView: VFX Tilemap reference is missing!");
+        }
 
-            // LOGIC SƯƠNG MÙ:
-            if (_fogTilemap != null)
-            {
-                _fogTilemap.SetTile(tilePos, null);
-            }
-
-            // Optional: Thêm VFX Particle System nổ tại đây nếu cần
-            // SpawnExplosionVFX(GetWorldCenterPosition(pos));
+        // 4. Xử lý Fog of War (Sương mù)
+        // Nguyên tắc: Bắn vào đâu thì sương mù ở đó phải biến mất để lộ kết quả.
+        if (_fogTilemap != null)
+        {
+            // SetTile là null đồng nghĩa với việc xóa Tile tại vị trí đó
+            _fogTilemap.SetTile(tilePos, null);
         }
     }
     // --- 3. HELPERS ---

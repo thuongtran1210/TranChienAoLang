@@ -38,9 +38,6 @@ public class GridController : MonoBehaviour, IGridContext
     public GridInputController InputController => _inputController;
     public bool IsGhostHorizontal => _ghostDuck != null && _ghostDuck.IsHorizontal;
 
-
-
-
     // --- INITIALIZATION ---
     public void Initialize(IGridSystem gridSystem, Owner owner)
     {
@@ -53,6 +50,7 @@ public class GridController : MonoBehaviour, IGridContext
 
         _gridSystem = gridSystem;
         _gridOwner = owner;
+        _gridSystem.OnGridStateChanged += OnGridSystemStateChanged;
 
         // Single Source of Truth: Lấy kích thước trực tiếp từ System
         _width = gridSystem.Width;
@@ -99,7 +97,17 @@ public class GridController : MonoBehaviour, IGridContext
     {
         if (_inputController != null) _inputController.UnregisterGrid(this);
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
+        if (_gridSystem != null)
+        {
+            _gridSystem.OnGridStateChanged -= OnGridSystemStateChanged;
+        }
 
+    }
+    // Callback xử lý khi Model thay đổi
+    private void OnGridSystemStateChanged(Vector2Int pos, ShotResult result)
+    {
+        // Controller ra lệnh cho View cập nhật hình ảnh tương ứng
+        _tilemapGridView.UpdateVisualCell(pos, result);
     }
 
     // --- INPUT HANDLING ---
@@ -149,7 +157,31 @@ public class GridController : MonoBehaviour, IGridContext
     /// <param name="shooter">Phe thực hiện phát bắn</param>
     public ShotResult ProcessShot(Vector2Int gridPos, Owner shooter)
     {
+        if (_gridSystem == null)
+        {
+            Debug.LogError($"[GridController-{GridOwner}] Critical Error: GridSystem is null via ProcessShot!");
+            return ShotResult.Invalid;
+        }
 
+        // 2. Gọi Model xử lý Logic (Model chịu trách nhiệm tính toán Hit/Miss/Sunk)
+        ShotResult result = _gridSystem.ShootAt(gridPos);
+
+        // 3. Xử lý kết quả trả về từ Model
+        if (result != ShotResult.Invalid && result != ShotResult.None)
+        {
+            // Bắn Event Global: Thông báo cho Game Loop, UI, Audio biết sự kiện này đã xảy ra.
+            _battleChannel.RaiseShotFired(shooter, result, gridPos);
+
+            Debug.Log($"[GridController-{GridOwner}] Shot processed at {gridPos}: {result}");
+        }
+        else
+        {
+            // Optional: Feedback âm thanh hoặc log khi bắn vào ô không hợp lệ (đã bắn rồi hoặc ngoài map)
+            Debug.LogWarning($"[GridController-{GridOwner}] Invalid shot attempt at {gridPos}");
+        }
+
+        // 4. Trả kết quả về cho bên gọi (thường là State Machine để quyết định chuyển lượt)
+        return result;
     }
 
 
