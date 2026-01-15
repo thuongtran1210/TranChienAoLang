@@ -138,16 +138,14 @@ public class TilemapGridView : MonoBehaviour
     private IEnumerator AnimateTilePop(Vector3Int tilePos, Tilemap targetTilemap)
     {
         targetTilemap.SetTileFlags(tilePos, TileFlags.None);
-        targetTilemap.SetTransformMatrix(tilePos, Matrix4x4.identity);
 
         float timer = 0f;
         while (timer < _iconPopDuration)
         {
             timer += Time.deltaTime;
             float progress = timer / _iconPopDuration;
-
-        
-            float scale = 1f + Mathf.Sin(progress * Mathf.PI) * 0.5f; // Scale lên 1.5 rồi về 1
+            // Scale lên 1.5 tại đỉnh, rồi về 1.0
+            float scale = 1f + Mathf.Sin(progress * Mathf.PI) * 0.5f;
 
             Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, Vector3.one * scale);
             targetTilemap.SetTransformMatrix(tilePos, matrix);
@@ -155,8 +153,10 @@ public class TilemapGridView : MonoBehaviour
             yield return null;
         }
 
-
         targetTilemap.SetTransformMatrix(tilePos, Matrix4x4.identity);
+
+      
+         targetTilemap.SetTileFlags(tilePos, TileFlags.LockTransform);
     }
     /// <summary>
     /// Cập nhật hình ảnh của ô lưới dựa trên kết quả bắn.
@@ -193,6 +193,7 @@ public class TilemapGridView : MonoBehaviour
         if (_vfxTilemap != null && tileToUse != null)
         {
             _vfxTilemap.SetTile(tilePos, tileToUse);
+            StartCoroutine(AnimateTilePop(tilePos, _vfxTilemap));
         }
     }
 
