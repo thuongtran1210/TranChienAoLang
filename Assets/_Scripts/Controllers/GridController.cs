@@ -147,43 +147,43 @@ public class GridController : MonoBehaviour, IGridContext
     /// </summary>
     /// <param name="gridPos">Toạ độ trên lưới bị bắn</param>
     /// <param name="shooter">Phe thực hiện phát bắn</param>
-    public ShotResult ProcessShot(Vector2Int gridPos, Owner shooter)
+    public void ProcessShot(Vector2Int gridPos, Owner shooter)
     {
-        // 1. Validate (Fail Fast)
+        // 1. Validate
         if (shooter == _gridOwner)
         {
-            Debug.LogWarning($"[GridController] {shooter} firing at self!");
-            return ShotResult.Invalid;
+            Debug.LogWarning($"[GridController] {shooter} đang cố tự bắn vào lưới nhà!");
+            return;
         }
 
-        // 2. Logic Model (Core)
+        // 2. Gọi Model xử lý logic nghiệp vụ
         ShotResult result = _gridSystem.ShootAt(gridPos);
 
-        // 3. Early Exit nếu bắn trùng hoặc lỗi
+        // 3. Kiểm tra kết quả trả về từ Model
         if (result == ShotResult.Invalid || result == ShotResult.None)
         {
-            return result;
+            return;
         }
 
-        // 4. Update Visual Cục Bộ
+        // 4. Update View cục bộ 
         if (_tilemapGridView != null)
         {
             _tilemapGridView.ShowShotResult(gridPos, result);
         }
 
-        // 5. Broadcast Event 
+        // 5. Broadcast Event ra toàn bộ hệ thống (Observer Pattern)
         if (_battleChannel != null)
         {
             _battleChannel.RaiseShotFired(shooter, result, gridPos);
 
-            // Feedback text
-            string feedback = result == ShotResult.Hit ? "HIT!" :
-                              (result == ShotResult.Sunk ? "SUNK!" : "MISS");
-            _battleChannel.RaiseSkillFeedback(feedback, gridPos);
+            // Logic feedback text
+            if (result == ShotResult.Hit)
+                _battleChannel.RaiseSkillFeedback("HIT!", gridPos);
+            else if (result == ShotResult.Sunk)
+                _battleChannel.RaiseSkillFeedback("SUNK!", gridPos);
+            else
+                _battleChannel.RaiseSkillFeedback("MISS", gridPos);
         }
-
-        // 6. Trả kết quả về cho State xử lý luồng game
-        return result;
     }
 
 
@@ -251,7 +251,6 @@ public class GridController : MonoBehaviour, IGridContext
     {
         HideGhost();
     }
-
 
     #endregion
 
