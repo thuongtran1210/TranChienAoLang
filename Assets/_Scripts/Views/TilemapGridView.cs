@@ -45,9 +45,9 @@ public class TilemapGridView : MonoBehaviour
     }
 
     // --- 2. EVENT LISTENER ---
-    private void HandleShotFired(Owner shooter, ShotResult result, Vector2Int pos)
+    private void HandleShotFired(Owner shooter, Owner target, ShotResult result, Vector2Int pos)
     {
-        if (shooter != _myOwner)
+        if (target == _myOwner)
         {
             UpdateVisualCell(pos, result);
         }
@@ -172,13 +172,17 @@ public class TilemapGridView : MonoBehaviour
         switch (result)
         {
             case ShotResult.Hit:
+                Debug.Log("HIT");
+                break;
             case ShotResult.Sunk:
                 tileToUse = _hitTile;
+                Debug.Log("Sunk");
                 break;
             case ShotResult.Miss:
+                Debug.Log("Miss");
                 tileToUse = _missTile;
                 break;
-                // ...
+               
         }
 
         // Xóa sương mù (Fog) tại vị trí bắn (Cơ chế Fog of War)

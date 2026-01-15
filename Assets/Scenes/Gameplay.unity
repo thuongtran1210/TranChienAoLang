@@ -283,9 +283,9 @@ MonoBehaviour:
   _highlightTile: {fileID: 0}
   _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
   _missTile: {fileID: 11400000, guid: 58ce8caac65cef14a8cfbe07cbc21bb5, type: 2}
-  _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
+  _hitTile: {fileID: 11400000, guid: 542fe1eb2e1717546bade1cae80da5c3, type: 2}
   _indicatorTile: {fileID: 11400000, guid: 542fe1eb2e1717546bade1cae80da5c3, type: 2}
-  _iconPopDuration: 1
+  _iconPopDuration: 0.5
   _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!156049354 &165998142
 Grid:
@@ -2708,7 +2708,7 @@ MonoBehaviour:
   _fogTile: {fileID: 11400000, guid: d374c5f79d485bb4098fa2a814e6b3b2, type: 2}
   _missTile: {fileID: 11400000, guid: 58ce8caac65cef14a8cfbe07cbc21bb5, type: 2}
   _hitTile: {fileID: 11400000, guid: 19a98d2ed82a398418521727d3fef444, type: 2}
-  _indicatorTile: {fileID: 11400000, guid: 0739765934b7a0447821c572502be908, type: 2}
+  _indicatorTile: {fileID: 11400000, guid: 542fe1eb2e1717546bade1cae80da5c3, type: 2}
   _iconPopDuration: 0.4
   _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
 --- !u!114 &1068560336

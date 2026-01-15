@@ -11,7 +11,7 @@ public class BattleEventChannelSO : ScriptableObject
     [SerializeField][TextArea] private string _channelDescription = "Quản lý sự kiện trong Battle Phase";
 
     [Header("Combat Events")]
-    public UnityAction<Owner, ShotResult, Vector2Int> OnShotFired;
+    public UnityAction<Owner, Owner, ShotResult, Vector2Int> OnShotFired;
     public UnityAction<Owner, int, int> OnEnergyChanged;
 
     [Header("Skill Events")]
@@ -32,10 +32,10 @@ public class BattleEventChannelSO : ScriptableObject
     // --- RAISERS ---
 
     // Khi bắn xong một phát súng
-    public void RaiseShotFired(Owner shooter, ShotResult result, Vector2Int pos)
+    public void RaiseShotFired(Owner shooter, Owner target, ShotResult result, Vector2Int pos)
     {
         LogEvent($"Shot Fired: Shooter={shooter}, Result={result}, Pos={pos}");
-        OnShotFired?.Invoke(shooter, result, pos);
+        OnShotFired?.Invoke(shooter, target, result, pos);
     }
     public void RaiseEnergyChanged(Owner owner, int current, int max)
     {

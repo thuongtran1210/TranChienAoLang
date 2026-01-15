@@ -38,11 +38,9 @@ public class DuckEnergySystem : MonoBehaviour
             _battleEvents.OnShotFired -= HandleShotFired;
     }
 
-    private void HandleShotFired(Owner shooter, ShotResult result, Vector2Int pos)
+    private void HandleShotFired(Owner shooter, Owner target, ShotResult result, Vector2Int pos)
     {
         if (shooter != _owner) return;
-
-       
         int energyGain = 0;
         switch (result)
         {

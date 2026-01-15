@@ -149,28 +149,32 @@ public class GridController : MonoBehaviour, IGridContext
     /// <param name="shooter">Phe thực hiện phát bắn</param>
     public ShotResult ProcessShot(Vector2Int gridPos, Owner shooter)
     {
+        // 1. Validation (Fail Fast Principle)
         if (_gridSystem == null)
         {
-            Debug.LogError($"[GridController-{shooter}] Critical Error: GridSystem is null via ProcessShot!");
+            Debug.LogError($"[GridController-{_gridOwner}] Critical: GridSystem is null on ProcessShot!");
             return ShotResult.Invalid;
         }
 
-        // 2. Gọi Model xử lý Logic (Model chịu trách nhiệm tính toán Hit/Miss/Sunk)
+        // 2. Gọi Model xử lý logic cốt lõi
         ShotResult result = _gridSystem.ShootAt(gridPos);
 
-        // 3. Xử lý kết quả trả về từ Model
+        // 3. Xử lý kết quả và Bắn Event
         if (result != ShotResult.Invalid && result != ShotResult.None)
         {
-            // Bắn Event Global: Thông báo cho Game Loop, UI, Audio biết sự kiện này đã xảy ra.
-            _battleChannel.RaiseShotFired(shooter, result, gridPos);
-
+            // --- KEY CHANGE HERE ---
+            // Truyền '_gridOwner' vào làm tham số Target.
+            // Ý nghĩa: "Shooter" vừa bắn vào "Tôi (_gridOwner)"
+            _battleChannel.RaiseShotFired(shooter, _gridOwner, result, gridPos);
         }
         else
         {
-            // Optional: Feedback âm thanh hoặc log khi bắn vào ô không hợp lệ (đã bắn rồi hoặc ngoài map)
+            // (Optional) Xử lý feedback khi bắn lỗi (đã bắn rồi/ngoài map)
+            // _audioChannel.RaiseErrorSound();
+            Debug.LogWarning($"Invalid shot by {shooter} at {gridPos} on {_gridOwner}'s grid.");
         }
 
-        // 4. Trả kết quả về cho bên gọi (thường là State Machine để quyết định chuyển lượt)
+        // 4. Trả kết quả về cho BattleState điều phối lượt
         return result;
     }
 
