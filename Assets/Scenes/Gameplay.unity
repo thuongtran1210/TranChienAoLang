@@ -275,7 +275,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TilemapGridView
   _gridOwner: 0
-  _eventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _baseTilemap: {fileID: 291322514}
   _fogTilemap: {fileID: 1063691856}
   _iconTilemap: {fileID: 1198174889}
@@ -1997,7 +1997,7 @@ TilemapRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -1263231599
   m_SortingLayer: 5
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
   m_MaxChunkCount: 16
@@ -2700,7 +2700,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TilemapGridView
   _gridOwner: 1
-  _eventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
+  _battleChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _baseTilemap: {fileID: 181813210}
   _fogTilemap: {fileID: 2079073293}
   _iconTilemap: {fileID: 1347193983}

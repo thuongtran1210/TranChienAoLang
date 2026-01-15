@@ -5,6 +5,11 @@ using UnityEngine.Tilemaps;
 
 public class TilemapGridView : MonoBehaviour
 {
+    [SerializeField] private Owner _gridOwner;
+
+    [Tooltip("Channel để lắng nghe sự kiện bắn súng")]
+    [SerializeField] private BattleEventChannelSO _battleChannel;
+
     [Header("Tilemap References")]
     [SerializeField] private Tilemap _baseTilemap;      // Layer nền (Nước)
     [SerializeField] private Tilemap _fogTilemap;       // Layer Fog
@@ -26,6 +31,34 @@ public class TilemapGridView : MonoBehaviour
     [SerializeField] private float _iconPopDuration = 0.5f;
 
     private List<Vector2Int> _currentHighlights = new List<Vector2Int>();
+
+    // --- 1. OBSERVER PATTERN SETUP ---
+    private void OnEnable()
+    {
+        if (_battleChannel != null)
+        {
+            _battleChannel.OnShotFired += HandleShotFiredEvent;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (_battleChannel != null)
+        {
+            _battleChannel.OnShotFired -= HandleShotFiredEvent;
+        }
+    }
+    private void HandleShotFiredEvent(Owner shooter, ShotResult result, Vector2Int pos)
+    {
+        // LOGIC QUAN TRỌNG:
+        // Nếu người bắn (Shooter) KHÁC với chủ sở hữu bàn cờ (_gridOwner)
+        // => Nghĩa là bàn cờ này là MỤC TIÊU (Target).
+        // Ví dụ: Shooter là Enemy, GridOwner là Player => Enemy đang bắn vào Player => Hiện Hit/Miss.
+        if (shooter != _gridOwner)
+        {
+            ShowShotResult(pos, result);
+        }
+    }
     // --- UNITY EVENTS ---
 
     // --- 1. INITIALIZATION (Khởi tạo hình ảnh bàn cờ) ---
@@ -153,19 +186,18 @@ public class TilemapGridView : MonoBehaviour
 
         if (_vfxTilemap != null && tileToUse != null)
         {
-            // SetTile visual
+            // Set Tile Visual
             _vfxTilemap.SetTile(tilePos, tileToUse);
 
-            // Xóa sương mù tại vị trí bị bắn 
+            // LOGIC SƯƠNG MÙ:
             if (_fogTilemap != null)
             {
                 _fogTilemap.SetTile(tilePos, null);
             }
-        }
-    }
-    private void HandleShotFired(Owner targetOwner, ShotResult result, Vector2Int pos)
-    {
 
+            // Optional: Thêm VFX Particle System nổ tại đây nếu cần
+            // SpawnExplosionVFX(GetWorldCenterPosition(pos));
+        }
     }
     // --- 3. HELPERS ---
 

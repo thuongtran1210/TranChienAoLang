@@ -165,13 +165,13 @@ public class GridController : MonoBehaviour, IGridContext
             return result;
         }
 
-        // 4. Update Visual Cục Bộ (QUAN TRỌNG: BattleState cũ đã bỏ qua bước này)
+        // 4. Update Visual Cục Bộ
         if (_tilemapGridView != null)
         {
             _tilemapGridView.ShowShotResult(gridPos, result);
         }
 
-        // 5. Broadcast Event (Chỉ nên bắn ở đây để tránh Duplicate)
+        // 5. Broadcast Event 
         if (_battleChannel != null)
         {
             _battleChannel.RaiseShotFired(shooter, result, gridPos);

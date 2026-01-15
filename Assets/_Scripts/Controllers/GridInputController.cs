@@ -58,7 +58,6 @@ public class GridInputController : MonoBehaviour
         inputReader.MoveEvent -= HandleMove;
         inputReader.FireEvent -= HandleFireInput;
         inputReader.RotateEvent -= HandleRotateInput;
-
         inputReader.MoveEvent += HandleMove;
         inputReader.FireEvent += HandleFireInput; 
         inputReader.RotateEvent += HandleRotateInput;
@@ -91,7 +90,7 @@ public class GridInputController : MonoBehaviour
         _currentScreenPos = screenPos;
         Vector3 worldPos = GetMouseWorldPosition(screenPos);
 
-        // 1. Báo cáo vị trí chuột (cho VFX, Ghost, etc.)
+        // 1. Báo cáo vị trí chuột (Ghost Duck và Ghost Skill)
         _gridInputChannel.RaisePointerPositionChanged(worldPos);
 
         bool foundGrid = false;
