@@ -17,9 +17,7 @@ public interface IGridLogic
     // Core Gameplay Logic
     bool IsPlacementValid(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
     bool TryPlaceDuck(Vector3 worldPos, DuckDataSO data, bool isHorizontal);
-
-
-    void ProcessShot(Vector2Int gridPos, Owner shooter);
+    ShotResult ProcessShot(Vector2Int gridPos, Owner shooter);
     // Event
     event Action<IGridLogic, Vector2Int> OnGridClicked;
 }
