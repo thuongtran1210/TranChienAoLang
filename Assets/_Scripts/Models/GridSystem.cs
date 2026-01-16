@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -36,26 +36,49 @@ public class GridSystem : IGridSystem
 
     public bool CanPlaceUnit(DuckDataSO data, Vector2Int position, bool isHorizontal)
     {
-        return CheckPlacementLogic(data, position, isHorizontal);
+        return CheckPlacement(data, position, isHorizontal).IsValid;
     }
 
-    private bool CheckPlacementLogic(DuckDataSO data, Vector2Int position, bool isHorizontal)
+    public PlacementCheckResult CheckPlacement(DuckDataSO data, Vector2Int position, bool isHorizontal)
     {
+        if (data == null)
+        {
+            return new PlacementCheckResult
+            {
+                IsValid = false,
+                Reason = PlacementFailReason.InvalidData,
+                FailedCell = position
+            };
+        }
+
         foreach (Vector2Int pos in GetTargetPositions(data, position, isHorizontal))
         {
             if (!IsValidPosition(pos))
             {
-                // Debug.Log($"Placement Failed: Pos {pos} is Out of Bounds");
-                return false;
+                return new PlacementCheckResult
+                {
+                    IsValid = false,
+                    Reason = PlacementFailReason.OutOfBounds,
+                    FailedCell = pos
+                };
             }
 
             if (Cells[pos.x, pos.y].IsOccupied)
             {
-                // Debug.Log($"Placement Failed: Pos {pos} is Occupied by {Cells[pos.x, pos.y].OccupiedUnit}");
-                return false;
+                return new PlacementCheckResult
+                {
+                    IsValid = false,
+                    Reason = PlacementFailReason.Occupied,
+                    FailedCell = pos
+                };
             }
         }
-        return true;
+        return new PlacementCheckResult
+        {
+            IsValid = true,
+            Reason = PlacementFailReason.None,
+            FailedCell = position
+        };
     }
 
     public void PlaceUnit(IGridOccupant unit, Vector2Int position, bool isHorizontal)

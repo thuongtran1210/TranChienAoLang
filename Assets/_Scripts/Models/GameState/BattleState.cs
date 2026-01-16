@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,10 +10,12 @@ public class BattleState : GameStateBase
 
     private GridInputChannelSO _gridInputChannel;
     private BattleEventChannelSO _battleEvents;
+    private GameFlowEventChannelSO _flowEvents;
     private DuckEnergySystem _playerEnergy;
     private DuckEnergySystem _enemyEnergy;
     private List<DuckSkillSO> _enemyAvailableSkills = new List<DuckSkillSO>();
     private DuckSkillSO _currentSelectedSkill;
+    private readonly Dictionary<DuckSkillSO, int> _playerCooldowns = new Dictionary<DuckSkillSO, int>();
 
     private readonly GameBalanceConfigSO _balanceConfig;
 
@@ -28,6 +30,7 @@ public class BattleState : GameStateBase
                                IEnemyAI enemyAI,
                                GridInputChannelSO gridInputChannel, 
                                BattleEventChannelSO battleEvents,
+                               GameFlowEventChannelSO flowEvents,
                                GameBalanceConfigSO balanceConfig,
                                DuckEnergySystem playerEnergy,
                                DuckEnergySystem enemyEnergy)
@@ -38,6 +41,7 @@ public class BattleState : GameStateBase
         _enemyAI = enemyAI;
         _gridInputChannel = gridInputChannel;
         _battleEvents = battleEvents;
+        _flowEvents = flowEvents;
         _balanceConfig = balanceConfig;
         _playerEnergy = playerEnergy;
         _enemyEnergy = enemyEnergy;
@@ -48,6 +52,9 @@ public class BattleState : GameStateBase
         Debug.Log("--- BATTLE START ---");
         _isPlayerTurn = true;
         _isGameOver = false;
+        _playerCooldowns.Clear();
+        if (_flowEvents != null)
+            _flowEvents.RaiseTurnChanged(Owner.Player);
 
 
         _gridInputChannel.OnGridCellClicked += HandleCellClicked;
@@ -68,6 +75,12 @@ public class BattleState : GameStateBase
     private void HandleSkillRequested(DuckSkillSO skill)
     {
         if (!_isPlayerTurn || _isGameOver) return;
+
+        if (GetPlayerCooldownRemaining(skill) > 0)
+        {
+            _battleEvents.RaiseSkillFeedback("Skill is on cooldown!", Vector2Int.zero);
+            return;
+        }
 
         if (_playerEnergy.CurrentEnergy < skill.energyCost)
         {
@@ -91,27 +104,50 @@ public class BattleState : GameStateBase
     // Nếu đang PendingSkill -> Cast Skill. Nếu không -> Bắn thường. 
     private void HandleCellClicked(Vector2Int gridPos, Owner owner)
     {
-        if (_isGameOver || !_isPlayerTurn) return;
+        if (_isGameOver) return;
+        if (!_isPlayerTurn)
+        {
+            _battleEvents.RaiseSkillFeedback("Not your turn!", Vector2Int.zero);
+            return;
+        }
 
         if (_pendingSkill != null)
         {
-            _gameContext.StartCoroutine(ExecuteSkillRoutine(gridPos));
+            if (!IsValidTargetGrid(owner, _pendingSkill.targetType))
+            {
+                _battleEvents.RaiseSkillFeedback("Invalid target grid!", gridPos);
+                return;
+            }
+
+            IGridContext targetGrid = owner == Owner.Player ? _playerGrid : _enemyGrid;
+            _gameContext.StartCoroutine(ExecuteSkillRoutine(targetGrid, owner, gridPos));
         }
         else
         {
+            if (owner != Owner.Enemy)
+            {
+                _battleEvents.RaiseSkillFeedback("You can only shoot the enemy grid!", gridPos);
+                return;
+            }
+
             ExecuteNormalShot(gridPos);
         }
     }
     // --- GAMEPLAY LOGIC ---
 
-    private IEnumerator ExecuteSkillRoutine(Vector2Int targetPos)
+    private IEnumerator ExecuteSkillRoutine(IGridContext targetGrid, Owner targetOwner, Vector2Int targetPos)
     {
+        DuckSkillSO skillToExecute = _pendingSkill;
+        if (skillToExecute == null)
+            yield break;
+
         // Execute Logic
-        bool success = _pendingSkill.Execute(_enemyGrid.GridSystem, targetPos, _battleEvents, Owner.Enemy);
+        bool success = skillToExecute.Execute(targetGrid.GridSystem, targetPos, _battleEvents, targetOwner);
 
         if (success)
         {
-            _playerEnergy.TryConsumeEnergy(_pendingSkill.energyCost);
+            _playerEnergy.TryConsumeEnergy(skillToExecute.energyCost);
+            SetPlayerCooldown(skillToExecute, skillToExecute.cooldownTurns);
             _pendingSkill = null;
 
             // Sử dụng Config cho thời gian delay
@@ -132,8 +168,25 @@ public class BattleState : GameStateBase
 
     private void ExecuteNormalShot(Vector2Int targetPos)
     {
-        if (_enemyGrid.GridSystem.GetCell(targetPos).IsHit) return;
+        GridCell cell = _enemyGrid.GridSystem.GetCell(targetPos);
+        if (cell == null) return;
+        if (cell.IsHit)
+        {
+            _battleEvents.RaiseSkillFeedback("Cell already shot!", targetPos);
+            return;
+        }
         ProcessShot(_enemyGrid, targetPos, Owner.Player);
+    }
+
+    private bool IsValidTargetGrid(Owner gridOwner, SkillTargetType skillTargetType)
+    {
+        return skillTargetType switch
+        {
+            SkillTargetType.Self => gridOwner == Owner.Player,
+            SkillTargetType.Enemy => gridOwner == Owner.Enemy,
+            SkillTargetType.Any => true,
+            _ => false
+        };
     }
 
 
@@ -184,6 +237,11 @@ public class BattleState : GameStateBase
     {
         _isPlayerTurn = !_isPlayerTurn;
         Debug.Log($"Turn Switch: {(_isPlayerTurn ? "PLAYER" : "ENEMY")}");
+        if (_flowEvents != null)
+            _flowEvents.RaiseTurnChanged(_isPlayerTurn ? Owner.Player : Owner.Enemy);
+
+        if (_isPlayerTurn)
+            TickPlayerCooldowns();
 
         if (!_isPlayerTurn)
         {
@@ -279,6 +337,12 @@ public class BattleState : GameStateBase
     {
         if (!_isPlayerTurn) return;
 
+        if (GetPlayerCooldownRemaining(skill) > 0)
+        {
+            _battleEvents.RaiseSkillFeedback("Skill is on cooldown!", Vector2Int.zero);
+            return;
+        }
+
         if (_playerEnergy.CurrentEnergy < skill.energyCost)
         {
             _battleEvents.RaiseSkillFeedback("Not enough energy!", Vector2Int.zero);
@@ -287,5 +351,44 @@ public class BattleState : GameStateBase
 
         _pendingSkill = skill;
         _battleEvents.RaiseSkillSelected(skill);
+    }
+
+    private int GetPlayerCooldownRemaining(DuckSkillSO skill)
+    {
+        if (skill == null)
+            return 0;
+
+        return _playerCooldowns.TryGetValue(skill, out int remaining) ? remaining : 0;
+    }
+
+    private void SetPlayerCooldown(DuckSkillSO skill, int cooldownTurns)
+    {
+        if (skill == null)
+            return;
+
+        int clamped = Mathf.Max(0, cooldownTurns);
+        if (clamped <= 0)
+            _playerCooldowns.Remove(skill);
+        else
+            _playerCooldowns[skill] = clamped;
+
+        _battleEvents.RaiseSkillCooldownChanged(skill, clamped);
+    }
+
+    private void TickPlayerCooldowns()
+    {
+        if (_playerCooldowns.Count == 0)
+            return;
+
+        var keys = new List<DuckSkillSO>(_playerCooldowns.Keys);
+        for (int i = 0; i < keys.Count; i++)
+        {
+            DuckSkillSO skill = keys[i];
+            int remaining = GetPlayerCooldownRemaining(skill);
+            if (remaining <= 0)
+                continue;
+
+            SetPlayerCooldown(skill, remaining - 1);
+        }
     }
 }

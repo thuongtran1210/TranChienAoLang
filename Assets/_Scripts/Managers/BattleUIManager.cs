@@ -23,6 +23,8 @@ public class BattleUIManager : MonoBehaviour
 
     private List<SkillButtonView> _spawnedButtons = new List<SkillButtonView>();
     private DuckSkillSO _currentSelectedSkill;
+    private int _currentPlayerEnergy;
+    private readonly Dictionary<DuckSkillSO, int> _cooldowns = new Dictionary<DuckSkillSO, int>();
 
     private void OnEnable()
     {
@@ -32,6 +34,7 @@ public class BattleUIManager : MonoBehaviour
         {
             _battleEvents.OnSkillSelected += HandleSkillSelected;
             _battleEvents.OnSkillDeselected += HandleSkillDeselected;
+            _battleEvents.OnSkillCooldownChanged += HandleSkillCooldownChanged;
         }
     }
 
@@ -43,6 +46,7 @@ public class BattleUIManager : MonoBehaviour
         {
             _battleEvents.OnSkillSelected -= HandleSkillSelected;
             _battleEvents.OnSkillDeselected -= HandleSkillDeselected;
+            _battleEvents.OnSkillCooldownChanged -= HandleSkillCooldownChanged;
         }
     }
 
@@ -51,6 +55,8 @@ public class BattleUIManager : MonoBehaviour
     {
         Debug.Log("BattleUIManager: Initializing...");
         Show();
+        _cooldowns.Clear();
+        _currentPlayerEnergy = 0;
         UpdateEnergyUI(Owner.Player, 0, 100);
         _currentSelectedSkill = null;
         SpawnSkillButtons(playerSkills);
@@ -128,6 +134,7 @@ public class BattleUIManager : MonoBehaviour
     {
         if (owner == Owner.Player)
         {
+            _currentPlayerEnergy = current;
             // Update Player UI
             if (_playerEnergySlider != null)
             {
@@ -139,7 +146,7 @@ public class BattleUIManager : MonoBehaviour
                 _playerEnergyText.text = $"{current}/{max}";
 
             // Cập nhật trạng thái nút Skill của Player
-            UpdateSkillButtonsInteractability(current);
+            RefreshSkillButtons();
         }
         else if (owner == Owner.Enemy)
         {
@@ -154,13 +161,29 @@ public class BattleUIManager : MonoBehaviour
                 _enemyEnergyText.text = $"{current}/{max}";
         }
     }
-    private void UpdateSkillButtonsInteractability(int currentEnergy)
+    private void RefreshSkillButtons()
     {
         foreach (var btn in _spawnedButtons)
         {
             if (btn != null)
-                btn.UpdateInteractable(currentEnergy);
+            {
+                int cooldownRemaining = 0;
+                DuckSkillSO skill = btn.SkillData;
+                if (skill != null && _cooldowns.TryGetValue(skill, out int value))
+                    cooldownRemaining = value;
+
+                btn.UpdateState(_currentPlayerEnergy, cooldownRemaining);
+            }
         }
+    }
+
+    private void HandleSkillCooldownChanged(DuckSkillSO skill, int remainingTurns)
+    {
+        if (skill == null)
+            return;
+
+        _cooldowns[skill] = Mathf.Max(0, remainingTurns);
+        RefreshSkillButtons();
     }
 
     private Sprite GetOwnerIconForSkill(DuckSkillSO skill)

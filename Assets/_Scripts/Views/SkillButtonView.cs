@@ -9,6 +9,7 @@ public class SkillButtonView : MonoBehaviour
     [SerializeField] private Image _iconImage;
     [SerializeField] private TextMeshProUGUI _costText;
     [SerializeField] private GameObject _cooldownOverlay;
+    [SerializeField] private TextMeshProUGUI _cooldownText;
     [SerializeField] private Image _selectedFrame;
     [SerializeField] private Image _ownerIconImage;
     [SerializeField] private TextMeshProUGUI _typeText;
@@ -59,10 +60,17 @@ public class SkillButtonView : MonoBehaviour
 
     public void UpdateInteractable(int currentEnergy)
     {
+        UpdateState(currentEnergy, 0);
+    }
+
+    public void UpdateState(int currentEnergy, int cooldownTurnsRemaining)
+    {
         if (_skillData == null)
             return;
 
-        bool canUse = currentEnergy >= _skillData.energyCost;
+        bool hasEnergy = currentEnergy >= _skillData.energyCost;
+        bool isOnCooldown = cooldownTurnsRemaining > 0;
+        bool canUse = hasEnergy && !isOnCooldown;
 
         if (_btn != null)
             _btn.interactable = canUse;
@@ -70,8 +78,11 @@ public class SkillButtonView : MonoBehaviour
         if (_cooldownOverlay != null)
             _cooldownOverlay.SetActive(!canUse);
 
+        if (_cooldownText != null)
+            _cooldownText.text = isOnCooldown ? cooldownTurnsRemaining.ToString() : string.Empty;
+
         if (_costText != null)
-            _costText.color = canUse ? Color.white : Color.red;
+            _costText.color = hasEnergy ? Color.white : Color.red;
     }
 
     public void SetSelected(bool selected)

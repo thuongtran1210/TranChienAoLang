@@ -11,6 +11,7 @@ public abstract class DuckSkillSO : ScriptableObject
     [Header("Skill Info")]
     public string skillName;
     public int energyCost;
+    public int cooldownTurns;
     public Sprite icon;
     public Color skillColor = Color.yellow; 
 

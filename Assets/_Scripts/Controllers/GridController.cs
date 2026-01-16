@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections.Generic;
 /// <summary>
@@ -138,6 +138,39 @@ public class GridController : MonoBehaviour, IGridContext
         if (_gridSystem == null || data == null) return false;
         Vector2Int gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
         return _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
+    }
+
+    public bool TryPlaceDuckWithResult(Vector3 worldPos, DuckDataSO data, bool isHorizontal, out PlacementCheckResult result)
+    {
+        result = default;
+
+        if (_gridSystem == null || _tilemapGridView == null)
+            return false;
+
+        Vector2Int gridPos = _tilemapGridView.WorldToGridPosition(worldPos);
+
+        if (_gridSystem is GridSystem concrete)
+        {
+            result = concrete.CheckPlacement(data, gridPos, isHorizontal);
+        }
+        else
+        {
+            bool canPlace = _gridSystem.CanPlaceUnit(data, gridPos, isHorizontal);
+            result = new PlacementCheckResult
+            {
+                IsValid = canPlace,
+                Reason = canPlace ? PlacementFailReason.None : PlacementFailReason.InvalidData,
+                FailedCell = gridPos
+            };
+        }
+
+        if (!result.IsValid)
+            return false;
+
+        DuckUnit newDuck = new DuckUnit(data, gridPos, isHorizontal);
+        _gridSystem.PlaceUnit(newDuck, gridPos, isHorizontal);
+        _unitVisualManager.SpawnDuck(gridPos, isHorizontal, data);
+        return true;
     }
     // --- BATTLE LOGIC ---
 

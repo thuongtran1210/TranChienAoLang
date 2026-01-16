@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SkillInteractionController : MonoBehaviour
@@ -74,7 +74,8 @@ public class SkillInteractionController : MonoBehaviour
         _battleEvents.RaiseSkillGhostUpdate(ghostSprite, ghostSize, cellWorldPos, isValidTarget);
 
         // Raise Grid Highlight (Preview Layer)
-        if (gridLogic is IGridSystem gridSystem)
+        IGridSystem gridSystem = gridLogic.GridSystem;
+        if (gridSystem != null)
         {
             // Tính toán vùng ảnh hưởng dựa trên Logic của Skill (Strategy Pattern trong SO)
             List<Vector2Int> affectedCells = _currentSelectedSkill.GetAffectedPositions(gridPos, gridSystem);

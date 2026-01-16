@@ -48,9 +48,6 @@ public class TilemapGridView : MonoBehaviour
     private void HandleShotFired(Owner shooter, Owner target, ShotResult result, Vector2Int pos)
     {
         if (target != _myOwner) return;
-
-        Debug.Log($"[Grid {_myOwner}] ShotFired: shooter={shooter}, target={target}, result={result}, pos={pos}");
-
         UpdateVisualCell(pos, result);
     }
     // --- 1. INITIALIZATION (Khởi tạo hình ảnh bàn cờ) ---

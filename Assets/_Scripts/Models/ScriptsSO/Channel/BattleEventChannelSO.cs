@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Tilemaps;
@@ -19,6 +19,7 @@ public class BattleEventChannelSO : ScriptableObject
     public UnityAction<string, Vector2Int> OnSkillFeedback;
     public UnityAction<DuckSkillSO> OnSkillSelected;
     public UnityAction OnSkillDeselected;
+    public UnityAction<DuckSkillSO, int> OnSkillCooldownChanged;
 
     [Header("Visual Events")]
     public UnityAction<Owner, List<Vector2Int>, Color> OnGridHighlightRequested;
@@ -49,6 +50,7 @@ public class BattleEventChannelSO : ScriptableObject
         LogEvent($"Skill REQUESTED: {(skill != null ? skill.skillName : "NULL")}");
         OnSkillRequested?.Invoke(skill);
     }
+    public void RaiseSkillCooldownChanged(DuckSkillSO skill, int remainingTurns) => OnSkillCooldownChanged?.Invoke(skill, remainingTurns);
 
     // --- ADDED RAISERS ---
     public void RaiseSkillSelected(DuckSkillSO skill)

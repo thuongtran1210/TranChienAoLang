@@ -1488,6 +1488,8 @@ MonoBehaviour:
   _enemyEnergySystem: {fileID: 2108850430}
   _battleEventChannel: {fileID: 11400000, guid: 86ccebbebe631a54b904918055ef4334, type: 2}
   _gridInputChannel: {fileID: 11400000, guid: 6bcf6b89fbcade344846cf138bea5add, type: 2}
+  _gameFlowEventChannel: {fileID: 11400000, guid: b1218d5e1adde2140bc6c3b258637e50, type: 2}
+  _uiFeedbackChannel: {fileID: 11400000, guid: 6314c7cfba85b4a43a24cde5719d1192, type: 2}
   _distanceBetweenBoards: 12
   _gameBalanceConfig: {fileID: 11400000, guid: 306dda77abf7ec948a3a11f57f35a21e, type: 2}
   vsAI: 1

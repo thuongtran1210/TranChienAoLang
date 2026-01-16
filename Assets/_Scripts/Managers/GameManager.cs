@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour, IGameContext
     [Header("--- EVENTS CHANEL ---")]
     [SerializeField] private BattleEventChannelSO _battleEventChannel;
     [SerializeField] private GridInputChannelSO _gridInputChannel;
+    [SerializeField] private GameFlowEventChannelSO _gameFlowEventChannel;
+    [SerializeField] private UIFeedbackChannelSO _uiFeedbackChannel;
 
     [Header("--- LAYOUT CONFIG ---")]
     [Tooltip("Khoảng cách giữa 2 bàn cờ")]
@@ -51,6 +53,8 @@ public class GameManager : MonoBehaviour, IGameContext
         if (_uiFlowManager != null)
         {
             _uiFlowManager.ShowMainMenu();
+            if (_gameFlowEventChannel != null)
+                _gameFlowEventChannel.RaisePhaseChanged(GamePhase.MainMenu);
         }
         else
         {
@@ -97,8 +101,8 @@ public class GameManager : MonoBehaviour, IGameContext
 
         // 5. Khởi tạo States
 
-        _setupState = new SetupState(this, _playerGrid, _fleetManager, _gridInputController, _gridInputChannel);
-        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel,_gameBalanceConfig, _playerEnergySystem, _enemyEnergySystem);
+        _setupState = new SetupState(this, _playerGrid, _fleetManager, _gridInputController, _gridInputChannel, _uiFeedbackChannel);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel, _gameFlowEventChannel, _gameBalanceConfig, _playerEnergySystem, _enemyEnergySystem);
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = _fleetManager.GetFleetData();
         gridRandomizer.RandomizePlacement(_enemyGridManager, enemyFleet);
@@ -110,6 +114,8 @@ public class GameManager : MonoBehaviour, IGameContext
         {
             _uiFlowManager.ShowSetup();
         }
+        if (_gameFlowEventChannel != null)
+            _gameFlowEventChannel.RaisePhaseChanged(GamePhase.Setup);
     }
 
     public void StartGameFromUI()
@@ -200,6 +206,8 @@ public class GameManager : MonoBehaviour, IGameContext
         {
             _uiFlowManager.ShowBattle();
         }
+        if (_gameFlowEventChannel != null)
+            _gameFlowEventChannel.RaisePhaseChanged(GamePhase.Battle);
     }
     private IEnumerator TransitionToBattle()
     {
@@ -213,6 +221,8 @@ public class GameManager : MonoBehaviour, IGameContext
         Debug.Log(playerWon ? "Game Over: VICTORY!" : "Game Over: DEFEAT!");
 
         _currentState = null;
+        if (_gameFlowEventChannel != null)
+            _gameFlowEventChannel.RaisePhaseChanged(GamePhase.GameOver);
     }
 
     // 3. Coroutine

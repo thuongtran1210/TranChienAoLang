@@ -9,18 +9,21 @@ public class SetupState : GameStateBase
     private GridInputChannelSO _gridInputChannel;
     private GridInputController _inputController;
     private DuckDataSO _selectedDuckData;
+    private UIFeedbackChannelSO _uiFeedback;
 
     public SetupState(IGameContext gameContext,
                           IGridContext playerGrid,
                           FleetManager fleetManager,
                           GridInputController inputController, 
-                          GridInputChannelSO gridInputChannel) 
+                          GridInputChannelSO gridInputChannel,
+                          UIFeedbackChannelSO uiFeedback) 
                 : base(gameContext)
     {
         _playerGrid = playerGrid;
         _fleetManager = fleetManager;
         _inputController = inputController;
         _gridInputChannel = gridInputChannel;
+        _uiFeedback = uiFeedback;
     }
 
     public override void EnterState()
@@ -71,6 +74,7 @@ public class SetupState : GameStateBase
         if (owner != Owner.Player)
         {
             Debug.LogWarning("Chỉ được đặt tàu lên bảng của Player!");
+            RaiseSetupFeedback("Chỉ được đặt vịt lên bảng của Player!", UIFeedbackType.Warning);
             return;
         }
 
@@ -105,7 +109,7 @@ public class SetupState : GameStateBase
             Vector3 worldPos = gridController.GetWorldPosition(gridPos);
             bool isHorizontal = _playerGrid.IsGhostHorizontal;
             // 3. GỌI HÀM VÀ HỨNG KẾT QUẢ (QUAN TRỌNG NHẤT)
-            bool isSuccess = gridController.TryPlaceDuck(worldPos, _selectedDuckData, isHorizontal);
+            bool isSuccess = gridController.TryPlaceDuckWithResult(worldPos, _selectedDuckData, isHorizontal, out PlacementCheckResult result);
 
             // 4. Kiểm tra kết quả
             if (isSuccess)
@@ -114,6 +118,7 @@ public class SetupState : GameStateBase
                 _fleetManager.OnDuckPlacedSuccess();
 
                 Debug.Log($"[SetupState] Đặt thành công {_selectedDuckData.duckName}");
+                RaiseSetupFeedback($"Đặt thành công {_selectedDuckData.duckName}", UIFeedbackType.Success);
 
                 // Reset trạng thái chọn
                 _selectedDuckData = null;
@@ -123,13 +128,43 @@ public class SetupState : GameStateBase
             {
                 // Logic thất bại: Controller đã log warning rồi, ở đây ta có thể play sound
                 Debug.Log("[SetupState] Đặt thất bại - Controller trả về False");
+                RaiseSetupFeedback(FormatPlacementFailure(result), UIFeedbackType.Error);
                 // audioManager.PlayErrorSound(); 
             }
         }
         else
         {
             Debug.LogError("[SetupState] _playerGrid không phải là GridController! Kiểm tra lại DI.");
+            RaiseSetupFeedback("Lỗi hệ thống: Player grid không hợp lệ", UIFeedbackType.Error);
         }
+    }
+
+    private void RaiseSetupFeedback(string message, UIFeedbackType type)
+    {
+        if (_uiFeedback == null || string.IsNullOrWhiteSpace(message))
+            return;
+
+        var payload = new UIFeedbackPayload
+        {
+            Message = message,
+            Type = type,
+            Source = UIFeedbackSource.Setup,
+            Duration = 1.5f
+        };
+
+        _uiFeedback.RaiseToast(payload);
+        _uiFeedback.RaiseLog(payload);
+    }
+
+    private string FormatPlacementFailure(PlacementCheckResult result)
+    {
+        return result.Reason switch
+        {
+            PlacementFailReason.OutOfBounds => "Không thể đặt: ngoài biên",
+            PlacementFailReason.Occupied => "Không thể đặt: ô đã bị chiếm",
+            PlacementFailReason.InvalidData => "Không thể đặt: dữ liệu không hợp lệ",
+            _ => "Không thể đặt: vị trí không hợp lệ"
+        };
     }
 
     // --- EVENT HANDLERS ---
