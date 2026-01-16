@@ -154,7 +154,6 @@ public class SetupState : GameStateBase
     {
         Debug.Log("Setup Completed!");  
         _playerGrid.OnSetupPhaseCompleted();
-        _gameContext.EndSetupPhase();
     }
 
     private void HandlePointerPositionChanged(Vector3 worldPos)

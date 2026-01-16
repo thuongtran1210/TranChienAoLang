@@ -9,6 +9,7 @@ public class FleetUIManager : MonoBehaviour
     [SerializeField] private FleetDuckButton duckButtonPrefab;
     [SerializeField] private Transform buttonContainer;
     [SerializeField] private Button startBattleButton;
+    [SerializeField] private GameManager gameManager;
 
     void Start()
     {
@@ -45,5 +46,13 @@ public class FleetUIManager : MonoBehaviour
 
         if (startBattleButton != null)
             startBattleButton.interactable = (currentFleet.Count == 0);
+    }
+
+    public void OnStartBattleButtonClicked()
+    {
+        if (gameManager != null)
+        {
+            gameManager.EndSetupPhase();
+        }
     }
 }
