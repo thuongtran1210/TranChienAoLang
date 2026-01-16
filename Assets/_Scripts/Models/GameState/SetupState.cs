@@ -69,11 +69,9 @@ public class SetupState : GameStateBase
 
     private void HandleGridInput(Vector2Int gridPos, Owner owner)
     {
-        Debug.Log($"[DEBUG] SetupState Received Click: {gridPos}, Owner: {owner}");
         // 1. Validate Input
         if (owner != Owner.Player)
         {
-            Debug.LogWarning("Chỉ được đặt tàu lên bảng của Player!");
             RaiseSetupFeedback("Chỉ được đặt vịt lên bảng của Player!", UIFeedbackType.Warning);
             return;
         }

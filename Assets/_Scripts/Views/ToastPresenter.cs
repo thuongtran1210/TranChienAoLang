@@ -24,7 +24,14 @@ public class ToastPresenter : MonoBehaviour
         if (_uiFeedback != null)
             _uiFeedback.OnToastRequested += Enqueue;
     }
-
+    void Awake()
+    {
+        if (_canvasGroup != null)
+        {
+            _canvasGroup.alpha = 0f;
+            _canvasGroup.gameObject.SetActive(false);
+        }
+    }
     private void OnDisable()
     {
         if (_uiFeedback != null)

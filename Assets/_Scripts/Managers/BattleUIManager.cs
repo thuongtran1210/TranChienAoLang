@@ -53,7 +53,6 @@ public class BattleUIManager : MonoBehaviour
     // Được gọi khi bắt đầu Battle (Bạn có thể gọi từ GameManager.EndSetupPhase hoặc Start)
     public void InitializeBattleUI(List<DuckSkillSO> playerSkills)
     {
-        Debug.Log("BattleUIManager: Initializing...");
         Show();
         _cooldowns.Clear();
         _currentPlayerEnergy = 0;
@@ -125,7 +124,6 @@ public class BattleUIManager : MonoBehaviour
 
     private void OnSkillClicked(DuckSkillSO skill)
     {
-        Debug.Log($"UI: Requesting skill {skill.skillName}");
 
         _battleEvents.RaiseSkillRequested(skill);
     }

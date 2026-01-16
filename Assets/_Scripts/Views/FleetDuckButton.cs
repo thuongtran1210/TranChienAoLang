@@ -9,7 +9,7 @@ public class FleetDuckButton : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private Button button;
     [SerializeField] private Image duckIcon;
-    [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private TextMeshProUGUI textDuckSize;
 
     private DuckDataSO _duckData;
     private Action<DuckDataSO> _onSelectAction;

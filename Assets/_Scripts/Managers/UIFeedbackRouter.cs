@@ -89,7 +89,7 @@ public class UIFeedbackRouter : MonoBehaviour
 
         string shooterLabel = shooter == Owner.Player ? "Player" : "Enemy";
         string resultLabel = result.ToString();
-        string message = $"{shooterLabel} bắn {pos}: {resultLabel}";
+        string message = $"{shooterLabel} bắn {resultLabel}";
 
         UIFeedbackType type = result == ShotResult.Miss ? UIFeedbackType.Info : UIFeedbackType.Success;
         if (result == ShotResult.Invalid || result == ShotResult.None) type = UIFeedbackType.Warning;
