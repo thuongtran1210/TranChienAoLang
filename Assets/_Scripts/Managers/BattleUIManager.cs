@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -22,17 +22,28 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private GameObject _contentRoot;
 
     private List<SkillButtonView> _spawnedButtons = new List<SkillButtonView>();
+    private DuckSkillSO _currentSelectedSkill;
 
     private void OnEnable()
     {
         if (_battleEvents != null)
             _battleEvents.OnEnergyChanged += UpdateEnergyUI;
+        if (_battleEvents != null)
+        {
+            _battleEvents.OnSkillSelected += HandleSkillSelected;
+            _battleEvents.OnSkillDeselected += HandleSkillDeselected;
+        }
     }
 
     private void OnDisable()
     {
         if (_battleEvents != null)
             _battleEvents.OnEnergyChanged -= UpdateEnergyUI;
+        if (_battleEvents != null)
+        {
+            _battleEvents.OnSkillSelected -= HandleSkillSelected;
+            _battleEvents.OnSkillDeselected -= HandleSkillDeselected;
+        }
     }
 
     // Được gọi khi bắt đầu Battle (Bạn có thể gọi từ GameManager.EndSetupPhase hoặc Start)
@@ -41,7 +52,7 @@ public class BattleUIManager : MonoBehaviour
         Debug.Log("BattleUIManager: Initializing...");
         Show();
         UpdateEnergyUI(Owner.Player, 0, 100);
-
+        _currentSelectedSkill = null;
         SpawnSkillButtons(playerSkills);
     }
     public void Show()
@@ -91,6 +102,8 @@ public class BattleUIManager : MonoBehaviour
                 CreateButton(skill);
             }
         }
+
+        RefreshSelectionVisuals();
     }
     private void CreateButton(DuckSkillSO skill)
     {
@@ -98,8 +111,8 @@ public class BattleUIManager : MonoBehaviour
 
         SkillButtonView btnView = Instantiate(_skillButtonPrefab, _skillButtonContainer);
 
-        // Setup Button: Truyền skill và hàm callback khi click
-        btnView.Setup(skill, OnSkillClicked);
+        Sprite ownerIcon = GetOwnerIconForSkill(skill);
+        btnView.Setup(skill, ownerIcon, OnSkillClicked);
 
         _spawnedButtons.Add(btnView);
     }
@@ -147,6 +160,52 @@ public class BattleUIManager : MonoBehaviour
         {
             if (btn != null)
                 btn.UpdateInteractable(currentEnergy);
+        }
+    }
+
+    private Sprite GetOwnerIconForSkill(DuckSkillSO skill)
+    {
+        if (_fleetManager == null || skill == null)
+            return null;
+
+        List<DuckDataSO> fleet = _fleetManager.GetCurrentFleet();
+        if (fleet == null)
+            return null;
+
+        for (int i = 0; i < fleet.Count; i++)
+        {
+            DuckDataSO duck = fleet[i];
+            if (duck != null && duck.activeSkill == skill && duck.icon != null)
+            {
+                return duck.icon;
+            }
+        }
+
+        return null;
+    }
+
+    private void HandleSkillSelected(DuckSkillSO skill)
+    {
+        _currentSelectedSkill = skill;
+        RefreshSelectionVisuals();
+    }
+
+    private void HandleSkillDeselected()
+    {
+        _currentSelectedSkill = null;
+        RefreshSelectionVisuals();
+    }
+
+    private void RefreshSelectionVisuals()
+    {
+        foreach (var btn in _spawnedButtons)
+        {
+            if (btn == null)
+                continue;
+
+            DuckSkillSO data = btn.SkillData;
+            bool isSelected = _currentSelectedSkill != null && data == _currentSelectedSkill;
+            btn.SetSelected(isSelected);
         }
     }
 }

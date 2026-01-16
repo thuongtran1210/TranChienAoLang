@@ -8,7 +8,7 @@ public class FleetManager : MonoBehaviour
     [SerializeField] private List<DuckDataSO> levelFleetConfig;
     [SerializeField] private List<DuckDataSO> levelFleetData;
     // Runtime
-    private List<DuckDataSO> _availableShips;
+    private List<DuckDataSO> _availableDucks;
 
     // Events
     public event Action<List<DuckDataSO>> OnFleetChanged;
@@ -27,23 +27,23 @@ public class FleetManager : MonoBehaviour
   
         if (levelFleetConfig != null)
         {
-            _availableShips = new List<DuckDataSO>(levelFleetConfig);
+            _availableDucks = new List<DuckDataSO>(levelFleetConfig);
         }
         else
         {
-            _availableShips = new List<DuckDataSO>();
+            _availableDucks = new List<DuckDataSO>();
         }
 
         _currentSelectedDuck = null;
 
  
-        OnFleetChanged?.Invoke(_availableShips);
+        OnFleetChanged?.Invoke(_availableDucks);
     }
 
     public List<DuckDataSO> GetCurrentFleet()
     { 
-        if (_availableShips == null) _availableShips = new List<DuckDataSO>();
-        return _availableShips;
+        if (_availableDucks == null) _availableDucks = new List<DuckDataSO>();
+        return _availableDucks;
     }
     public List<DuckDataSO> GetFleetData()
     {
@@ -53,7 +53,7 @@ public class FleetManager : MonoBehaviour
 
     public void SelectDuck(DuckDataSO duckData)
     {
-        if (_availableShips.Contains(duckData))
+        if (_availableDucks.Contains(duckData))
         {
             _currentSelectedDuck = duckData;
             OnDuckSelected?.Invoke(duckData); 
@@ -66,14 +66,14 @@ public class FleetManager : MonoBehaviour
     {
         if (_currentSelectedDuck != null)
         {
-            _availableShips.Remove(_currentSelectedDuck);
+            _availableDucks.Remove(_currentSelectedDuck);
             _currentSelectedDuck = null;
 
             // Cập nhật UI
-            OnFleetChanged?.Invoke(_availableShips);
+            OnFleetChanged?.Invoke(_availableDucks);
 
             // Check xem hết tàu chưa
-            if (_availableShips.Count == 0)
+            if (_availableDucks.Count == 0)
             {
                 OnFleetEmpty?.Invoke();
                 Debug.Log("FleetManager: Hết tàu trong kho!");

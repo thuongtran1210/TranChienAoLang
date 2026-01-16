@@ -140,6 +140,9 @@ MonoBehaviour:
   _iconImage: {fileID: 263386801577407880}
   _costText: {fileID: 5778932474443513829}
   _cooldownOverlay: {fileID: 4800275815200826124}
+  _selectedFrame: {fileID: 0}
+  _ownerIconImage: {fileID: 2096901305774679304}
+  _typeText: {fileID: 5778932474443513829}
 --- !u!1 &3465597764178433330
 GameObject:
   m_ObjectHideFlags: 0

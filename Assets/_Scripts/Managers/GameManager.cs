@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro.Examples;
@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour, IGameContext
     [SerializeField] private FleetManager _fleetManager;
     [SerializeField] private GridRandomizer gridRandomizer;
     [SerializeField] private BattleUIManager _battleUIManager;
- 
+    [SerializeField] private UIFlowManager _uiFlowManager;
 
     [SerializeField] private CameraController cameraController;
     [SerializeField] private GridInputController _gridInputController;
@@ -48,7 +48,14 @@ public class GameManager : MonoBehaviour, IGameContext
 
     private void Start()
     {
-        InitializeGame();
+        if (_uiFlowManager != null)
+        {
+            _uiFlowManager.ShowMainMenu();
+        }
+        else
+        {
+            InitializeGame();
+        }
     }
 
     private void InitializeGame()
@@ -98,8 +105,16 @@ public class GameManager : MonoBehaviour, IGameContext
 
         // 7. Start Game
         ChangeState(_setupState);
-    
 
+        if (_uiFlowManager != null)
+        {
+            _uiFlowManager.ShowSetup();
+        }
+    }
+
+    public void StartGameFromUI()
+    {
+        InitializeGame();
     }
 
     private void OnDestroy()
@@ -180,6 +195,10 @@ public class GameManager : MonoBehaviour, IGameContext
         if (_battleUIManager != null)
         {
             _battleUIManager.InitializeBattleUI(playerSkills);
+        }
+        if (_uiFlowManager != null)
+        {
+            _uiFlowManager.ShowBattle();
         }
     }
     private IEnumerator TransitionToBattle()

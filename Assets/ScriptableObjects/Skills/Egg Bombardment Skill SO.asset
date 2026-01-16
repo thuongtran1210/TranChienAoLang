@@ -25,7 +25,7 @@ MonoBehaviour:
     \u0111\u1ED3. D\xF9ng \u0111\u1EC3 ph\xE1 th\u1EBF b\u1EBF t\u1EAFc."
   ghostPrefab: {fileID: 6492697460367462693, guid: 70a63ab8ef37dfd4bae8f8538c7b254e, type: 3}
   ghostSprite: {fileID: -2305461910001153335, guid: 1d969dc700af5f242a77aaab6e796433, type: 3}
-  areaSize: {x: 1, y: 1}
+  areaSize: {x: 10, y: 10}
   _eggsCount: 5
   _feedbackFormat: Egg Bombardment hit {0} cells!
   _noTargetMessage: No cells left to bombard.
