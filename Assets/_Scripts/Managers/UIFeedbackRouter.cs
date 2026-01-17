@@ -99,15 +99,15 @@ public class UIFeedbackRouter : MonoBehaviour
             Message = message,
             Type = type,
             Source = UIFeedbackSource.Shot,
+            ToastVisual = result == ShotResult.Sunk ? UIFeedbackToastVisual.DuckSunk : UIFeedbackToastVisual.DefaultText,
             HasOwner = true,
             Owner = shooter,
             HasGridPos = true,
             GridPos = pos,
-            Duration = 1.2f
+            Duration = 1.8f
         };
 
         _uiFeedback.RaiseToast(payload);
         _uiFeedback.RaiseLog(payload);
     }
 }
-

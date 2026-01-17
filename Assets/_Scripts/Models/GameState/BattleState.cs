@@ -18,11 +18,14 @@ public class BattleState : GameStateBase
     private readonly Dictionary<DuckSkillSO, int> _playerCooldowns = new Dictionary<DuckSkillSO, int>();
 
     private readonly GameBalanceConfigSO _balanceConfig;
+    private readonly AIDifficultyConfigSO _aiDifficultyConfig;
 
     private bool _isPlayerTurn;
     private bool _isGameOver;
 
     private DuckSkillSO _pendingSkill; 
+    private float _playerTurnTimer;
+    private bool _isPlayerTurnTimerRunning;
 
     public BattleState(IGameContext context,
                                IGridContext playerGrid,
@@ -32,6 +35,7 @@ public class BattleState : GameStateBase
                                BattleEventChannelSO battleEvents,
                                GameFlowEventChannelSO flowEvents,
                                GameBalanceConfigSO balanceConfig,
+                               AIDifficultyConfigSO aiDifficultyConfig,
                                DuckEnergySystem playerEnergy,
                                DuckEnergySystem enemyEnergy)
                     : base(context)
@@ -43,6 +47,7 @@ public class BattleState : GameStateBase
         _battleEvents = battleEvents;
         _flowEvents = flowEvents;
         _balanceConfig = balanceConfig;
+        _aiDifficultyConfig = aiDifficultyConfig;
         _playerEnergy = playerEnergy;
         _enemyEnergy = enemyEnergy;
     }
@@ -56,6 +61,7 @@ public class BattleState : GameStateBase
         if (_flowEvents != null)
             _flowEvents.RaiseTurnChanged(Owner.Player);
 
+        StartPlayerTurnTimer();
 
         _gridInputChannel.OnGridCellClicked += HandleCellClicked;
         _gridInputChannel.OnRotateAction += HandleCancelSkill;
@@ -65,6 +71,7 @@ public class BattleState : GameStateBase
 
     public override void ExitState()
     {
+        StopPlayerTurnTimer(true);
 
         _gridInputChannel.OnGridCellClicked -= HandleCellClicked;
         _gridInputChannel.OnRotateAction += HandleCancelSkill;
@@ -202,6 +209,11 @@ public class BattleState : GameStateBase
 
         ShotResult result = targetGrid.ProcessShot(pos, shooter);
 
+        if (shooter == Owner.Player)
+        {
+            OnPlayerShotFired();
+        }
+
         // Nếu bắn vào ô không hợp lệ (đã bắn rồi), thì return luôn
         if (result == ShotResult.Invalid || result == ShotResult.None) return;
 
@@ -214,34 +226,31 @@ public class BattleState : GameStateBase
             return;
         }
 
-        // 2. Turn Logic
-        if (result == ShotResult.Miss)
+        if (shooter == Owner.Enemy)
         {
-            SwitchTurn();
+            _enemyAI.NotifyHit(pos, targetGrid.GridSystem);
         }
-        else
-        {
-            // Hit/Sunk -> Bonus Turn
-            Debug.Log($"{shooter} Hit! Bonus Turn.");
 
-            // Riêng AI cần thông báo để nó cập nhật Heatmap
-            if (shooter == Owner.Enemy)
-            {
-                _enemyAI.NotifyHit(pos, targetGrid.GridSystem);
-                _gameContext.StartCoroutine(EnemyRoutine());
-            }
-        }
+        SwitchTurn();
     }
 
     private void SwitchTurn()
     {
+        if (_isPlayerTurn)
+        {
+            StopPlayerTurnTimer(true);
+        }
+
         _isPlayerTurn = !_isPlayerTurn;
         Debug.Log($"Turn Switch: {(_isPlayerTurn ? "PLAYER" : "ENEMY")}");
         if (_flowEvents != null)
             _flowEvents.RaiseTurnChanged(_isPlayerTurn ? Owner.Player : Owner.Enemy);
 
         if (_isPlayerTurn)
+        {
             TickPlayerCooldowns();
+            StartPlayerTurnTimer();
+        }
 
         if (!_isPlayerTurn)
         {
@@ -250,13 +259,23 @@ public class BattleState : GameStateBase
     }
     private void EndBattle(bool isPlayerWon)
     {
+        StopPlayerTurnTimer(true);
         _isGameOver = true;
         _gameContext.EndGame(isPlayerWon);
     }
 
     private IEnumerator EnemyRoutine()
     {
-        float aiDelay = _balanceConfig != null ? _balanceConfig.EnemyTurnDelay : 1.0f;
+        float aiDelay = 1.0f;
+        if (_aiDifficultyConfig != null)
+        {
+            var settings = _aiDifficultyConfig.GetSettings(_aiDifficultyConfig.CurrentDifficulty);
+            aiDelay = settings.EnemyTurnDelay;
+        }
+        else if (_balanceConfig != null)
+        {
+            aiDelay = _balanceConfig.EnemyTurnDelay;
+        }
         yield return new WaitForSeconds(aiDelay);
 
         // Kiểm tra lại Game Over vì trạng thái có thể thay đổi trong lúc chờ
@@ -390,5 +409,84 @@ public class BattleState : GameStateBase
 
             SetPlayerCooldown(skill, remaining - 1);
         }
+    }
+
+    private float GetPlayerTurnDuration()
+    {
+        if (_balanceConfig != null && _balanceConfig.PlayerTurnTimeSeconds > 0f)
+            return _balanceConfig.PlayerTurnTimeSeconds;
+        return 30f;
+    }
+
+    private void StartPlayerTurnTimer()
+    {
+        if (_isGameOver)
+            return;
+
+        float duration = GetPlayerTurnDuration();
+        if (duration <= 0f)
+            return;
+
+        _playerTurnTimer = duration;
+        _isPlayerTurnTimerRunning = true;
+
+        if (_flowEvents != null)
+            _flowEvents.RaiseTurnTimerChanged(Mathf.CeilToInt(_playerTurnTimer));
+
+        _gameContext.StartCoroutine(PlayerTurnTimerRoutine());
+    }
+
+    private void StopPlayerTurnTimer(bool resetUi)
+    {
+        _isPlayerTurnTimerRunning = false;
+
+        if (resetUi && _flowEvents != null)
+            _flowEvents.RaiseTurnTimerChanged(0);
+    }
+
+    private IEnumerator PlayerTurnTimerRoutine()
+    {
+        int lastSeconds = Mathf.CeilToInt(_playerTurnTimer);
+
+        while (_isPlayerTurnTimerRunning && !_isGameOver && _isPlayerTurn && _playerTurnTimer > 0f)
+        {
+            _playerTurnTimer -= Time.deltaTime;
+
+            int seconds = Mathf.Max(0, Mathf.CeilToInt(_playerTurnTimer));
+            if (seconds != lastSeconds)
+            {
+                lastSeconds = seconds;
+                if (_flowEvents != null)
+                    _flowEvents.RaiseTurnTimerChanged(seconds);
+            }
+
+            if (_playerTurnTimer <= 0f)
+                break;
+
+            yield return null;
+        }
+
+        if (_isPlayerTurnTimerRunning && !_isGameOver && _isPlayerTurn && _playerTurnTimer <= 0f)
+        {
+            _isPlayerTurnTimerRunning = false;
+            HandlePlayerTurnTimeout();
+        }
+        else
+        {
+            _isPlayerTurnTimerRunning = false;
+        }
+    }
+
+    private void HandlePlayerTurnTimeout()
+    {
+        if (_isGameOver)
+            return;
+
+        SwitchTurn();
+    }
+
+    private void OnPlayerShotFired()
+    {
+        StopPlayerTurnTimer(true);
     }
 }

@@ -14,10 +14,24 @@ public class EnemyAIController : IEnemyAI
 
     private readonly List<Vector2Int> _cachedNeighbors = new List<Vector2Int>(4);
 
+    private AIDifficulty _currentDifficulty = AIDifficulty.Normal;
+    private AIDifficultyConfigSO _difficultyConfig;
+    private float _decisionRandomness;
 
-    // --- INITIALIZATION ---
+   // --- INITIALIZATION ---
     public void Initialize(int width, int height)
+       {
+           Initialize(width, height, null);
+       }
+    public void Initialize(int width, int height, AIDifficultyConfigSO difficultyConfig)
     {
+        _difficultyConfig = difficultyConfig;
+        if (_difficultyConfig != null)
+        {
+            _currentDifficulty = _difficultyConfig.CurrentDifficulty;
+            _decisionRandomness = _difficultyConfig.GetSettings(_currentDifficulty).DecisionRandomness;
+        }
+
         _availableParityMoves = new List<Vector2Int>();
         for (int x = 0; x < width; x++)
         {
@@ -30,7 +44,7 @@ public class EnemyAIController : IEnemyAI
                 }
             }
         }
-        ShuffleList(_availableParityMoves);
+              ShuffleList(_availableParityMoves);
     }
 
     public AIAction GetDecision(IGridSystem playerGrid, DuckEnergySystem myEnergy, List<DuckSkillSO> availableSkills)
@@ -66,6 +80,12 @@ public class EnemyAIController : IEnemyAI
         if (_currentState == AIState.Targeting && _potentialTargets.Count > 0)
         {
             baseScore += 2f;
+        }
+
+        if (_decisionRandomness > 0f)
+        {
+            float noise = Random.Range(-_decisionRandomness, _decisionRandomness) * baseScore;
+            baseScore += noise;
         }
 
         return baseScore;

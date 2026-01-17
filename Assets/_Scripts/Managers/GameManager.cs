@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour, IGameContext
 
     [Header("--- GAME BALANCE CONFIG ---")]
     [SerializeField] private GameBalanceConfigSO _gameBalanceConfig;
+    [SerializeField] private AIDifficultyConfigSO _aiDifficultyConfig;
 
     private IGridContext _playerGrid => _playerGridManager;
     private IGridContext _enemyGrid => _enemyGridManager;
@@ -90,7 +91,7 @@ public class GameManager : MonoBehaviour, IGameContext
 
         // 3. Setup AI
         EnemyAIController aiController = new EnemyAIController();
-        aiController.Initialize(10, 10);
+        aiController.Initialize(10, 10, _aiDifficultyConfig);
         IEnemyAI aiImplementation = aiController;
 
         // 4. Setup Camera 
@@ -102,7 +103,7 @@ public class GameManager : MonoBehaviour, IGameContext
         // 5. Khởi tạo States
 
         _setupState = new SetupState(this, _playerGrid, _fleetManager, _gridInputController, _gridInputChannel, _uiFeedbackChannel);
-        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel, _gameFlowEventChannel, _gameBalanceConfig, _playerEnergySystem, _enemyEnergySystem);
+        _battleState = new BattleState(this, _playerGrid, _enemyGrid, aiController, _gridInputChannel, _battleEventChannel, _gameFlowEventChannel, _gameBalanceConfig, _aiDifficultyConfig, _playerEnergySystem, _enemyEnergySystem);
         // 6. Setup Enemy Fleet 
         List<DuckDataSO> enemyFleet = _fleetManager.GetFleetData();
         gridRandomizer.RandomizePlacement(_enemyGridManager, enemyFleet);

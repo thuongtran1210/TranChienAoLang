@@ -16,4 +16,7 @@ public class GameBalanceConfigSO : ScriptableObject
     public float GridCellSize = 1.0f;
     public float SkillExecutionDelay = 1f;
     public float EnemyTurnDelay = 1f;
+
+    [Header("Turn Timer Settings")]
+    public float PlayerTurnTimeSeconds = 30f;
 }

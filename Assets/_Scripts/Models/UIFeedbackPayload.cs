@@ -7,6 +7,7 @@ public struct UIFeedbackPayload
     public string Message;
     public UIFeedbackType Type;
     public UIFeedbackSource Source;
+    public UIFeedbackToastVisual ToastVisual;
 
     public bool HasOwner;
     public Owner Owner;
@@ -23,10 +24,10 @@ public struct UIFeedbackPayload
             Message = message,
             Type = UIFeedbackType.Info,
             Source = source,
+            ToastVisual = UIFeedbackToastVisual.DefaultText,
             HasOwner = false,
             HasGridPos = false,
             Duration = duration
         };
     }
 }
-
