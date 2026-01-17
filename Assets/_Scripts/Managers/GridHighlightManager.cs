@@ -42,12 +42,29 @@ public class GridHighlightManager : MonoBehaviour
     {
         if (target != _gridOwner) return;
 
-        // [Logic] Cập nhật State
-        _activePreviewPositions = new List<Vector2Int>(positions); // Copy list để an toàn
+        if (_hasActivePreview && positions.Count == _activePreviewPositions.Count && color.Equals(_activePreviewColor))
+        {
+            bool same = true;
+            for (int i = 0; i < positions.Count; i++)
+            {
+                if (positions[i] != _activePreviewPositions[i])
+                {
+                    same = false;
+                    break;
+                }
+            }
+
+            if (same)
+            {
+                return;
+            }
+        }
+
+        _activePreviewPositions = new List<Vector2Int>(positions);
         _activePreviewColor = color;
         _hasActivePreview = true;
 
-        // [Visual] Vẽ ngay lập tức
+        _tilemapGridView.ClearHighlights();
         RenderPreview();
     }
 

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SonarSkillSO
   skillName: "V\u1ECBt soi m\xF3i"
   energyCost: 50
+  cooldownTurns: 0
   icon: {fileID: -9018408806940583333, guid: 1868a66aa027d254398fda3a64cf2e9d, type: 3}
   skillColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   targetType: 1
@@ -28,4 +29,6 @@ MonoBehaviour:
   areaSize: {x: 3, y: 3}
   _radius: 1
   _detectedIndicatorTile: {fileID: 11400000, guid: 542fe1eb2e1717546bade1cae80da5c3, type: 2}
-  _scanAreaColor: {r: 0.5, g: 0.5, b: 0.5, a: 0.5}
+  _scanAreaColor: {r: 0.9249499, g: 1, b: 0.5415094, a: 0.5}
+  _foundMessageFormat: Sonar detected {0} signals!
+  _noSignalMessage: No signals.

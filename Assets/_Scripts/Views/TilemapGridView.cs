@@ -35,8 +35,22 @@ public class TilemapGridView : MonoBehaviour
     public void SetupIdentity(Owner owner)
     {
         _myOwner = owner;
-       
-        _battleChannel.OnShotFired += HandleShotFired;
+
+        if (_baseTilemap != null && _highlightTilemap != null)
+        {
+            Transform baseTransform = _baseTilemap.transform;
+            Transform highlightTransform = _highlightTilemap.transform;
+
+            highlightTransform.SetParent(baseTransform.parent, false);
+            highlightTransform.localPosition = baseTransform.localPosition;
+            highlightTransform.localRotation = baseTransform.localRotation;
+            highlightTransform.localScale = baseTransform.localScale;
+        }
+
+        if (_battleChannel != null)
+        {
+            _battleChannel.OnShotFired += HandleShotFired;
+        }
     }
     private void OnDestroy()
     {
